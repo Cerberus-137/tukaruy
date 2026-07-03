@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Country Dropdown</title>
+    <style>
+        body { background: #000; color: #fff; padding: 20px; font-family: Arial; }
+        .dropdown { background: #1a1a1a; border: 1px solid #3a3a3a; border-radius: 8px; padding: 10px; margin: 10px 0; }
+        .country-item { padding: 10px; cursor: pointer; }
+        .country-item:hover { background: #2a2a2a; }
+        button { background: #8b5cf6; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h2>Test Country Dropdown</h2>
+    
+    <input type="text" id="origin-country-display" placeholder="Semua negara" onclick="toggleCountryDropdown('origin')" style="width: 300px; padding: 10px;">
+    
+    <div id="origin-country-dropdown" class="dropdown hidden">
+        <div id="origin-country-list"></div>
+    </div>
+    
+    <input type="hidden" id="origin_country">
+    
+    <div style="margin-top: 20px;">
+        <strong>Selected Country:</strong> <span id="selected-display">None</span>
+    </div>
+    
+    <script>
+        const countries = [
+            { code: 'ID', name: 'Indonesia' },
+            { code: 'US', name: 'United States' },
+            { code: 'GB', name: 'United Kingdom' }
+        ];
+        
+        function initializeCountrySelects() {
+            const list = document.getElementById('origin-country-list');
+            list.innerHTML = '';
+            
+            countries.forEach(country => {
+                const item = document.createElement('div');
+                item.className = 'country-item';
+                item.textContent = `${country.name} (${country.code})`;
+                item.onclick = () => selectCountry('origin', country.code, country.name);
+                list.appendChild(item);
+            });
+            
+            console.log('Countries initialized');
+        }
+        
+        function toggleCountryDropdown(type) {
+            const dropdown = document.getElementById(`${type}-country-dropdown`);
+            dropdown.classList.toggle('hidden');
+            console.log('Dropdown toggled');
+        }
+        
+        function selectCountry(type, code, name) {
+            document.getElementById(`${type}_country`).value = code;
+            document.getElementById(`${type}-country-display`).value = `${name} (${code})`;
+            document.getElementById(`${type}-country-dropdown`).classList.add('hidden');
+            document.getElementById('selected-display').textContent = `${name} (${code})`;
+            console.log('Selected:', code, name);
+        }
+        
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', function() {
+            initializeCountrySelects();
+        });
+    </script>
+</body>
+</html>

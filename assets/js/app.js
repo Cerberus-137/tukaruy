@@ -70,33 +70,68 @@ const citiesByCountry = {
 
 // Initialize country selects
 function initializeCountrySelects() {
+    // Wait for DOM to be ready
+    const originList = document.getElementById('origin-country-list');
+    const destList = document.getElementById('dest-country-list');
+    
+    if (!originList || !destList) {
+        console.error('Country list elements not found');
+        return;
+    }
+    
     // Populate country lists
-    ['origin', 'dest'].forEach(type => {
-        const list = document.getElementById(`${type}-country-list`);
-        list.innerHTML = '';
+    originList.innerHTML = '';
+    destList.innerHTML = '';
+    
+    countries.forEach(country => {
+        // Origin list
+        const originItem = document.createElement('div');
+        originItem.className = 'country-item px-4 py-2 hover:bg-dark-300 cursor-pointer text-sm';
+        originItem.textContent = `${country.name} (${country.code})`;
+        originItem.dataset.code = country.code;
+        originItem.dataset.name = country.name;
+        originItem.onclick = () => selectCountry('origin', country.code, country.name);
+        originList.appendChild(originItem);
         
-        countries.forEach(country => {
-            const item = document.createElement('div');
-            item.className = 'country-item px-4 py-2 hover:bg-dark-300 cursor-pointer text-sm';
-            item.textContent = `${country.name} (${country.code})`;
-            item.dataset.code = country.code;
-            item.dataset.name = country.name;
-            item.onclick = () => selectCountry(type, country.code, country.name);
-            list.appendChild(item);
-        });
+        // Dest list
+        const destItem = document.createElement('div');
+        destItem.className = 'country-item px-4 py-2 hover:bg-dark-300 cursor-pointer text-sm';
+        destItem.textContent = `${country.name} (${country.code})`;
+        destItem.dataset.code = country.code;
+        destItem.dataset.name = country.name;
+        destItem.onclick = () => selectCountry('dest', country.code, country.name);
+        destList.appendChild(destItem);
     });
+    
+    console.log('Countries initialized successfully');
 }
 
 // Toggle country dropdown
 function toggleCountryDropdown(type) {
+    console.log('Toggling country dropdown:', type);
+    
     const dropdown = document.getElementById(`${type}-country-dropdown`);
+    
+    if (!dropdown) {
+        console.error('Dropdown not found:', `${type}-country-dropdown`);
+        return;
+    }
+    
     const isHidden = dropdown.classList.contains('hidden');
     
     // Close all dropdowns first
-    document.querySelectorAll('[id$="-dropdown"]').forEach(d => d.classList.add('hidden'));
+    document.querySelectorAll('[id$="-dropdown"]').forEach(d => {
+        if (d.id !== `${type}-country-dropdown`) {
+            d.classList.add('hidden');
+        }
+    });
     
     if (isHidden) {
         dropdown.classList.remove('hidden');
+        console.log('Dropdown opened');
+    } else {
+        dropdown.classList.add('hidden');
+        console.log('Dropdown closed');
     }
 }
 
@@ -122,16 +157,32 @@ function toggleCityDropdown(type) {
 
 // Select country
 function selectCountry(type, code, name) {
-    document.getElementById(`${type}_country`).value = code;
-    document.getElementById(`${type}-country-display`).value = `${name} (${code})`;
-    document.getElementById(`${type}-country-dropdown`).classList.add('hidden');
+    console.log('Selecting country:', type, code, name);
+    
+    const countryInput = document.getElementById(`${type}_country`);
+    const displayInput = document.getElementById(`${type}-country-display`);
+    const dropdown = document.getElementById(`${type}-country-dropdown`);
+    
+    if (!countryInput || !displayInput) {
+        console.error('Country input elements not found');
+        return;
+    }
+    
+    countryInput.value = code;
+    displayInput.value = `${name} (${code})`;
+    dropdown.classList.add('hidden');
     
     // Load cities for this country
     loadCities(type, code);
     
     // Reset city selection
-    document.getElementById(`${type}_city`).value = '';
-    document.getElementById(`${type}-city-display`).value = 'Any city';
+    const cityInput = document.getElementById(`${type}_city`);
+    const cityDisplay = document.getElementById(`${type}-city-display`);
+    
+    if (cityInput) cityInput.value = '';
+    if (cityDisplay) cityDisplay.value = 'Semua kota';
+    
+    console.log('Country selected successfully');
 }
 
 // Load cities for country
@@ -215,7 +266,14 @@ function filterCities(type) {
 
 // Close dropdowns when clicking outside
 document.addEventListener('click', function(event) {
-    if (!event.target.closest('[id$="-dropdown"]') && !event.target.closest('input[id$="-display"]')) {
+    const target = event.target;
+    
+    // Check if click is outside any dropdown
+    const isDropdownClick = target.closest('[id$="-dropdown"]');
+    const isDisplayClick = target.closest('input[id$="-display"]');
+    const isButtonClick = target.closest('button');
+    
+    if (!isDropdownClick && !isDisplayClick && !isButtonClick) {
         document.querySelectorAll('[id$="-dropdown"]').forEach(d => d.classList.add('hidden'));
     }
 });
@@ -277,10 +335,13 @@ function toggleMoreOptions() {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    initializeCountrySelects();
+    console.log('DOM Content Loaded - Initializing...');
     
-    // Delay auto-search to prevent lag
-    // Removed auto-search on load - only search when user clicks button
+    // Small delay to ensure all elements are rendered
+    setTimeout(() => {
+        initializeCountrySelects();
+        console.log('Initialization complete');
+    }, 100);
 });
 
 // Toggle sidebar
@@ -316,9 +377,9 @@ function collectFilters() {
         filters.status = selectedStatuses;
     }
     
-    // Get origin
+    // Get origin - use hidden inputs
     const originCountry = document.getElementById('origin_country')?.value;
-    const originCity = document.querySelector('input[name="origin_city"]')?.value;
+    const originCity = document.getElementById('origin_city')?.value;
     
     if (originCountry) {
         filters.origin_country = originCountry;
@@ -327,19 +388,15 @@ function collectFilters() {
         filters.origin_city = originCity;
     }
     
-    // Get destination
+    // Get destination - use hidden inputs
     const destCountry = document.getElementById('dest_country')?.value;
-    const destZip = document.querySelector('input[name="dest_zip"]')?.value;
-    const destState = document.querySelector('select[name="dest_state"]')?.value;
+    const destCity = document.getElementById('dest_city')?.value;
     
     if (destCountry) {
         filters.dest_country = destCountry;
     }
-    if (destZip) {
-        filters.dest_zip = destZip;
-    }
-    if (destState) {
-        filters.dest_state = destState;
+    if (destCity) {
+        filters.dest_city = destCity;
     }
     
     // Get ship date range
@@ -383,6 +440,7 @@ function collectFilters() {
         filters.photo_confirmed = true;
     }
     
+    console.log('Collected filters:', filters);
     return filters;
 }
 
