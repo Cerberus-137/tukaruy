@@ -85,6 +85,79 @@ $stats = $api->getStats();
             border-color: #8b5cf6;
             color: #c084fc;
         }
+        .country-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            font-size: 0.875rem;
+        }
+        .country-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+        }
+        .country-item.selected {
+            background: rgba(139, 92, 246, 0.3);
+            color: #c084fc;
+        }
+        #country-dropdown-menu {
+            animation: slideDown 0.2s ease-out;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(26, 26, 26, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.5);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.7);
+        }
+        .loading-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        .badge-info {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: rgba(139, 92, 246, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+            animation: slideInRight 0.3s ease-out;
+            z-index: 1000;
+        }
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body class="bg-black text-gray-100 min-h-screen">
@@ -158,7 +231,23 @@ $stats = $api->getStats();
                         <!-- Tujuan -->
                         <div>
                             <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Tujuan</label>
-                            <input type="text" id="dest_country" placeholder="Negara (ID, US, GB...)" class="w-full mb-2 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm">
+                            <div class="relative mb-2">
+                                <div id="country-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                    <span id="selected-country-display">United States (US)</span>
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
+                                <input type="hidden" id="dest_country" value="US">
+                                
+                                <!-- Dropdown Menu -->
+                                <div id="country-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                                    <div class="p-2 border-b border-dark-400">
+                                        <input type="text" id="country-search" placeholder="Search country..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                                    </div>
+                                    <div id="country-list" class="overflow-y-auto max-h-52">
+                                        <!-- Countries will be populated by JS -->
+                                    </div>
+                                </div>
+                            </div>
                             <input type="text" id="dest_city" placeholder="Kota" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm">
                         </div>
 

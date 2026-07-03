@@ -4,21 +4,185 @@ let selectedStatuses = [];
 let currentCursor = null;
 let currentTnId = null;
 
+// Country data
+const countries = [
+    { code: 'US', name: 'United States' },
+    { code: 'GB', name: 'United Kingdom' },
+    { code: 'CA', name: 'Canada' },
+    { code: 'AU', name: 'Australia' },
+    { code: 'DE', name: 'Germany' },
+    { code: 'FR', name: 'France' },
+    { code: 'IT', name: 'Italy' },
+    { code: 'ES', name: 'Spain' },
+    { code: 'NL', name: 'Netherlands' },
+    { code: 'BE', name: 'Belgium' },
+    { code: 'SE', name: 'Sweden' },
+    { code: 'NO', name: 'Norway' },
+    { code: 'DK', name: 'Denmark' },
+    { code: 'FI', name: 'Finland' },
+    { code: 'CH', name: 'Switzerland' },
+    { code: 'AT', name: 'Austria' },
+    { code: 'PL', name: 'Poland' },
+    { code: 'CZ', name: 'Czech Republic' },
+    { code: 'IE', name: 'Ireland' },
+    { code: 'PT', name: 'Portugal' },
+    { code: 'GR', name: 'Greece' },
+    { code: 'HU', name: 'Hungary' },
+    { code: 'RO', name: 'Romania' },
+    { code: 'BG', name: 'Bulgaria' },
+    { code: 'HR', name: 'Croatia' },
+    { code: 'SK', name: 'Slovakia' },
+    { code: 'SI', name: 'Slovenia' },
+    { code: 'LT', name: 'Lithuania' },
+    { code: 'LV', name: 'Latvia' },
+    { code: 'EE', name: 'Estonia' },
+    { code: 'JP', name: 'Japan' },
+    { code: 'CN', name: 'China' },
+    { code: 'KR', name: 'South Korea' },
+    { code: 'IN', name: 'India' },
+    { code: 'SG', name: 'Singapore' },
+    { code: 'MY', name: 'Malaysia' },
+    { code: 'TH', name: 'Thailand' },
+    { code: 'VN', name: 'Vietnam' },
+    { code: 'PH', name: 'Philippines' },
+    { code: 'ID', name: 'Indonesia' },
+    { code: 'HK', name: 'Hong Kong' },
+    { code: 'TW', name: 'Taiwan' },
+    { code: 'NZ', name: 'New Zealand' },
+    { code: 'BR', name: 'Brazil' },
+    { code: 'MX', name: 'Mexico' },
+    { code: 'AR', name: 'Argentina' },
+    { code: 'CL', name: 'Chile' },
+    { code: 'CO', name: 'Colombia' },
+    { code: 'PE', name: 'Peru' },
+    { code: 'ZA', name: 'South Africa' },
+    { code: 'EG', name: 'Egypt' },
+    { code: 'NG', name: 'Nigeria' },
+    { code: 'KE', name: 'Kenya' },
+    { code: 'AE', name: 'United Arab Emirates' },
+    { code: 'SA', name: 'Saudi Arabia' },
+    { code: 'IL', name: 'Israel' },
+    { code: 'TR', name: 'Turkey' },
+    { code: 'RU', name: 'Russia' },
+    { code: 'UA', name: 'Ukraine' }
+];
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     setupFilterButtons();
+    setupCountryDropdown();
     console.log('Tukeruy initialized');
     
-    // Auto-load data on page load with default filters
+    // Auto-load data on page load with default filters (US)
     setTimeout(() => {
         autoLoadInitialData();
     }, 500);
 });
 
+// Setup country dropdown
+function setupCountryDropdown() {
+    const trigger = document.getElementById('country-dropdown-trigger');
+    const menu = document.getElementById('country-dropdown-menu');
+    const searchInput = document.getElementById('country-search');
+    const countryList = document.getElementById('country-list');
+    const hiddenInput = document.getElementById('dest_country');
+    const display = document.getElementById('selected-country-display');
+    
+    // Populate country list
+    renderCountryList(countries);
+    
+    // Toggle dropdown
+    trigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        menu.classList.toggle('hidden');
+        if (!menu.classList.contains('hidden')) {
+            searchInput.focus();
+        }
+    });
+    
+    // Search functionality
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const filtered = countries.filter(c => 
+            c.name.toLowerCase().includes(query) || 
+            c.code.toLowerCase().includes(query)
+        );
+        renderCountryList(filtered);
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!trigger.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+    });
+    
+    // Render country list
+    function renderCountryList(countryArray) {
+        countryList.innerHTML = '';
+        
+        countryArray.forEach(country => {
+            const item = document.createElement('div');
+            item.className = 'country-item';
+            if (country.code === hiddenInput.value) {
+                item.classList.add('selected');
+            }
+            item.innerHTML = `${country.name} <span class="text-gray-500 text-xs">(${country.code})</span>`;
+            item.addEventListener('click', function() {
+                selectCountry(country);
+            });
+            countryList.appendChild(item);
+        });
+    }
+    
+    // Select country
+    function selectCountry(country) {
+        hiddenInput.value = country.code;
+        display.textContent = `${country.name} (${country.code})`;
+        menu.classList.add('hidden');
+        searchInput.value = '';
+        renderCountryList(countries);
+        
+        // Show notification
+        showNotification(`Country changed to ${country.name}`, 'info');
+    }
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    const colors = {
+        info: 'rgba(139, 92, 246, 0.9)',
+        success: 'rgba(34, 197, 94, 0.9)',
+        error: 'rgba(239, 68, 68, 0.9)'
+    };
+    
+    const notification = document.createElement('div');
+    notification.className = 'badge-info';
+    notification.style.background = colors[type];
+    notification.innerHTML = `
+        <div class="flex items-center space-x-2">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span class="text-sm font-medium">${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transition = 'all 0.3s ease-out';
+        notification.style.transform = 'translateX(100%)';
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
 // Auto load initial data
 function autoLoadInitialData() {
-    console.log('Auto-loading initial data...');
-    const filters = {}; // Empty filters = get all
+    console.log('Auto-loading initial data with default US filter...');
+    // Load with United States as default
+    const filters = {
+        dest_country: 'US'
+    };
     performSearch(filters);
 }
 
@@ -120,6 +284,9 @@ function applyFilters() {
     // Reset cursor for new search
     currentCursor = null;
     
+    // Show notification
+    showNotification('Applying filters...', 'info');
+    
     // Perform search
     performSearch(filters);
 }
@@ -195,6 +362,11 @@ async function performSearch(filters, append = false) {
         const total = data.total >= 100 ? '100+' : data.total;
         resultCount.textContent = `${total} hasil`;
         
+        // Show success notification
+        if (!append) {
+            showNotification(`Found ${total} tracking numbers`, 'success');
+        }
+        
         // Handle pagination
         if (data.next_cursor) {
             currentCursor = data.next_cursor;
@@ -231,7 +403,8 @@ function resetFilters() {
     // Reset inputs
     document.getElementById('origin_country').value = '';
     document.getElementById('origin_city').value = '';
-    document.getElementById('dest_country').value = '';
+    document.getElementById('dest_country').value = 'US'; // Reset to US
+    document.getElementById('selected-country-display').textContent = 'United States (US)'; // Reset display
     document.getElementById('dest_city').value = '';
     document.getElementById('ship_from').value = '';
     document.getElementById('ship_to').value = '';
@@ -248,7 +421,7 @@ function resetFilters() {
     document.getElementById('result-count').textContent = '~100 hasil';
     document.getElementById('load-more').classList.add('hidden');
     
-    // Auto-reload data
+    // Auto-reload data with US default
     setTimeout(() => {
         autoLoadInitialData();
     }, 300);
@@ -311,6 +484,9 @@ async function revealTracking(tnId) {
         // Update credits
         document.getElementById('credits-display').textContent = data.credits_remaining.toLocaleString();
         
+        // Show success notification
+        showNotification(`Tracking number revealed: ${data.tracking_number}`, 'success');
+        
         // Show success
         content.innerHTML = `
             <div class="bg-green-500/20 border border-green-500/50 rounded-lg p-4">
@@ -348,6 +524,9 @@ async function revealTracking(tnId) {
                 </div>
             </div>
         `;
+        
+        // Show error notification
+        showNotification(error.message, 'error');
         
         btn.innerHTML = 'Konfirmasi';
         btn.disabled = false;
