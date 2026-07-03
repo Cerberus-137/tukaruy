@@ -51,50 +51,174 @@ const countries = [
     { code: 'CO', name: 'Colombia' }
 ];
 
-// US States
-const usStates = [
-    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
-    'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
-    'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
-    'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
-    'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
-];
+// City data per country (common cities)
+const citiesByCountry = {
+    'ID': ['JAKARTA', 'SEMARANG', 'SURABAYA', 'BANDUNG', 'BATAM', 'DENPASAR', 'MEDAN', 'BEKASI', 'TANGERANG', 'DEPOK'],
+    'US': ['NEW YORK', 'LOS ANGELES', 'CHICAGO', 'HOUSTON', 'PHOENIX', 'PHILADELPHIA', 'SAN ANTONIO', 'SAN DIEGO', 'DALLAS', 'SAN JOSE'],
+    'GB': ['LONDON', 'MANCHESTER', 'BIRMINGHAM', 'GLASGOW', 'LIVERPOOL', 'LEEDS', 'SHEFFIELD', 'EDINBURGH', 'BRISTOL', 'NEWCASTLE', 'SOUTHAMPTON', 'EXETER', 'DOCKLANDS', 'STANSTED', 'ABERDEEN'],
+    'CA': ['TORONTO', 'MONTREAL', 'VANCOUVER', 'CALGARY', 'EDMONTON', 'OTTAWA', 'WINNIPEG', 'QUEBEC CITY', 'HAMILTON', 'KITCHENER'],
+    'DE': ['BERLIN', 'HAMBURG', 'MUNICH', 'COLOGNE', 'FRANKFURT', 'STUTTGART', 'DUSSELDORF', 'DORTMUND', 'ESSEN', 'LEIPZIG'],
+    'FR': ['PARIS', 'MARSEILLE', 'LYON', 'TOULOUSE', 'NICE', 'NANTES', 'STRASBOURG', 'MONTPELLIER', 'BORDEAUX', 'LILLE'],
+    'AU': ['SYDNEY', 'MELBOURNE', 'BRISBANE', 'PERTH', 'ADELAIDE', 'GOLD COAST', 'CANBERRA', 'NEWCASTLE', 'WOLLONGONG', 'HOBART'],
+    'JP': ['TOKYO', 'OSAKA', 'YOKOHAMA', 'NAGOYA', 'SAPPORO', 'FUKUOKA', 'KOBE', 'KYOTO', 'KAWASAKI', 'SAITAMA'],
+    'CN': ['BEIJING', 'SHANGHAI', 'GUANGZHOU', 'SHENZHEN', 'CHENGDU', 'TIANJIN', 'WUHAN', 'HANGZHOU', 'NANJING', 'CHONGQING'],
+    'IT': ['ROME', 'MILAN', 'NAPLES', 'TURIN', 'PALERMO', 'GENOA', 'BOLOGNA', 'FLORENCE', 'BARI', 'CATANIA'],
+    'ES': ['MADRID', 'BARCELONA', 'VALENCIA', 'SEVILLE', 'ZARAGOZA', 'MALAGA', 'MURCIA', 'PALMA', 'BILBAO', 'ALICANTE'],
+    'MX': ['MEXICO CITY', 'GUADALAJARA', 'MONTERREY', 'PUEBLA', 'TIJUANA', 'LEON', 'JUAREZ', 'ZAPOPAN', 'MONTERREY', 'NEZAHUALCOYOTL'],
+    'BR': ['SAO PAULO', 'RIO DE JANEIRO', 'BRASILIA', 'SALVADOR', 'FORTALEZA', 'BELO HORIZONTE', 'MANAUS', 'CURITIBA', 'RECIFE', 'PORTO ALEGRE']
+};
 
 // Initialize country selects
 function initializeCountrySelects() {
-    const originSelect = document.getElementById('origin_country');
-    const destSelect = document.getElementById('dest_country');
-    const destStateSelect = document.querySelector('select[name="dest_state"]');
-    
-    countries.forEach(country => {
-        const option1 = new Option(`${country.name} (${country.code})`, country.code);
-        const option2 = new Option(`${country.name} (${country.code})`, country.code);
-        originSelect.add(option1);
-        destSelect.add(option2);
+    // Populate country lists
+    ['origin', 'dest'].forEach(type => {
+        const list = document.getElementById(`${type}-country-list`);
+        list.innerHTML = '';
+        
+        countries.forEach(country => {
+            const item = document.createElement('div');
+            item.className = 'country-item px-4 py-2 hover:bg-dark-300 cursor-pointer text-sm';
+            item.textContent = `${country.name} (${country.code})`;
+            item.dataset.code = country.code;
+            item.dataset.name = country.name;
+            item.onclick = () => selectCountry(type, country.code, country.name);
+            list.appendChild(item);
+        });
     });
+}
+
+// Toggle country dropdown
+function toggleCountryDropdown(type) {
+    const dropdown = document.getElementById(`${type}-country-dropdown`);
+    const isHidden = dropdown.classList.contains('hidden');
     
-    // Add US states
-    usStates.forEach(state => {
-        destStateSelect.add(new Option(state, state));
+    // Close all dropdowns first
+    document.querySelectorAll('[id$="-dropdown"]').forEach(d => d.classList.add('hidden'));
+    
+    if (isHidden) {
+        dropdown.classList.remove('hidden');
+    }
+}
+
+// Toggle city dropdown
+function toggleCityDropdown(type) {
+    const dropdown = document.getElementById(`${type}-city-dropdown`);
+    const countryCode = document.getElementById(`${type}_country`).value;
+    
+    if (!countryCode) {
+        alert('Silakan pilih negara terlebih dahulu');
+        return;
+    }
+    
+    const isHidden = dropdown.classList.contains('hidden');
+    
+    // Close all dropdowns first
+    document.querySelectorAll('[id$="-dropdown"]').forEach(d => d.classList.add('hidden'));
+    
+    if (isHidden) {
+        dropdown.classList.remove('hidden');
+    }
+}
+
+// Select country
+function selectCountry(type, code, name) {
+    document.getElementById(`${type}_country`).value = code;
+    document.getElementById(`${type}-country-display`).value = `${name} (${code})`;
+    document.getElementById(`${type}-country-dropdown`).classList.add('hidden');
+    
+    // Load cities for this country
+    loadCities(type, code);
+    
+    // Reset city selection
+    document.getElementById(`${type}_city`).value = '';
+    document.getElementById(`${type}-city-display`).value = 'Any city';
+}
+
+// Load cities for country
+function loadCities(type, countryCode) {
+    const cityList = document.getElementById(`${type}-city-list`);
+    const cities = citiesByCountry[countryCode] || [];
+    
+    cityList.innerHTML = '';
+    
+    if (cities.length === 0) {
+        cityList.innerHTML = '<div class="text-center text-gray-500 text-sm py-4">Tidak ada kota tersedia</div>';
+        return;
+    }
+    
+    cities.forEach(city => {
+        const item = document.createElement('div');
+        item.className = 'city-item px-4 py-2 hover:bg-dark-300 cursor-pointer text-sm';
+        item.textContent = city;
+        item.onclick = () => selectCity(type, city);
+        cityList.appendChild(item);
     });
+}
+
+// Select city
+function selectCity(type, city) {
+    document.getElementById(`${type}_city`).value = city;
+    document.getElementById(`${type}-city-display`).value = city;
+    document.getElementById(`${type}-city-dropdown`).classList.add('hidden');
+}
+
+// Clear country
+function clearOriginCountry() {
+    document.getElementById('origin_country').value = '';
+    document.getElementById('origin-country-display').value = '';
+    document.getElementById('origin_city').value = '';
+    document.getElementById('origin-city-display').value = 'Semua kota';
+    document.getElementById('origin-city-list').innerHTML = '<div class="text-center text-gray-500 text-sm py-4">Pilih negara terlebih dahulu</div>';
+}
+
+function clearDestCountry() {
+    document.getElementById('dest_country').value = '';
+    document.getElementById('dest-country-display').value = '';
+    document.getElementById('dest_city').value = '';
+    document.getElementById('dest-city-display').value = 'Semua kota';
+    document.getElementById('dest-city-list').innerHTML = '<div class="text-center text-gray-500 text-sm py-4">Pilih negara terlebih dahulu</div>';
 }
 
 // Filter countries in dropdown
 function filterCountries(type) {
     const searchInput = document.getElementById(`${type}-search`);
-    const select = document.getElementById(`${type}_country`);
+    const list = document.getElementById(`${type}-country-list`);
     const filter = searchInput.value.toUpperCase();
+    const items = list.getElementsByClassName('country-item');
     
-    for (let i = 1; i < select.options.length; i++) {
-        const option = select.options[i];
-        const txtValue = option.textContent || option.innerText;
+    for (let i = 0; i < items.length; i++) {
+        const txtValue = items[i].textContent || items[i].innerText;
         if (txtValue.toUpperCase().indexOf(filter) > -1) {
-            option.style.display = '';
+            items[i].style.display = '';
         } else {
-            option.style.display = 'none';
+            items[i].style.display = 'none';
         }
     }
 }
+
+// Filter cities in dropdown
+function filterCities(type) {
+    const searchInput = document.getElementById(`${type}-city-search`);
+    const list = document.getElementById(`${type}-city-list`);
+    const filter = searchInput.value.toUpperCase();
+    const items = list.getElementsByClassName('city-item');
+    
+    for (let i = 0; i < items.length; i++) {
+        const txtValue = items[i].textContent || items[i].innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            items[i].style.display = '';
+        } else {
+            items[i].style.display = 'none';
+        }
+    }
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('[id$="-dropdown"]') && !event.target.closest('input[id$="-display"]')) {
+        document.querySelectorAll('[id$="-dropdown"]').forEach(d => d.classList.add('hidden'));
+    }
+});
 
 // Toggle carrier button
 function toggleCarrier(btn) {
@@ -155,10 +279,8 @@ function toggleMoreOptions() {
 document.addEventListener('DOMContentLoaded', function() {
     initializeCountrySelects();
     
-    // Auto-search on page load with default filters
-    setTimeout(() => {
-        performSearch();
-    }, 500);
+    // Delay auto-search to prevent lag
+    // Removed auto-search on load - only search when user clicks button
 });
 
 // Toggle sidebar
@@ -321,7 +443,7 @@ async function performSearch() {
         }
         
         if (data.results.length === 0 && !currentCursor) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-12 text-gray-500"><i class="fas fa-inbox text-3xl mb-3"></i><div>No tracking numbers found</div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-12 text-gray-500"><i class="fas fa-inbox text-3xl mb-3"></i><div>Tidak ada nomor resi ditemukan</div></td></tr>';
             loadMoreBtn.classList.add('hidden');
             return;
         }
@@ -346,7 +468,7 @@ async function performSearch() {
                 <td class="py-4 px-4 text-sm">${item.weight}</td>
                 <td class="py-4 px-4 text-right">
                     <button onclick="showRevealModal('${item.tn_id}', ${item.reveal_cost})" class="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
-                        Get TN
+                        Dapatkan Resi
                     </button>
                 </td>
             `;
@@ -509,19 +631,25 @@ function resetFilters() {
     
     // Reset all inputs
     document.getElementById('origin_country').value = '';
-    document.querySelector('input[name="origin_city"]').value = '';
+    document.querySelector('input[name="origin_city"]')?.value = '';
     document.getElementById('dest_country').value = '';
-    document.querySelector('input[name="dest_zip"]').value = '';
-    document.querySelector('select[name="dest_state"]').value = '';
-    document.querySelector('input[name="ship_from"]').value = '';
-    document.querySelector('input[name="ship_to"]').value = '';
-    document.querySelector('input[name="delivery_from"]').value = '';
-    document.querySelector('input[name="delivery_to"]').value = '';
-    document.querySelector('input[name="weight_min"]').value = '';
-    document.querySelector('input[name="weight_max"]').value = '';
-    document.querySelector('input[name="signature_required"]').checked = false;
-    document.querySelector('input[name="photo_confirmed"]').checked = false;
+    document.querySelector('input[name="dest_zip"]')?.value = '';
+    document.querySelector('select[name="dest_state"]')?.value = '';
+    document.querySelector('input[name="ship_from"]')?.value = '';
+    document.querySelector('input[name="ship_to"]')?.value = '';
+    document.querySelector('input[name="delivery_from"]')?.value = '';
+    document.querySelector('input[name="delivery_to"]')?.value = '';
+    document.querySelector('input[name="weight_min"]')?.value = '';
+    document.querySelector('input[name="weight_max"]')?.value = '';
+    document.querySelector('input[name="signature_required"]')?.checked = false;
+    document.querySelector('input[name="photo_confirmed"]')?.checked = false;
     document.getElementById('search-input').value = '';
+    
+    // Clear displays
+    document.getElementById('origin-country-display').value = '';
+    document.getElementById('origin-city-display').value = 'Semua kota';
+    document.getElementById('dest-country-display').value = '';
+    document.getElementById('dest-city-display').value = 'Semua kota';
     
     // Clear search inputs
     document.getElementById('origin-search').value = '';

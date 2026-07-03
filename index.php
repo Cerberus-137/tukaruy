@@ -122,6 +122,16 @@ $stats = $api->getStats();
         .toggle-switch:checked::before {
             transform: translateX(20px);
         }
+        .country-item, .city-item {
+            transition: background-color 0.15s ease;
+        }
+        .country-item:hover, .city-item:hover {
+            background-color: rgba(58, 58, 58, 0.8);
+        }
+        #origin-country-dropdown, #dest-country-dropdown,
+        #origin-city-dropdown, #dest-city-dropdown {
+            backdrop-filter: blur(10px);
+        }
     </style>
 </head>
 <body class="bg-black text-gray-100 min-h-screen">
@@ -190,65 +200,152 @@ $stats = $api->getStats();
                             </div>
                         </div>
 
-                        <!-- Origin -->
+                        <!-- Asal/Pengirim -->
                         <div>
-                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Origin</label>
-                            <div class="relative">
-                                <input type="text" id="origin-search" placeholder="Search country..." class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" onkeyup="filterCountries('origin')">
-                                <select id="origin_country" name="origin_country" class="w-full mt-2 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" size="5">
-                                    <option value="">Any country</option>
-                                </select>
+                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Asal Pengiriman</label>
+                            
+                            <!-- Country Selector -->
+                            <div class="relative mb-2">
+                                <input type="text" id="origin-country-display" readonly placeholder="Semua negara" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 pr-20 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer" onclick="toggleCountryDropdown('origin')">
+                                <div class="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                                    <button type="button" onclick="clearOriginCountry()" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
+                                        <i class="fas fa-times text-xs text-gray-500"></i>
+                                    </button>
+                                    <button type="button" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
+                                        <i class="fas fa-sync text-xs text-gray-500"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Country Dropdown -->
+                                <div id="origin-country-dropdown" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-xl max-h-80 overflow-hidden">
+                                    <div class="p-2">
+                                        <div class="relative">
+                                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs"></i>
+                                            <input type="text" id="origin-search" placeholder="Cari negara..." class="w-full bg-dark-300 border border-dark-400 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" onkeyup="filterCountries('origin')">
+                                        </div>
+                                    </div>
+                                    <div id="origin-country-list" class="overflow-y-auto max-h-60">
+                                        <!-- Countries populated by JS -->
+                                    </div>
+                                </div>
                             </div>
-                            <input type="text" name="origin_city" placeholder="Any city" class="w-full mt-2 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            
+                            <!-- City Selector -->
+                            <div class="relative">
+                                <input type="text" id="origin-city-display" readonly placeholder="Semua kota" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 pr-20 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer" onclick="toggleCityDropdown('origin')">
+                                <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
+                                    <button type="button" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
+                                        <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- City Dropdown -->
+                                <div id="origin-city-dropdown" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-xl max-h-80 overflow-hidden">
+                                    <div class="p-2">
+                                        <div class="relative">
+                                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs"></i>
+                                            <input type="text" id="origin-city-search" placeholder="Cari kota..." class="w-full bg-dark-300 border border-dark-400 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" onkeyup="filterCities('origin')">
+                                        </div>
+                                    </div>
+                                    <div id="origin-city-list" class="overflow-y-auto max-h-60">
+                                        <div class="text-center text-gray-500 text-sm py-4">Pilih negara terlebih dahulu</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <input type="hidden" id="origin_country" name="origin_country">
+                            <input type="hidden" id="origin_city" name="origin_city">
                         </div>
 
                         <!-- Ship Date Window -->
                         <div>
-                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Ship Date Window</label>
+                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Tanggal Pengiriman</label>
                             <div class="relative">
-                                <input type="date" name="ship_from" placeholder="Any ship date" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                <span class="text-xs text-gray-500 mt-1 block">to</span>
+                                <input type="date" name="ship_from" placeholder="Semua tanggal" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <span class="text-xs text-gray-500 mt-1 block">sampai</span>
                                 <input type="date" name="ship_to" class="w-full mt-1 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                             </div>
                         </div>
 
                         <!-- Destination -->
                         <div>
-                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Destination</label>
+                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Tujuan</label>
+                            
+                            <!-- Country Selector -->
+                            <div class="relative mb-2">
+                                <input type="text" id="dest-country-display" readonly placeholder="Semua negara" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 pr-20 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer" onclick="toggleCountryDropdown('dest')">
+                                <div class="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                                    <button type="button" onclick="clearDestCountry()" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
+                                        <i class="fas fa-times text-xs text-gray-500"></i>
+                                    </button>
+                                    <button type="button" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
+                                        <i class="fas fa-sync text-xs text-gray-500"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Country Dropdown -->
+                                <div id="dest-country-dropdown" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-xl max-h-80 overflow-hidden">
+                                    <div class="p-2">
+                                        <div class="relative">
+                                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs"></i>
+                                            <input type="text" id="dest-search" placeholder="Cari negara..." class="w-full bg-dark-300 border border-dark-400 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" onkeyup="filterCountries('dest')">
+                                        </div>
+                                    </div>
+                                    <div id="dest-country-list" class="overflow-y-auto max-h-60">
+                                        <!-- Countries populated by JS -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- City Selector -->
                             <div class="relative">
-                                <input type="text" id="dest-search" placeholder="Search country..." class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" onkeyup="filterCountries('dest')">
-                                <select id="dest_country" name="dest_country" class="w-full mt-2 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" size="5">
-                                    <option value="">Any country</option>
-                                </select>
+                                <input type="text" id="dest-city-display" readonly placeholder="Semua kota" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer" onclick="toggleCityDropdown('dest')">
+                                <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
+                                    <button type="button" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
+                                        <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- City Dropdown -->
+                                <div id="dest-city-dropdown" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-xl max-h-80 overflow-hidden left-0">
+                                    <div class="p-2">
+                                        <div class="relative">
+                                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs"></i>
+                                            <input type="text" id="dest-city-search" placeholder="Cari kota..." class="w-full bg-dark-300 border border-dark-400 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" onkeyup="filterCities('dest')">
+                                        </div>
+                                    </div>
+                                    <div id="dest-city-list" class="overflow-y-auto max-h-60">
+                                        <div class="text-center text-gray-500 text-sm py-4">Pilih negara terlebih dahulu</div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-2 mt-2">
-                                <input type="text" name="dest_zip" placeholder="Any ZIP" class="bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                <select name="dest_state" class="bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                    <option value="">State</option>
-                                </select>
-                            </div>
+                            
+                            <input type="hidden" id="dest_country" name="dest_country">
+                            <input type="hidden" id="dest_city" name="dest_city">
+                            <input type="hidden" name="dest_zip">
+                            <input type="hidden" name="dest_state">
                         </div>
 
                         <!-- Est Delivery Window -->
                         <div>
-                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Est. Delivery Window</label>
+                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Estimasi Pengiriman</label>
                             <div class="relative">
                                 <input type="date" name="delivery_from" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                <span class="text-xs text-gray-500 mt-1 block">to</span>
+                                <span class="text-xs text-gray-500 mt-1 block">sampai</span>
                                 <input type="date" name="delivery_to" class="w-full mt-1 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                             </div>
-                            <p class="text-xs text-gray-500 mt-2">Pre-transit labels have no delivery estimate yet</p>
+                            <p class="text-xs text-gray-500 mt-2">Label pre-transit belum ada estimasi pengiriman</p>
                         </div>
 
                         <!-- More Options (Collapsible) -->
                         <div>
                             <button type="button" onclick="toggleMoreOptions()" class="flex items-center justify-between w-full text-xs font-medium text-gray-400 uppercase mb-3">
-                                <span>▶ More (Weight, Service)</span>
+                                <span>▶ Opsi Lainnya (Berat, Layanan)</span>
                             </button>
                             <div id="more-options" class="hidden space-y-3">
                                 <div class="grid grid-cols-2 gap-2">
-                                    <input type="number" name="weight_min" placeholder="Min grams" class="bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                    <input type="number" name="weight_max" placeholder="Max grams" class="bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <input type="number" name="weight_min" placeholder="Min gram" class="bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <input type="number" name="weight_max" placeholder="Max gram" class="bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                                 </div>
                             </div>
                         </div>
@@ -256,17 +353,17 @@ $stats = $api->getStats();
                         <!-- Advanced Options -->
                         <div>
                             <label class="flex items-center justify-between cursor-pointer py-2">
-                                <span class="text-sm">Allow signature required</span>
+                                <span class="text-sm">Perlu tanda tangan</span>
                                 <input type="checkbox" name="signature_required" class="toggle-switch">
                             </label>
                             <label class="flex items-center justify-between cursor-pointer py-2">
-                                <span class="text-sm">Allow photo-on-delivery</span>
+                                <span class="text-sm">Foto saat pengiriman</span>
                                 <input type="checkbox" name="photo_confirmed" class="toggle-switch">
                             </label>
                         </div>
 
                         <button onclick="applyFilters()" class="w-full bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-medium py-2.5 rounded-lg transition">
-                            <i class="fas fa-search mr-2"></i>Search
+                            <i class="fas fa-search mr-2"></i>Cari
                         </button>
                         <button onclick="resetFilters()" class="w-full mt-2 bg-dark-300 hover:bg-dark-400 text-white font-medium py-2.5 rounded-lg transition">
                             <i class="fas fa-redo mr-2"></i>Reset
@@ -328,11 +425,11 @@ $stats = $api->getStats();
                 <!-- Search and Table -->
                 <div class="glass-effect rounded-2xl p-6">
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
-                        <h2 class="text-lg font-semibold">Find tracking numbers</h2>
+                        <h2 class="text-lg font-semibold">Cari nomor resi</h2>
                         <div class="flex items-center space-x-3">
                             <div class="relative flex-1 md:w-80">
                                 <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-                                <input type="text" id="search-input" placeholder="Search by destination, origin..." class="w-full bg-dark-300 border border-dark-400 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <input type="text" id="search-input" placeholder="Cari berdasarkan tujuan, asal..." class="w-full bg-dark-300 border border-dark-400 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                             </div>
                             <button onclick="searchTracking()" class="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-medium px-6 py-2.5 rounded-lg transition whitespace-nowrap">
                                 <i class="fas fa-search mr-2"></i>Search
@@ -360,9 +457,9 @@ $stats = $api->getStats();
                             </thead>
                             <tbody id="tracking-results">
                                 <tr>
-                                    <td colspan="7" class="text-center py-12">
-                                        <i class="fas fa-spinner fa-spin text-3xl text-purple-500"></i>
-                                        <div class="mt-3 text-gray-500">Loading tracking numbers...</div>
+                                    <td colspan="7" class="text-center py-12 text-gray-500">
+                                        <i class="fas fa-search text-3xl mb-3"></i>
+                                        <div>Gunakan filter dan klik "Cari" untuk menemukan nomor resi</div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -398,11 +495,5 @@ $stats = $api->getStats();
     </div>
 
     <script src="assets/js/app.js"></script>
-    <script>
-        // Auto-load results on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            performSearch();
-        });
-    </script>
 </body>
 </html>
