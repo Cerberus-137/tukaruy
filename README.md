@@ -92,8 +92,8 @@ Add the following configuration:
 
 ```apache
 <VirtualHost *:80>
-    ServerName tukeruy.com
-    ServerAlias www.tukeruy.com
+    ServerName tukaruy.online
+    ServerAlias www.tukaruy.online
     DocumentRoot /var/www/tukeruy
 
     <Directory /var/www/tukeruy>

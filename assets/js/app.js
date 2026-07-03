@@ -1,22 +1,79 @@
+// Global variables
+let selectedCarriers = ['all'];
+let selectedStatuses = [];
 let currentCursor = null;
-let currentFilters = {};
+let currentTnId = null;
 
-// Toggle sidebar
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const filterContent = document.getElementById('filter-content');
-    const filterTitle = document.getElementById('filter-title');
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    setupFilterButtons();
+    console.log('Tukeruy initialized');
     
-    if (sidebar.classList.contains('sidebar-expanded')) {
-        sidebar.classList.remove('sidebar-expanded');
-        sidebar.classList.add('sidebar-collapsed');
-        filterContent.style.display = 'none';
-        filterTitle.style.display = 'none';
-    } else {    
-        sidebar.classList.remove('sidebar-collapsed');
-        sidebar.classList.add('sidebar-expanded');
-        filterContent.style.display = 'block';
-        filterTitle.style.display = 'block';
+    // Auto-load data on page load with default filters
+    setTimeout(() => {
+        autoLoadInitialData();
+    }, 500);
+});
+
+// Auto load initial data
+function autoLoadInitialData() {
+    console.log('Auto-loading initial data...');
+    const filters = {}; // Empty filters = get all
+    performSearch(filters);
+}
+
+// Setup filter buttons
+function setupFilterButtons() {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const type = this.dataset.type;
+            const value = this.dataset.value;
+            
+            if (type === 'carrier') {
+                handleCarrierClick(this, value);
+            } else if (type === 'status') {
+                handleStatusClick(this, value);
+            }
+        });
+    });
+}
+
+// Handle carrier button click
+function handleCarrierClick(btn, value) {
+    if (value === 'all') {
+        // Select all, deselect others
+        document.querySelectorAll('[data-type="carrier"]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedCarriers = ['all'];
+    } else {
+        // Deselect "all" first
+        document.querySelector('[data-type="carrier"][data-value="all"]').classList.remove('active');
+        
+        // Toggle this carrier
+        if (btn.classList.contains('active')) {
+            btn.classList.remove('active');
+            selectedCarriers = selectedCarriers.filter(c => c !== value);
+        } else {
+            btn.classList.add('active');
+            selectedCarriers.push(value);
+        }
+        
+        // If nothing selected, select all
+        if (selectedCarriers.length === 0) {
+            document.querySelector('[data-type="carrier"][data-value="all"]').classList.add('active');
+            selectedCarriers = ['all'];
+        }
+    }
+}
+
+// Handle status button click
+function handleStatusClick(btn, value) {
+    if (btn.classList.contains('active')) {
+        btn.classList.remove('active');
+        selectedStatuses = selectedStatuses.filter(s => s !== value);
+    } else {
+        btn.classList.add('active');
+        selectedStatuses.push(value);
     }
 }
 
@@ -24,86 +81,65 @@ function toggleSidebar() {
 function applyFilters() {
     const filters = {};
     
-    // Get carrier filters
-    const carrierChecks = document.querySelectorAll('input[name="carrier[]"]:checked');
-    const carriers = Array.from(carrierChecks).map(cb => cb.value);
-    if (carriers.length > 0 && !carriers.includes('all')) {
-        filters.carrier = carriers;
+    // Carriers
+    if (selectedCarriers.length > 0 && !selectedCarriers.includes('all')) {
+        filters.carrier = selectedCarriers;
     }
     
-    // Get status filters
-    const statusChecks = document.querySelectorAll('input[name="status[]"]:checked');
-    const statuses = Array.from(statusChecks).map(cb => cb.value);
-    if (statuses.length > 0) {
-        filters.status = statuses;
+    // Statuses
+    if (selectedStatuses.length > 0) {
+        filters.status = selectedStatuses;
     }
     
-    // Get destination
-    const destCountry = document.querySelector('select[name="dest_country"]').value;
-    const destCity = document.querySelector('input[name="dest_city"]').value;
+    // Origin
+    const originCountry = document.getElementById('origin_country').value.trim().toUpperCase();
+    const originCity = document.getElementById('origin_city').value.trim().toUpperCase();
+    if (originCountry) filters.origin_country = originCountry;
+    if (originCity) filters.origin_city = originCity;
     
-    if (destCountry) {
-        filters.dest_country = destCountry;
-    }
-    if (destCity) {
-        filters.dest_city = destCity;
-    }
+    // Destination
+    const destCountry = document.getElementById('dest_country').value.trim().toUpperCase();
+    const destCity = document.getElementById('dest_city').value.trim().toUpperCase();
+    if (destCountry) filters.dest_country = destCountry;
+    if (destCity) filters.dest_city = destCity;
     
-    // Get date range
-    const deliveryFrom = document.querySelector('input[name="delivery_from"]').value;
-    const deliveryTo = document.querySelector('input[name="delivery_to"]').value;
+    // Ship dates
+    const shipFrom = document.getElementById('ship_from').value;
+    const shipTo = document.getElementById('ship_to').value;
+    if (shipFrom) filters.ship_from = shipFrom;
+    if (shipTo) filters.ship_to = shipTo;
     
-    if (deliveryFrom) {
-        filters.delivery_from = deliveryFrom;
-    }
-    if (deliveryTo) {
-        filters.delivery_to = deliveryTo;
-    }
+    // Delivery dates
+    const deliveryFrom = document.getElementById('delivery_from').value;
+    const deliveryTo = document.getElementById('delivery_to').value;
+    if (deliveryFrom) filters.delivery_from = deliveryFrom;
+    if (deliveryTo) filters.delivery_to = deliveryTo;
     
-    // Get advanced options
-    if (document.querySelector('input[name="signature_required"]').checked) {
-        filters.signature_required = true;
-    }
-    if (document.querySelector('input[name="photo_confirmed"]').checked) {
-        filters.photo_confirmed = true;
-    }
+    console.log('Filters:', filters);
     
-    currentFilters = filters;
+    // Reset cursor for new search
     currentCursor = null;
-    performSearch();
+    
+    // Perform search
+    performSearch(filters);
 }
 
-// Search tracking numbers
-function searchTracking() {
-    const searchInput = document.getElementById('search-input').value.trim();
-    
-    if (searchInput) {
-        // Simple parsing of search input
-        currentFilters.dest_city = searchInput;
-    }
-    
-    currentCursor = null;
-    performSearch();
-}
-
-// Perform the actual search
-async function performSearch() {
-    const tbody = document.getElementById('tracking-results');
-    const loadMoreBtn = document.getElementById('load-more-btn');
+// Perform search
+async function performSearch(filters, append = false) {
+    const tbody = document.getElementById('results-table');
+    const loadMore = document.getElementById('load-more');
     const resultCount = document.getElementById('result-count');
     
-    if (!currentCursor) {
+    if (!append) {
         tbody.innerHTML = '<tr><td colspan="7" class="text-center py-12"><i class="fas fa-spinner fa-spin text-3xl text-purple-500"></i></td></tr>';
     }
     
     try {
         const response = await fetch('api/search.php', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                filters: currentFilters,
+                filters: filters,
                 page_size: 25,
                 cursor: currentCursor
             })
@@ -115,17 +151,18 @@ async function performSearch() {
             throw new Error(data.error);
         }
         
-        if (!currentCursor) {
+        if (!append) {
             tbody.innerHTML = '';
         }
         
-        if (data.results.length === 0 && !currentCursor) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-12 text-gray-500"><i class="fas fa-inbox text-3xl mb-3"></i><div>No tracking numbers found</div></td></tr>';
-            loadMoreBtn.classList.add('hidden');
+        if (data.results.length === 0 && !append) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-12 text-gray-500"><i class="fas fa-inbox text-3xl mb-3"></i><div>Tidak ada hasil ditemukan</div></td></tr>';
+            loadMore.classList.add('hidden');
+            resultCount.textContent = '0 hasil';
             return;
         }
         
-        // Append results
+        // Render results
         data.results.forEach(item => {
             const row = document.createElement('tr');
             row.className = 'border-b border-dark-400 hover:bg-dark-200 transition';
@@ -133,101 +170,136 @@ async function performSearch() {
                 <td class="py-4 px-4">
                     <div class="flex items-center space-x-2">
                         <span class="font-mono text-xs bg-dark-300 px-2 py-1 rounded">${item.carrier}</span>
-                        <span class="text-xs text-gray-500">${item.service}</span>
                     </div>
                 </td>
                 <td class="py-4 px-4">
                     <span class="status-badge ${item.status_class}">${item.status}</span>
                 </td>
-                <td class="py-4 px-4 text-sm">${item.origin}</td>
+                <td class="py-4 px-4 text-sm">${item.origin || 'N/A'}</td>
                 <td class="py-4 px-4 text-sm">${item.destination}</td>
-                <td class="py-4 px-4 text-sm text-gray-400">${item.ship_date}<br><small>${item.est_delivery_date}</small></td>
+                                <td class="py-4 px-4 text-sm text-gray-400">
+                                    ${item.ship_date || 'Belum dikirim'}
+                                    ${item.est_delivery_date ? '<br><small>Est: ' + item.est_delivery_date + '</small>' : ''}
+                                </td>
                 <td class="py-4 px-4 text-sm">${item.weight}</td>
                 <td class="py-4 px-4 text-right">
                     <button onclick="showRevealModal('${item.tn_id}', ${item.reveal_cost})" class="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
-                        Get TN
+                        Dapatkan
                     </button>
                 </td>
             `;
             tbody.appendChild(row);
         });
         
-        // Update result count
+        // Update count
         const total = data.total >= 100 ? '100+' : data.total;
-        resultCount.textContent = `${total} matches`;
+        resultCount.textContent = `${total} hasil`;
         
         // Handle pagination
         if (data.next_cursor) {
             currentCursor = data.next_cursor;
-            loadMoreBtn.classList.remove('hidden');
+            loadMore.classList.remove('hidden');
         } else {
-            loadMoreBtn.classList.add('hidden');
+            loadMore.classList.add('hidden');
         }
         
+        // Store current filters for load more
+        window.currentFilters = filters;
+        
     } catch (error) {
+        console.error('Search error:', error);
         tbody.innerHTML = `<tr><td colspan="7" class="text-center py-12 text-red-500"><i class="fas fa-exclamation-triangle text-3xl mb-3"></i><div>${error.message}</div></td></tr>`;
-        loadMoreBtn.classList.add('hidden');
+        loadMore.classList.add('hidden');
     }
 }
 
 // Load more results
 function loadMore() {
-    if (currentCursor) {
-        performSearch();
+    if (currentCursor && window.currentFilters) {
+        performSearch(window.currentFilters, true);
     }
 }
 
+// Reset filters
+function resetFilters() {
+    // Reset buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector('[data-type="carrier"][data-value="all"]').classList.add('active');
+    
+    // Reset inputs
+    document.getElementById('origin_country').value = '';
+    document.getElementById('origin_city').value = '';
+    document.getElementById('dest_country').value = '';
+    document.getElementById('dest_city').value = '';
+    document.getElementById('ship_from').value = '';
+    document.getElementById('ship_to').value = '';
+    document.getElementById('delivery_from').value = '';
+    document.getElementById('delivery_to').value = '';
+    
+    // Reset variables
+    selectedCarriers = ['all'];
+    selectedStatuses = [];
+    currentCursor = null;
+    
+    // Clear table
+    document.getElementById('results-table').innerHTML = '<tr><td colspan="7" class="text-center py-12"><i class="fas fa-spinner fa-spin text-3xl text-purple-500"></i><div class="mt-3 text-gray-500">Memuat data...</div></td></tr>';
+    document.getElementById('result-count').textContent = '~100 hasil';
+    document.getElementById('load-more').classList.add('hidden');
+    
+    // Auto-reload data
+    setTimeout(() => {
+        autoLoadInitialData();
+    }, 300);
+}
+
 // Show reveal modal
-let currentTnId = null;
 function showRevealModal(tnId, cost) {
     currentTnId = tnId;
     const modal = document.getElementById('reveal-modal');
-    const content = document.getElementById('reveal-content');
+    const content = document.getElementById('modal-content');
     
     content.innerHTML = `
         <div class="bg-dark-300 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-sm text-gray-400">TN ID:</span>
+            <div class="flex justify-between mb-2">
+                <span class="text-sm text-gray-400">ID Resi:</span>
                 <span class="font-mono text-sm">${tnId}</span>
             </div>
-            <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-400">Cost:</span>
-                <span class="font-semibold">${cost} credit${cost > 1 ? 's' : ''}</span>
+            <div class="flex justify-between">
+                <span class="text-sm text-gray-400">Biaya:</span>
+                <span class="font-semibold">${cost} kredit</span>
             </div>
         </div>
     `;
     
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+    
+    // Set confirm button action
+    document.getElementById('confirm-btn').onclick = () => revealTracking(tnId);
 }
 
-
-// Close reveal modal
-function closeRevealModal() {
-    const modal = document.getElementById('reveal-modal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
+// Close modal
+function closeModal() {
+    document.getElementById('reveal-modal').classList.add('hidden');
+    document.getElementById('reveal-modal').classList.remove('flex');
     currentTnId = null;
 }
 
-// Confirm reveal
-document.getElementById('confirm-reveal-btn')?.addEventListener('click', async function() {
-    if (!currentTnId) return;
+// Reveal tracking number
+async function revealTracking(tnId) {
+    const btn = document.getElementById('confirm-btn');
+    const content = document.getElementById('modal-content');
     
-    const btn = this;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Revealing...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
     btn.disabled = true;
     
     try {
         const response = await fetch('api/reveal.php', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                tn_id: currentTnId
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tn_id: tnId })
         });
         
         const data = await response.json();
@@ -236,26 +308,26 @@ document.getElementById('confirm-reveal-btn')?.addEventListener('click', async f
             throw new Error(data.error);
         }
         
-        // Update credits display
+        // Update credits
         document.getElementById('credits-display').textContent = data.credits_remaining.toLocaleString();
         
         // Show success
-        document.getElementById('reveal-content').innerHTML = `
-            <div class="bg-green-500/20 border border-green-500/50 rounded-lg p-4 mb-4">
-                <div class="flex items-center space-x-2 mb-2">
+        content.innerHTML = `
+            <div class="bg-green-500/20 border border-green-500/50 rounded-lg p-4">
+                <div class="flex items-center space-x-2 mb-3">
                     <i class="fas fa-check-circle text-green-400"></i>
-                    <span class="font-semibold text-green-400">Successfully Revealed</span>
+                    <span class="font-semibold text-green-400">Berhasil!</span>
                 </div>
-                <div class="mt-4 space-y-2">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-400">Tracking Number:</span>
-                        <span class="font-mono font-bold text-lg">${data.tracking_number}</span>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-sm text-gray-400">Nomor Resi:</span>
+                        <span class="font-mono font-bold">${data.tracking_number}</span>
                     </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-400">Carrier:</span>
+                    <div class="flex justify-between">
+                        <span class="text-sm text-gray-400">Kurir:</span>
                         <span class="font-semibold">${data.carrier}</span>
                     </div>
-                    <div class="flex items-center justify-between">
+                    <div class="flex justify-between">
                         <span class="text-sm text-gray-400">Status:</span>
                         <span class="font-semibold">${data.status}</span>
                     </div>
@@ -263,11 +335,12 @@ document.getElementById('confirm-reveal-btn')?.addEventListener('click', async f
             </div>
         `;
         
-        btn.innerHTML = 'Close';
-        btn.onclick = closeRevealModal;
+        btn.innerHTML = 'Tutup';
+        btn.onclick = closeModal;
+        btn.disabled = false;
         
     } catch (error) {
-        document.getElementById('reveal-content').innerHTML = `
+        content.innerHTML = `
             <div class="bg-red-500/20 border border-red-500/50 rounded-lg p-4">
                 <div class="flex items-center space-x-2">
                     <i class="fas fa-exclamation-triangle text-red-400"></i>
@@ -276,31 +349,7 @@ document.getElementById('confirm-reveal-btn')?.addEventListener('click', async f
             </div>
         `;
         
-        btn.innerHTML = originalText;
+        btn.innerHTML = 'Konfirmasi';
         btn.disabled = false;
     }
-});
-
-// Handle "All" carrier checkbox
-document.querySelector('input[name="carrier[]"][value="all"]')?.addEventListener('change', function() {
-    const otherCarriers = document.querySelectorAll('input[name="carrier[]"]:not([value="all"])');
-    if (this.checked) {
-        otherCarriers.forEach(cb => cb.checked = false);
-    }
-});
-
-// Uncheck "All" when other carriers are selected
-document.querySelectorAll('input[name="carrier[]"]:not([value="all"])')?.forEach(cb => {
-    cb.addEventListener('change', function() {
-        if (this.checked) {
-            document.querySelector('input[name="carrier[]"][value="all"]').checked = false;
-        }
-    });
-});
-
-// Enter key for search
-document.getElementById('search-input')?.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        searchTracking();
-    }
-});
+}
