@@ -181,9 +181,9 @@ $stats = $api->getStats();
                     <div id="filter-content" class="space-y-6">
                         <!-- Carrier Filter -->
                         <div>
-                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Carrier</label>
+                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Kurir</label>
                             <div class="grid grid-cols-2 gap-2">
-                                <button type="button" class="carrier-btn active" data-value="all" onclick="toggleCarrier(this)">All</button>
+                                <button type="button" class="carrier-btn active" data-value="all" onclick="toggleCarrier(this)">Semua</button>
                                 <button type="button" class="carrier-btn" data-value="fedex" onclick="toggleCarrier(this)">FedEx</button>
                                 <button type="button" class="carrier-btn" data-value="dhl" onclick="toggleCarrier(this)">DHL</button>
                                 <button type="button" class="carrier-btn" data-value="ups" onclick="toggleCarrier(this)">UPS</button>
@@ -194,9 +194,9 @@ $stats = $api->getStats();
                         <div>
                             <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Status</label>
                             <div class="grid grid-cols-3 gap-2">
-                                <button type="button" class="status-btn" data-value="pre-transit" onclick="toggleStatus(this)">Pre Transit</button>
+                                <button type="button" class="status-btn" data-value="pre-transit" onclick="toggleStatus(this)">Pra Kirim</button>
                                 <button type="button" class="status-btn" data-value="transit" onclick="toggleStatus(this)">Transit</button>
-                                <button type="button" class="status-btn" data-value="delivered" onclick="toggleStatus(this)">Delivered</button>
+                                <button type="button" class="status-btn" data-value="delivered" onclick="toggleStatus(this)">Terkirim</button>
                             </div>
                         </div>
 
@@ -206,12 +206,12 @@ $stats = $api->getStats();
                             
                             <!-- Country Selector -->
                             <div class="relative mb-2">
-                                <input type="text" id="origin-country-display" readonly placeholder="Semua negara" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 pr-20 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer" onclick="toggleCountryDropdown('origin')">
+                                <input type="text" id="origin-country-display" readonly placeholder="Semua negara" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 pr-20 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer" onclick="event.stopPropagation(); toggleCountryDropdown('origin')">
                                 <div class="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
-                                    <button type="button" onclick="clearOriginCountry()" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
+                                    <button type="button" onclick="event.stopPropagation(); clearOriginCountry()" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
                                         <i class="fas fa-times text-xs text-gray-500"></i>
                                     </button>
-                                    <button type="button" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
+                                    <button type="button" onclick="event.stopPropagation(); initializeCountrySelects()" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
                                         <i class="fas fa-sync text-xs text-gray-500"></i>
                                     </button>
                                 </div>
@@ -232,9 +232,9 @@ $stats = $api->getStats();
                             
                             <!-- City Selector -->
                             <div class="relative">
-                                <input type="text" id="origin-city-display" readonly placeholder="Semua kota" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 pr-20 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer" onclick="toggleCityDropdown('origin')">
+                                <input type="text" id="origin-city-display" readonly placeholder="Semua kota" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 pr-20 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer" onclick="event.stopPropagation(); toggleCityDropdown('origin')">
                                 <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
-                                    <button type="button" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
+                                    <button type="button" onclick="event.stopPropagation(); toggleCityDropdown('origin')" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
                                         <i class="fas fa-chevron-down text-xs text-gray-500"></i>
                                     </button>
                                 </div>
@@ -273,12 +273,12 @@ $stats = $api->getStats();
                             
                             <!-- Country Selector -->
                             <div class="relative mb-2">
-                                <input type="text" id="dest-country-display" readonly placeholder="Semua negara" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 pr-20 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer" onclick="toggleCountryDropdown('dest')">
+                                <input type="text" id="dest-country-display" readonly placeholder="Semua negara" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 pr-20 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer" onclick="event.stopPropagation(); toggleCountryDropdown('dest')">
                                 <div class="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
-                                    <button type="button" onclick="clearDestCountry()" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
+                                    <button type="button" onclick="event.stopPropagation(); clearDestCountry()" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
                                         <i class="fas fa-times text-xs text-gray-500"></i>
                                     </button>
-                                    <button type="button" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
+                                    <button type="button" onclick="event.stopPropagation(); initializeCountrySelects()" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
                                         <i class="fas fa-sync text-xs text-gray-500"></i>
                                     </button>
                                 </div>
@@ -299,9 +299,9 @@ $stats = $api->getStats();
                             
                             <!-- City Selector -->
                             <div class="relative">
-                                <input type="text" id="dest-city-display" readonly placeholder="Semua kota" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer" onclick="toggleCityDropdown('dest')">
+                                <input type="text" id="dest-city-display" readonly placeholder="Semua kota" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer" onclick="event.stopPropagation(); toggleCityDropdown('dest')">
                                 <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
-                                    <button type="button" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
+                                    <button type="button" onclick="event.stopPropagation(); toggleCityDropdown('dest')" class="w-6 h-6 hover:bg-dark-400 rounded flex items-center justify-center">
                                         <i class="fas fa-chevron-down text-xs text-gray-500"></i>
                                     </button>
                                 </div>
