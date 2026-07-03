@@ -155,7 +155,7 @@ $stats = $api->getStats();
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <span class="text-sm text-gray-400">Credits: <span class="text-white font-semibold" id="credits-display"><?php echo number_format($stats['credits']); ?></span></span>
+                    <span class="text-sm text-gray-400">Kredit: <span class="text-white font-semibold" id="credits-display"><?php echo number_format($stats['credits']); ?></span></span>
                     <button class="w-8 h-8 rounded-lg bg-dark-300 hover:bg-dark-400 transition flex items-center justify-center">
                         <i class="fas fa-user text-sm"></i>
                     </button>
@@ -385,7 +385,7 @@ $stats = $api->getStats();
                             </div>
                         </div>
                         <div class="text-3xl font-bold"><?php echo number_format($stats['total']); ?></div>
-                        <div class="text-xs text-gray-500 mt-1">Available numbers</div>
+                        <div class="text-xs text-gray-500 mt-1">Nomor tersedia</div>
                     </div>
 
                     <div class="glass-effect rounded-xl p-6 hover-lift">
@@ -396,7 +396,7 @@ $stats = $api->getStats();
                             </div>
                         </div>
                         <div class="text-3xl font-bold"><?php echo number_format($stats['fedex']); ?></div>
-                        <div class="text-xs text-gray-500 mt-1">Packages</div>
+                        <div class="text-xs text-gray-500 mt-1">Paket</div>
                     </div>
 
                     <div class="glass-effect rounded-xl p-6 hover-lift">
@@ -446,13 +446,13 @@ $stats = $api->getStats();
                         <table class="w-full">
                             <thead>
                                 <tr class="border-b border-dark-400">
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Carrier</th>
+                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Kurir</th>
                                     <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Status</th>
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Origin</th>
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Destination</th>
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Shipment</th>
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Weight</th>
-                                    <th class="text-right py-3 px-4 text-xs font-medium text-gray-400 uppercase">Action</th>
+                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Asal</th>
+                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Tujuan</th>
+                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Pengiriman</th>
+                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Berat</th>
+                                    <th class="text-right py-3 px-4 text-xs font-medium text-gray-400 uppercase">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="tracking-results">
@@ -468,7 +468,7 @@ $stats = $api->getStats();
 
                     <div class="mt-6 flex items-center justify-center">
                         <button id="load-more-btn" onclick="loadMore()" class="text-purple-400 hover:text-purple-300 text-sm font-medium transition hidden">
-                            Load more
+                            Muat lebih banyak
                         </button>
                     </div>
                 </div>
@@ -480,15 +480,15 @@ $stats = $api->getStats();
     <!-- Reveal Modal -->
     <div id="reveal-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center">
         <div class="glass-effect rounded-2xl p-8 max-w-lg w-full mx-4">
-            <h3 class="text-xl font-bold mb-4">Reveal Tracking Number</h3>
-            <p class="text-gray-400 mb-6">This will spend 1 credit to reveal the tracking number.</p>
+            <h3 class="text-xl font-bold mb-4">Tampilkan Nomor Resi</h3>
+            <p class="text-gray-400 mb-6">Ini akan menggunakan 1 kredit untuk menampilkan nomor resi.</p>
             <div id="reveal-content" class="mb-6"></div>
             <div class="flex gap-3">
                 <button onclick="closeRevealModal()" class="flex-1 bg-dark-300 hover:bg-dark-400 text-white font-medium py-2.5 rounded-lg transition">
-                    Cancel
+                    Batal
                 </button>
                 <button id="confirm-reveal-btn" class="flex-1 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-medium py-2.5 rounded-lg transition">
-                    Confirm & Reveal
+                    Konfirmasi & Tampilkan
                 </button>
             </div>
         </div>

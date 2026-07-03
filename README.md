@@ -67,7 +67,7 @@ You can use SCP, SFTP, or git to upload the project files:
 
 ```bash
 # Using git (if you have a repository)
-git clone <your-repo-url> /var/www/tukeruy
+git clone https://github.com/Cerberus-137/tukaruy /var/www/tukeruy
 
 # Or use SCP from your local machine:
 # scp -r /path/to/tukeruy/* root@178.83.181.62:/var/www/tukeruy/
@@ -137,7 +137,7 @@ Save and exit.
 
 ```bash
 apt install certbot python3-certbot-apache -y
-certbot --apache -d tukeruy.com -d www.tukeruy.com
+certbot --apache -d tukaruy.online -d www.tukaruy.online
 ```
 
 Follow the prompts to complete SSL installation.

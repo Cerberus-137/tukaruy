@@ -568,12 +568,12 @@ function showRevealModal(tnId, cost) {
     content.innerHTML = `
         <div class="bg-dark-300 rounded-lg p-4">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-sm text-gray-400">TN ID:</span>
+                <span class="text-sm text-gray-400">ID Resi:</span>
                 <span class="font-mono text-sm">${tnId}</span>
             </div>
             <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-400">Cost:</span>
-                <span class="font-semibold">${cost} credit${cost > 1 ? 's' : ''}</span>
+                <span class="text-sm text-gray-400">Biaya:</span>
+                <span class="font-semibold">${cost} kredit</span>
             </div>
         </div>
     `;
@@ -596,7 +596,7 @@ document.getElementById('confirm-reveal-btn')?.addEventListener('click', async f
     
     const btn = this;
     const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Revealing...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
     btn.disabled = true;
     
     try {
@@ -643,7 +643,7 @@ document.getElementById('confirm-reveal-btn')?.addEventListener('click', async f
             </div>
         `;
         
-        btn.innerHTML = 'Close';
+        btn.innerHTML = 'Tutup';
         btn.onclick = closeRevealModal;
         
     } catch (error) {
