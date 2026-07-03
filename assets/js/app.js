@@ -1,5 +1,165 @@
 let currentCursor = null;
 let currentFilters = {};
+let selectedCarriers = ['all'];
+let selectedStatuses = [];
+
+// Country data
+const countries = [
+    { code: 'US', name: 'United States' },
+    { code: 'GB', name: 'United Kingdom' },
+    { code: 'CA', name: 'Canada' },
+    { code: 'MX', name: 'Mexico' },
+    { code: 'DE', name: 'Germany' },
+    { code: 'FR', name: 'France' },
+    { code: 'IT', name: 'Italy' },
+    { code: 'ES', name: 'Spain' },
+    { code: 'NL', name: 'Netherlands' },
+    { code: 'BE', name: 'Belgium' },
+    { code: 'CH', name: 'Switzerland' },
+    { code: 'AT', name: 'Austria' },
+    { code: 'PL', name: 'Poland' },
+    { code: 'SE', name: 'Sweden' },
+    { code: 'NO', name: 'Norway' },
+    { code: 'DK', name: 'Denmark' },
+    { code: 'FI', name: 'Finland' },
+    { code: 'IE', name: 'Ireland' },
+    { code: 'PT', name: 'Portugal' },
+    { code: 'GR', name: 'Greece' },
+    { code: 'CZ', name: 'Czech Republic' },
+    { code: 'HU', name: 'Hungary' },
+    { code: 'RO', name: 'Romania' },
+    { code: 'AU', name: 'Australia' },
+    { code: 'NZ', name: 'New Zealand' },
+    { code: 'SG', name: 'Singapore' },
+    { code: 'HK', name: 'Hong Kong' },
+    { code: 'JP', name: 'Japan' },
+    { code: 'KR', name: 'South Korea' },
+    { code: 'CN', name: 'China' },
+    { code: 'IN', name: 'India' },
+    { code: 'ID', name: 'Indonesia' },
+    { code: 'TH', name: 'Thailand' },
+    { code: 'MY', name: 'Malaysia' },
+    { code: 'PH', name: 'Philippines' },
+    { code: 'VN', name: 'Vietnam' },
+    { code: 'AE', name: 'United Arab Emirates' },
+    { code: 'SA', name: 'Saudi Arabia' },
+    { code: 'IL', name: 'Israel' },
+    { code: 'ZA', name: 'South Africa' },
+    { code: 'BR', name: 'Brazil' },
+    { code: 'AR', name: 'Argentina' },
+    { code: 'CL', name: 'Chile' },
+    { code: 'CO', name: 'Colombia' }
+];
+
+// US States
+const usStates = [
+    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+    'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+    'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+    'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+    'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+];
+
+// Initialize country selects
+function initializeCountrySelects() {
+    const originSelect = document.getElementById('origin_country');
+    const destSelect = document.getElementById('dest_country');
+    const destStateSelect = document.querySelector('select[name="dest_state"]');
+    
+    countries.forEach(country => {
+        const option1 = new Option(`${country.name} (${country.code})`, country.code);
+        const option2 = new Option(`${country.name} (${country.code})`, country.code);
+        originSelect.add(option1);
+        destSelect.add(option2);
+    });
+    
+    // Add US states
+    usStates.forEach(state => {
+        destStateSelect.add(new Option(state, state));
+    });
+}
+
+// Filter countries in dropdown
+function filterCountries(type) {
+    const searchInput = document.getElementById(`${type}-search`);
+    const select = document.getElementById(`${type}_country`);
+    const filter = searchInput.value.toUpperCase();
+    
+    for (let i = 1; i < select.options.length; i++) {
+        const option = select.options[i];
+        const txtValue = option.textContent || option.innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            option.style.display = '';
+        } else {
+            option.style.display = 'none';
+        }
+    }
+}
+
+// Toggle carrier button
+function toggleCarrier(btn) {
+    const value = btn.dataset.value;
+    
+    if (value === 'all') {
+        // If clicking "All", deselect others
+        document.querySelectorAll('.carrier-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedCarriers = ['all'];
+    } else {
+        // Deselect "All" first
+        document.querySelector('.carrier-btn[data-value="all"]').classList.remove('active');
+        
+        // Toggle this carrier
+        if (btn.classList.contains('active')) {
+            btn.classList.remove('active');
+            selectedCarriers = selectedCarriers.filter(c => c !== value);
+        } else {
+            btn.classList.add('active');
+            selectedCarriers.push(value);
+        }
+        
+        // If nothing selected, select "All"
+        if (selectedCarriers.length === 0 || (selectedCarriers.length === 1 && selectedCarriers[0] === 'all')) {
+            document.querySelector('.carrier-btn[data-value="all"]').classList.add('active');
+            selectedCarriers = ['all'];
+        }
+    }
+}
+
+// Toggle status button
+function toggleStatus(btn) {
+    const value = btn.dataset.value;
+    
+    if (btn.classList.contains('active')) {
+        btn.classList.remove('active');
+        selectedStatuses = selectedStatuses.filter(s => s !== value);
+    } else {
+        btn.classList.add('active');
+        selectedStatuses.push(value);
+    }
+}
+
+// Toggle more options
+function toggleMoreOptions() {
+    const moreOptions = document.getElementById('more-options');
+    const isHidden = moreOptions.classList.contains('hidden');
+    
+    if (isHidden) {
+        moreOptions.classList.remove('hidden');
+    } else {
+        moreOptions.classList.add('hidden');
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCountrySelects();
+    
+    // Auto-search on page load with default filters
+    setTimeout(() => {
+        performSearch();
+    }, 500);
+});
 
 // Toggle sidebar
 function toggleSidebar() {
@@ -20,38 +180,60 @@ function toggleSidebar() {
     }
 }
 
-// Apply filters and search
-function applyFilters() {
+// Collect current filters
+function collectFilters() {
     const filters = {};
     
     // Get carrier filters
-    const carrierChecks = document.querySelectorAll('input[name="carrier[]"]:checked');
-    const carriers = Array.from(carrierChecks).map(cb => cb.value);
-    if (carriers.length > 0 && !carriers.includes('all')) {
-        filters.carrier = carriers;
+    if (selectedCarriers.length > 0 && !selectedCarriers.includes('all')) {
+        filters.carrier = selectedCarriers;
     }
     
     // Get status filters
-    const statusChecks = document.querySelectorAll('input[name="status[]"]:checked');
-    const statuses = Array.from(statusChecks).map(cb => cb.value);
-    if (statuses.length > 0) {
-        filters.status = statuses;
+    if (selectedStatuses.length > 0) {
+        filters.status = selectedStatuses;
+    }
+    
+    // Get origin
+    const originCountry = document.getElementById('origin_country')?.value;
+    const originCity = document.querySelector('input[name="origin_city"]')?.value;
+    
+    if (originCountry) {
+        filters.origin_country = originCountry;
+    }
+    if (originCity) {
+        filters.origin_city = originCity;
     }
     
     // Get destination
-    const destCountry = document.querySelector('select[name="dest_country"]').value;
-    const destCity = document.querySelector('input[name="dest_city"]').value;
+    const destCountry = document.getElementById('dest_country')?.value;
+    const destZip = document.querySelector('input[name="dest_zip"]')?.value;
+    const destState = document.querySelector('select[name="dest_state"]')?.value;
     
     if (destCountry) {
         filters.dest_country = destCountry;
     }
-    if (destCity) {
-        filters.dest_city = destCity;
+    if (destZip) {
+        filters.dest_zip = destZip;
+    }
+    if (destState) {
+        filters.dest_state = destState;
     }
     
-    // Get date range
-    const deliveryFrom = document.querySelector('input[name="delivery_from"]').value;
-    const deliveryTo = document.querySelector('input[name="delivery_to"]').value;
+    // Get ship date range
+    const shipFrom = document.querySelector('input[name="ship_from"]')?.value;
+    const shipTo = document.querySelector('input[name="ship_to"]')?.value;
+    
+    if (shipFrom) {
+        filters.ship_from = shipFrom;
+    }
+    if (shipTo) {
+        filters.ship_to = shipTo;
+    }
+    
+    // Get delivery date range
+    const deliveryFrom = document.querySelector('input[name="delivery_from"]')?.value;
+    const deliveryTo = document.querySelector('input[name="delivery_to"]')?.value;
     
     if (deliveryFrom) {
         filters.delivery_from = deliveryFrom;
@@ -60,15 +242,31 @@ function applyFilters() {
         filters.delivery_to = deliveryTo;
     }
     
+    // Get weight range
+    const weightMin = document.querySelector('input[name="weight_min"]')?.value;
+    const weightMax = document.querySelector('input[name="weight_max"]')?.value;
+    
+    if (weightMin) {
+        filters.weight_min = weightMin;
+    }
+    if (weightMax) {
+        filters.weight_max = weightMax;
+    }
+    
     // Get advanced options
-    if (document.querySelector('input[name="signature_required"]').checked) {
+    if (document.querySelector('input[name="signature_required"]')?.checked) {
         filters.signature_required = true;
     }
-    if (document.querySelector('input[name="photo_confirmed"]').checked) {
+    if (document.querySelector('input[name="photo_confirmed"]')?.checked) {
         filters.photo_confirmed = true;
     }
     
-    currentFilters = filters;
+    return filters;
+}
+
+// Apply filters and search
+function applyFilters() {
+    currentFilters = collectFilters();
     currentCursor = null;
     performSearch();
 }
@@ -77,8 +275,11 @@ function applyFilters() {
 function searchTracking() {
     const searchInput = document.getElementById('search-input').value.trim();
     
+    // Collect all current filters
+    currentFilters = collectFilters();
+    
+    // Add search input as destination city
     if (searchInput) {
-        // Simple parsing of search input
         currentFilters.dest_city = searchInput;
     }
     
@@ -280,26 +481,89 @@ document.getElementById('confirm-reveal-btn')?.addEventListener('click', async f
     }
 });
 
-// Handle "All" carrier checkbox
-document.querySelector('input[name="carrier[]"][value="all"]')?.addEventListener('change', function() {
-    const otherCarriers = document.querySelectorAll('input[name="carrier[]"]:not([value="all"])');
-    if (this.checked) {
-        otherCarriers.forEach(cb => cb.checked = false);
-    }
-});
-
-// Uncheck "All" when other carriers are selected
-document.querySelectorAll('input[name="carrier[]"]:not([value="all"])')?.forEach(cb => {
-    cb.addEventListener('change', function() {
-        if (this.checked) {
-            document.querySelector('input[name="carrier[]"][value="all"]').checked = false;
-        }
-    });
-});
-
 // Enter key for search
 document.getElementById('search-input')?.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
         searchTracking();
     }
+});
+
+
+// Reset all filters
+function resetFilters() {
+    // Reset carriers
+    selectedCarriers = ['all'];
+    document.querySelectorAll('.carrier-btn').forEach(btn => {
+        if (btn.dataset.value === 'all') {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    // Reset statuses
+    selectedStatuses = [];
+    document.querySelectorAll('.status-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Reset all inputs
+    document.getElementById('origin_country').value = '';
+    document.querySelector('input[name="origin_city"]').value = '';
+    document.getElementById('dest_country').value = '';
+    document.querySelector('input[name="dest_zip"]').value = '';
+    document.querySelector('select[name="dest_state"]').value = '';
+    document.querySelector('input[name="ship_from"]').value = '';
+    document.querySelector('input[name="ship_to"]').value = '';
+    document.querySelector('input[name="delivery_from"]').value = '';
+    document.querySelector('input[name="delivery_to"]').value = '';
+    document.querySelector('input[name="weight_min"]').value = '';
+    document.querySelector('input[name="weight_max"]').value = '';
+    document.querySelector('input[name="signature_required"]').checked = false;
+    document.querySelector('input[name="photo_confirmed"]').checked = false;
+    document.getElementById('search-input').value = '';
+    
+    // Clear search inputs
+    document.getElementById('origin-search').value = '';
+    document.getElementById('dest-search').value = '';
+    
+    // Show all countries again
+    filterCountries('origin');
+    filterCountries('dest');
+    
+    // Apply reset
+    currentFilters = {};
+    currentCursor = null;
+    performSearch();
+}
+
+// Real-time filter update (optional - auto search on change)
+function setupAutoSearch() {
+    // Auto-search when changing important filters
+    const autoSearchElements = [
+        'select[name="dest_country"]',
+        'select[name="origin_country"]',
+        'input[name="ship_from"]',
+        'input[name="ship_to"]',
+        'input[name="delivery_from"]',
+        'input[name="delivery_to"]'
+    ];
+    
+    autoSearchElements.forEach(selector => {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.addEventListener('change', function() {
+                // Debounce to avoid too many requests
+                clearTimeout(window.searchTimeout);
+                window.searchTimeout = setTimeout(() => {
+                    applyFilters();
+                }, 800);
+            });
+        }
+    });
+}
+
+// Call setup after DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    setupAutoSearch();
 });

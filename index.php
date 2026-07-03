@@ -76,6 +76,52 @@ $stats = $api->getStats();
         .sidebar-expanded {
             width: 280px;
         }
+        .carrier-btn, .status-btn {
+            padding: 8px 12px;
+            background: rgba(42, 42, 42, 0.8);
+            border: 1px solid rgba(74, 74, 74, 0.5);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .carrier-btn:hover, .status-btn:hover {
+            background: rgba(58, 58, 58, 0.8);
+            color: #fff;
+        }
+        .carrier-btn.active, .status-btn.active {
+            background: rgba(139, 92, 246, 0.3);
+            border-color: #8b5cf6;
+            color: #c084fc;
+        }
+        .toggle-switch {
+            appearance: none;
+            width: 44px;
+            height: 24px;
+            background: #3a3a3a;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .toggle-switch:checked {
+            background: #8b5cf6;
+        }
+        .toggle-switch::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s;
+        }
+        .toggle-switch:checked::before {
+            transform: translateX(20px);
+        }
     </style>
 </head>
 <body class="bg-black text-gray-100 min-h-screen">
@@ -126,81 +172,104 @@ $stats = $api->getStats();
                         <!-- Carrier Filter -->
                         <div>
                             <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Carrier</label>
-                            <div class="space-y-2">
-                                <label class="flex items-center space-x-2 cursor-pointer">
-                                    <input type="checkbox" name="carrier[]" value="all" checked class="w-4 h-4 rounded bg-dark-300 border-dark-400">
-                                    <span class="text-sm">All</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer">
-                                    <input type="checkbox" name="carrier[]" value="fedex" class="w-4 h-4 rounded bg-dark-300 border-dark-400">
-                                    <span class="text-sm">FedEx</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer">
-                                    <input type="checkbox" name="carrier[]" value="dhl" class="w-4 h-4 rounded bg-dark-300 border-dark-400">
-                                    <span class="text-sm">DHL</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer">
-                                    <input type="checkbox" name="carrier[]" value="ups" class="w-4 h-4 rounded bg-dark-300 border-dark-400">
-                                    <span class="text-sm">UPS</span>
-                                </label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" class="carrier-btn active" data-value="all" onclick="toggleCarrier(this)">All</button>
+                                <button type="button" class="carrier-btn" data-value="fedex" onclick="toggleCarrier(this)">FedEx</button>
+                                <button type="button" class="carrier-btn" data-value="dhl" onclick="toggleCarrier(this)">DHL</button>
+                                <button type="button" class="carrier-btn" data-value="ups" onclick="toggleCarrier(this)">UPS</button>
                             </div>
                         </div>
 
                         <!-- Status Filter -->
                         <div>
                             <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Status</label>
-                            <div class="space-y-2">
-                                <label class="flex items-center space-x-2 cursor-pointer">
-                                    <input type="checkbox" name="status[]" value="pre-transit" class="w-4 h-4 rounded bg-dark-300 border-dark-400">
-                                    <span class="text-sm">Pre Transit</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer">
-                                    <input type="checkbox" name="status[]" value="transit" class="w-4 h-4 rounded bg-dark-300 border-dark-400">
-                                    <span class="text-sm">Transit</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer">
-                                    <input type="checkbox" name="status[]" value="delivered" class="w-4 h-4 rounded bg-dark-300 border-dark-400">
-                                    <span class="text-sm">Delivered</span>
-                                </label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button type="button" class="status-btn" data-value="pre-transit" onclick="toggleStatus(this)">Pre Transit</button>
+                                <button type="button" class="status-btn" data-value="transit" onclick="toggleStatus(this)">Transit</button>
+                                <button type="button" class="status-btn" data-value="delivered" onclick="toggleStatus(this)">Delivered</button>
+                            </div>
+                        </div>
+
+                        <!-- Origin -->
+                        <div>
+                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Origin</label>
+                            <div class="relative">
+                                <input type="text" id="origin-search" placeholder="Search country..." class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" onkeyup="filterCountries('origin')">
+                                <select id="origin_country" name="origin_country" class="w-full mt-2 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" size="5">
+                                    <option value="">Any country</option>
+                                </select>
+                            </div>
+                            <input type="text" name="origin_city" placeholder="Any city" class="w-full mt-2 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+
+                        <!-- Ship Date Window -->
+                        <div>
+                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Ship Date Window</label>
+                            <div class="relative">
+                                <input type="date" name="ship_from" placeholder="Any ship date" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <span class="text-xs text-gray-500 mt-1 block">to</span>
+                                <input type="date" name="ship_to" class="w-full mt-1 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                             </div>
                         </div>
 
                         <!-- Destination -->
                         <div>
                             <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Destination</label>
-                            <select name="dest_country" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                <option value="">Any country</option>
-                                <option value="US">United States</option>
-                                <option value="GB">United Kingdom</option>
-                                <option value="CA">Canada</option>
-                            </select>
-                            <input type="text" name="dest_city" placeholder="City" class="w-full mt-2 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <div class="relative">
+                                <input type="text" id="dest-search" placeholder="Search country..." class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" onkeyup="filterCountries('dest')">
+                                <select id="dest_country" name="dest_country" class="w-full mt-2 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" size="5">
+                                    <option value="">Any country</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 mt-2">
+                                <input type="text" name="dest_zip" placeholder="Any ZIP" class="bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <select name="dest_state" class="bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">State</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <!-- Date Range -->
+                        <!-- Est Delivery Window -->
                         <div>
-                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Est. Delivery</label>
-                            <input type="date" name="delivery_from" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            <input type="date" name="delivery_to" class="w-full mt-2 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Est. Delivery Window</label>
+                            <div class="relative">
+                                <input type="date" name="delivery_from" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <span class="text-xs text-gray-500 mt-1 block">to</span>
+                                <input type="date" name="delivery_to" class="w-full mt-1 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">Pre-transit labels have no delivery estimate yet</p>
+                        </div>
+
+                        <!-- More Options (Collapsible) -->
+                        <div>
+                            <button type="button" onclick="toggleMoreOptions()" class="flex items-center justify-between w-full text-xs font-medium text-gray-400 uppercase mb-3">
+                                <span>▶ More (Weight, Service)</span>
+                            </button>
+                            <div id="more-options" class="hidden space-y-3">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="number" name="weight_min" placeholder="Min grams" class="bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <input type="number" name="weight_max" placeholder="Max grams" class="bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Advanced Options -->
                         <div>
-                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">More Options</label>
-                            <div class="space-y-2">
-                                <label class="flex items-center justify-between cursor-pointer">
-                                    <span class="text-sm">Signature required</span>
-                                    <input type="checkbox" name="signature_required" class="toggle-switch">
-                                </label>
-                                <label class="flex items-center justify-between cursor-pointer">
-                                    <span class="text-sm">Photo on delivery</span>
-                                    <input type="checkbox" name="photo_confirmed" class="toggle-switch">
-                                </label>
-                            </div>
+                            <label class="flex items-center justify-between cursor-pointer py-2">
+                                <span class="text-sm">Allow signature required</span>
+                                <input type="checkbox" name="signature_required" class="toggle-switch">
+                            </label>
+                            <label class="flex items-center justify-between cursor-pointer py-2">
+                                <span class="text-sm">Allow photo-on-delivery</span>
+                                <input type="checkbox" name="photo_confirmed" class="toggle-switch">
+                            </label>
                         </div>
 
                         <button onclick="applyFilters()" class="w-full bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-medium py-2.5 rounded-lg transition">
-                            Apply Filters
+                            <i class="fas fa-search mr-2"></i>Search
+                        </button>
+                        <button onclick="resetFilters()" class="w-full mt-2 bg-dark-300 hover:bg-dark-400 text-white font-medium py-2.5 rounded-lg transition">
+                            <i class="fas fa-redo mr-2"></i>Reset
                         </button>
                     </div>
                 </div>
@@ -272,7 +341,7 @@ $stats = $api->getStats();
                     </div>
 
                     <div class="text-sm text-gray-400 mb-4">
-                        <span id="result-count">100+ matches</span>
+                        <span id="result-count">~100 matches</span>
                     </div>
 
                     <!-- Table -->
@@ -291,9 +360,9 @@ $stats = $api->getStats();
                             </thead>
                             <tbody id="tracking-results">
                                 <tr>
-                                    <td colspan="7" class="text-center py-12 text-gray-500">
-                                        <i class="fas fa-search text-3xl mb-3"></i>
-                                        <div>Use filters and search to find tracking numbers</div>
+                                    <td colspan="7" class="text-center py-12">
+                                        <i class="fas fa-spinner fa-spin text-3xl text-purple-500"></i>
+                                        <div class="mt-3 text-gray-500">Loading tracking numbers...</div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -329,5 +398,11 @@ $stats = $api->getStats();
     </div>
 
     <script src="assets/js/app.js"></script>
+    <script>
+        // Auto-load results on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            performSearch();
+        });
+    </script>
 </body>
 </html>
