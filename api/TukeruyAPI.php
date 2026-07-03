@@ -30,7 +30,8 @@ class TukeruyAPI {
         
         if ($method === 'POST') {
             curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            $jsonData = json_encode($data, JSON_UNESCAPED_SLASHES);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
         }
         
         $response = curl_exec($ch);
@@ -49,8 +50,15 @@ class TukeruyAPI {
      * Search tracking numbers
      */
     public function search($filters = [], $pageSize = ITEMS_PER_PAGE, $cursor = null) {
+        $filter = $this->buildFilter($filters);
+        
+        // Ensure filter is always an object, not an array
+        if (empty($filter)) {
+            $filter = new stdClass();
+        }
+        
         $searchQuery = [
-            'filter' => $this->buildFilter($filters),
+            'filter' => $filter,
             'page_size' => min($pageSize, MAX_ITEMS_PER_PAGE)
         ];
         
@@ -75,88 +83,90 @@ class TukeruyAPI {
      * Build filter array from request parameters
      */
     private function buildFilter($filters) {
-        $filter = [];
+        $filter = new stdClass();
         
         // Carrier filter
         if (!empty($filters['carrier']) && !in_array('all', $filters['carrier'])) {
-            $filter['carrier'] = array_values($filters['carrier']);
+            $filter->carrier = array_values($filters['carrier']);
         }
         
         // Status filter
         if (!empty($filters['status'])) {
-            $filter['status'] = array_values($filters['status']);
+            $filter->status = array_values($filters['status']);
         }
         
         // Destination filter
         if (!empty($filters['dest_country'])) {
-            $filter['dest'] = ['country' => $filters['dest_country']];
+            $filter->dest = new stdClass();
+            $filter->dest->country = $filters['dest_country'];
             
             if (!empty($filters['dest_state'])) {
-                $filter['dest']['state'] = $filters['dest_state'];
+                $filter->dest->state = $filters['dest_state'];
             }
             
             if (!empty($filters['dest_city'])) {
-                $filter['dest']['city'] = strtoupper($filters['dest_city']);
+                $filter->dest->city = strtoupper($filters['dest_city']);
             }
         }
         
         // Origin filter
         if (!empty($filters['origin_country'])) {
-            $filter['origin'] = ['country' => $filters['origin_country']];
+            $filter->origin = new stdClass();
+            $filter->origin->country = $filters['origin_country'];
             
             if (!empty($filters['origin_state'])) {
-                $filter['origin']['state'] = $filters['origin_state'];
+                $filter->origin->state = $filters['origin_state'];
             }
             
             if (!empty($filters['origin_city'])) {
-                $filter['origin']['city'] = strtoupper($filters['origin_city']);
+                $filter->origin->city = strtoupper($filters['origin_city']);
             }
         }
         
         // Date range filters
         if (!empty($filters['delivery_from']) || !empty($filters['delivery_to'])) {
-            $filter['est_delivery_between'] = [];
+            $filter->est_delivery_between = new stdClass();
             
             if (!empty($filters['delivery_from'])) {
-                $filter['est_delivery_between']['from'] = $filters['delivery_from'];
+                $filter->est_delivery_between->from = $filters['delivery_from'];
             }
             
             if (!empty($filters['delivery_to'])) {
-                $filter['est_delivery_between']['to'] = $filters['delivery_to'];
+                $filter->est_delivery_between->to = $filters['delivery_to'];
             }
         }
         
         if (!empty($filters['ship_from']) || !empty($filters['ship_to'])) {
-            $filter['shipped_between'] = [];
+            $filter->shipped_between = new stdClass();
             
             if (!empty($filters['ship_from'])) {
-                $filter['shipped_between']['from'] = $filters['ship_from'];
+                $filter->shipped_between->from = $filters['ship_from'];
             }
             
             if (!empty($filters['ship_to'])) {
-                $filter['shipped_between']['to'] = $filters['ship_to'];
+                $filter->shipped_between->to = $filters['ship_to'];
             }
         }
         
         // Signature and photo options
         if (isset($filters['signature_required']) && $filters['signature_required']) {
-            $filter['signature_required'] = true;
+            $filter->signature_required = true;
         }
         
         if (isset($filters['photo_confirmed']) && $filters['photo_confirmed']) {
-            $filter['photo_confirmed'] = true;
+            $filter->photo_confirmed = true;
         }
         
         // Weight range
         if (!empty($filters['weight_min']) || !empty($filters['weight_max'])) {
-            $filter['weight_grams'] = [];
+            $filter->weight_grams = new stdClass();
             
             if (!empty($filters['weight_min'])) {
-                $filter['weight_grams']['min'] = (int)$filters['weight_min'];
+                $filter->weight_grams->min = (int)$filters['weight_min'];
             }
             
             if (!empty($filters['weight_max'])) {
-                $filter['weight_grams']['max'] = (int)$filters['weight_max'];
+                $filter->weight_grams->max = (int)$filters['weight_max'];
             }
         }
         

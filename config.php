@@ -3,7 +3,7 @@
 
 // API Configuration
 define('API_BASE_URL', 'https://v2.tracktaco.com');
-define('API_KEY', 'YOUR_API_KEY_HERE'); // Replace with your actual API key
+define('API_KEY', 'tt_test_jg7QMZc33E93iis_fKwxot5j43bxUw0KymEAMZmYEm0'); // Sandbox API key
 
 // Database configuration (optional for caching)
 define('DB_HOST', 'localhost');
