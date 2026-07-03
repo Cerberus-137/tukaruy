@@ -67,10 +67,86 @@ const countries = [
     { code: 'UA', name: 'Ukraine' }
 ];
 
+// City data by country
+const citiesByCountry = {
+    'ID': [
+        'JAKARTA', 'SURABAYA', 'BANDUNG', 'MEDAN', 'SEMARANG', 'MAKASSAR', 'PALEMBANG',
+        'TANGERANG', 'BOGOR', 'BATAM', 'PEKANBARU', 'BANDAR LAMPUNG', 'MALANG',
+        'PADANG', 'DENPASAR', 'SAMARINDA', 'BANJARMASIN', 'JAMBI', 'CIREBON',
+        'SURAKARTA', 'BALIKPAPAN', 'PONTIANAK', 'MANADO', 'YOGYAKARTA'
+    ],
+    'US': [
+        'NEW YORK, NY', 'LOS ANGELES, CA', 'CHICAGO, IL', 'HOUSTON, TX', 'PHOENIX, AZ',
+        'PHILADELPHIA, PA', 'SAN ANTONIO, TX', 'SAN DIEGO, CA', 'DALLAS, TX', 'SAN JOSE, CA',
+        'AUSTIN, TX', 'JACKSONVILLE, FL', 'FORT WORTH, TX', 'COLUMBUS, OH', 'CHARLOTTE, NC',
+        'SAN FRANCISCO, CA', 'INDIANAPOLIS, IN', 'SEATTLE, WA', 'DENVER, CO', 'WASHINGTON, DC',
+        'BOSTON, MA', 'EL PASO, TX', 'NASHVILLE, TN', 'DETROIT, MI', 'OKLAHOMA CITY, OK',
+        'PORTLAND, OR', 'LAS VEGAS, NV', 'MEMPHIS, TN', 'LOUISVILLE, KY', 'BALTIMORE, MD',
+        'MILWAUKEE, WI', 'ALBUQUERQUE, NM', 'TUCSON, AZ', 'FRESNO, CA', 'MESA, AZ',
+        'SACRAMENTO, CA', 'ATLANTA, GA', 'KANSAS CITY, MO', 'COLORADO SPRINGS, CO', 'MIAMI, FL',
+        'RALEIGH, NC', 'OMAHA, NE', 'LONG BEACH, CA', 'VIRGINIA BEACH, VA', 'OAKLAND, CA'
+    ],
+    'GB': [
+        'LONDON', 'BIRMINGHAM', 'MANCHESTER', 'LEEDS', 'GLASGOW', 'LIVERPOOL', 'NEWCASTLE',
+        'SHEFFIELD', 'BRISTOL', 'EDINBURGH', 'LEICESTER', 'NOTTINGHAM', 'COVENTRY',
+        'HULL', 'BRADFORD', 'CARDIFF', 'BELFAST', 'STOKE-ON-TRENT', 'WOLVERHAMPTON',
+        'PLYMOUTH', 'DERBY', 'SOUTHAMPTON', 'PORTSMOUTH', 'BRIGHTON', 'READING'
+    ],
+    'AU': [
+        'SYDNEY, NSW', 'MELBOURNE, VIC', 'BRISBANE, QLD', 'PERTH, WA', 'ADELAIDE, SA',
+        'GOLD COAST, QLD', 'NEWCASTLE, NSW', 'CANBERRA, ACT', 'SUNSHINE COAST, QLD',
+        'WOLLONGONG, NSW', 'HOBART, TAS', 'GEELONG, VIC', 'TOWNSVILLE, QLD', 'CAIRNS, QLD',
+        'DARWIN, NT', 'TOOWOOMBA, QLD', 'BALLARAT, VIC', 'BENDIGO, VIC', 'LAUNCESTON, TAS'
+    ],
+    'CA': [
+        'TORONTO, ON', 'MONTREAL, QC', 'VANCOUVER, BC', 'CALGARY, AB', 'EDMONTON, AB',
+        'OTTAWA, ON', 'WINNIPEG, MB', 'QUEBEC CITY, QC', 'HAMILTON, ON', 'KITCHENER, ON',
+        'LONDON, ON', 'VICTORIA, BC', 'HALIFAX, NS', 'OSHAWA, ON', 'WINDSOR, ON',
+        'SASKATOON, SK', 'REGINA, SK', 'ST. JOHN\'S, NL', 'KELOWNA, BC', 'BARRIE, ON'
+    ],
+    'JP': [
+        'TOKYO', 'OSAKA', 'YOKOHAMA', 'NAGOYA', 'SAPPORO', 'FUKUOKA', 'KOBE', 'KYOTO',
+        'KAWASAKI', 'SAITAMA', 'HIROSHIMA', 'SENDAI', 'KITAKYUSHU', 'CHIBA', 'SAKAI',
+        'NIIGATA', 'HAMAMATSU', 'KUMAMOTO', 'SAGAMIHARA', 'SHIZUOKA', 'OKAYAMA'
+    ],
+    'SG': [
+        'SINGAPORE'
+    ],
+    'MY': [
+        'KUALA LUMPUR', 'GEORGE TOWN', 'IPOH', 'SHAH ALAM', 'PETALING JAYA',
+        'JOHOR BAHRU', 'MALACCA CITY', 'KOTA KINABALU', 'KUCHING', 'KUANTAN',
+        'SEREMBAN', 'ALOR SETAR', 'KOTA BHARU', 'KUALA TERENGGANU', 'SANDAKAN'
+    ],
+    'TH': [
+        'BANGKOK', 'NONTHABURI', 'PAK KRET', 'HAT YAI', 'CHIANG MAI', 'PHUKET CITY',
+        'NAKHON RATCHASIMA', 'UDON THANI', 'SURAT THANI', 'KHON KAEN', 'NAKHON SI THAMMARAT',
+        'PATTAYA', 'CHIANG RAI', 'SONGKHLA', 'LAMPANG'
+    ],
+    'PH': [
+        'MANILA', 'QUEZON CITY', 'DAVAO CITY', 'CALOOCAN', 'CEBU CITY', 'ZAMBOANGA CITY',
+        'ANTIPOLO', 'PASIG', 'TAGUIG', 'CAGAYAN DE ORO', 'PARAÑAQUE', 'VALENZUELA',
+        'DASMARIÑAS', 'LAS PIÑAS', 'GENERAL SANTOS', 'MAKATI', 'BACOLOD', 'BACOOR',
+        'ILOILO CITY', 'MUNTINLUPA', 'SAN JOSE DEL MONTE', 'MARIKINA'
+    ],
+    'DE': [
+        'BERLIN', 'HAMBURG', 'MUNICH', 'COLOGNE', 'FRANKFURT', 'STUTTGART', 'DÜSSELDORF',
+        'DORTMUND', 'ESSEN', 'LEIPZIG', 'BREMEN', 'DRESDEN', 'HANOVER', 'NUREMBERG',
+        'DUISBURG', 'BOCHUM', 'WUPPERTAL', 'BIELEFELD', 'BONN', 'MÜNSTER'
+    ],
+    'FR': [
+        'PARIS', 'MARSEILLE', 'LYON', 'TOULOUSE', 'NICE', 'NANTES', 'STRASBOURG',
+        'MONTPELLIER', 'BORDEAUX', 'LILLE', 'RENNES', 'REIMS', 'LE HAVRE', 'SAINT-ÉTIENNE',
+        'TOULON', 'GRENOBLE', 'DIJON', 'NÎMES', 'ANGERS', 'VILLEURBANNE'
+    ]
+};
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     setupFilterButtons();
     setupCountryDropdown();
+    setupOriginCountryDropdown();
+    setupDestCityDropdown();
+    setupOriginCityDropdown();
     console.log('Tukeruy initialized');
     
     // Auto-load data on page load with default filters (US)
@@ -143,9 +219,342 @@ function setupCountryDropdown() {
         searchInput.value = '';
         renderCountryList(countries);
         
+        // Load cities for destination
+        loadDestinationCities(country.code);
+        
         // Show notification
         showNotification(`Country changed to ${country.name}`, 'info');
     }
+}
+
+// Setup origin country dropdown
+function setupOriginCountryDropdown() {
+    const trigger = document.getElementById('origin-country-dropdown-trigger');
+    const menu = document.getElementById('origin-country-dropdown-menu');
+    const searchInput = document.getElementById('origin-country-search');
+    const countryList = document.getElementById('origin-country-list');
+    const hiddenInput = document.getElementById('origin_country');
+    const display = document.getElementById('selected-origin-country-display');
+    
+    // Add "Any country" option
+    const countriesWithAny = [{ code: '', name: 'Any country' }, ...countries];
+    
+    // Populate country list
+    renderOriginCountryList(countriesWithAny);
+    
+    // Toggle dropdown
+    trigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        menu.classList.toggle('hidden');
+        if (!menu.classList.contains('hidden')) {
+            searchInput.focus();
+        }
+    });
+    
+    // Search functionality
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const filtered = countriesWithAny.filter(c => 
+            c.name.toLowerCase().includes(query) || 
+            c.code.toLowerCase().includes(query)
+        );
+        renderOriginCountryList(filtered);
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!trigger.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+    });
+    
+    // Render country list
+    function renderOriginCountryList(countryArray) {
+        countryList.innerHTML = '';
+        
+        countryArray.forEach(country => {
+            const item = document.createElement('div');
+            item.className = 'country-item';
+            if (country.code === hiddenInput.value) {
+                item.classList.add('selected');
+            }
+            item.innerHTML = country.code ? 
+                `${country.name} <span class="text-gray-500 text-xs">(${country.code})</span>` :
+                country.name;
+            item.addEventListener('click', function() {
+                selectOriginCountry(country);
+            });
+            countryList.appendChild(item);
+        });
+    }
+    
+    // Select country
+    function selectOriginCountry(country) {
+        hiddenInput.value = country.code;
+        display.textContent = country.code ? `${country.name} (${country.code})` : country.name;
+        display.classList.toggle('text-gray-400', !country.code);
+        menu.classList.add('hidden');
+        searchInput.value = '';
+        renderOriginCountryList(countriesWithAny);
+        
+        // Load cities for origin
+        if (country.code) {
+            loadOriginCities(country.code);
+            showNotification(`Origin country changed to ${country.name}`, 'info');
+        } else {
+            // Clear city selection
+            document.getElementById('origin_city').value = '';
+            document.getElementById('selected-origin-city-display').textContent = 'Any city';
+            document.getElementById('selected-origin-city-display').classList.add('text-gray-400');
+            document.getElementById('origin-city-list').innerHTML = '<div class="p-4 text-center text-sm text-gray-500">Select a country first</div>';
+        }
+    }
+}
+
+// Load destination cities
+function loadDestinationCities(countryCode) {
+    const cities = citiesByCountry[countryCode] || [];
+    const cityList = document.getElementById('dest-city-list');
+    const hiddenInput = document.getElementById('dest_city');
+    
+    cityList.innerHTML = '';
+    
+    if (cities.length === 0) {
+        cityList.innerHTML = '<div class="p-4 text-center text-sm text-gray-500">No cities available</div>';
+        return;
+    }
+    
+    // Add "Any city" option
+    const anyItem = document.createElement('div');
+    anyItem.className = 'country-item';
+    if (!hiddenInput.value) {
+        anyItem.classList.add('selected');
+    }
+    anyItem.textContent = 'Any city';
+    anyItem.addEventListener('click', function() {
+        hiddenInput.value = '';
+        document.getElementById('selected-dest-city-display').textContent = 'Any city';
+        document.getElementById('selected-dest-city-display').classList.add('text-gray-400');
+        document.getElementById('dest-city-dropdown-menu').classList.add('hidden');
+        document.getElementById('dest-city-search').value = '';
+        loadDestinationCities(countryCode);
+    });
+    cityList.appendChild(anyItem);
+    
+    // Add cities
+    cities.forEach(city => {
+        const item = document.createElement('div');
+        item.className = 'country-item';
+        if (city === hiddenInput.value) {
+            item.classList.add('selected');
+        }
+        item.textContent = city;
+        item.addEventListener('click', function() {
+            hiddenInput.value = city;
+            document.getElementById('selected-dest-city-display').textContent = city;
+            document.getElementById('selected-dest-city-display').classList.remove('text-gray-400');
+            document.getElementById('dest-city-dropdown-menu').classList.add('hidden');
+            document.getElementById('dest-city-search').value = '';
+            loadDestinationCities(countryCode);
+            showNotification(`City changed to ${city}`, 'info');
+        });
+        cityList.appendChild(item);
+    });
+}
+
+// Load origin cities
+function loadOriginCities(countryCode) {
+    const cities = citiesByCountry[countryCode] || [];
+    const cityList = document.getElementById('origin-city-list');
+    const hiddenInput = document.getElementById('origin_city');
+    
+    cityList.innerHTML = '';
+    
+    if (cities.length === 0) {
+        cityList.innerHTML = '<div class="p-4 text-center text-sm text-gray-500">No cities available</div>';
+        return;
+    }
+    
+    // Add "Any city" option
+    const anyItem = document.createElement('div');
+    anyItem.className = 'country-item';
+    if (!hiddenInput.value) {
+        anyItem.classList.add('selected');
+    }
+    anyItem.textContent = 'Any city';
+    anyItem.addEventListener('click', function() {
+        hiddenInput.value = '';
+        document.getElementById('selected-origin-city-display').textContent = 'Any city';
+        document.getElementById('selected-origin-city-display').classList.add('text-gray-400');
+        document.getElementById('origin-city-dropdown-menu').classList.add('hidden');
+        document.getElementById('origin-city-search').value = '';
+        loadOriginCities(countryCode);
+    });
+    cityList.appendChild(anyItem);
+    
+    // Add cities
+    cities.forEach(city => {
+        const item = document.createElement('div');
+        item.className = 'country-item';
+        if (city === hiddenInput.value) {
+            item.classList.add('selected');
+        }
+        item.textContent = city;
+        item.addEventListener('click', function() {
+            hiddenInput.value = city;
+            document.getElementById('selected-origin-city-display').textContent = city;
+            document.getElementById('selected-origin-city-display').classList.remove('text-gray-400');
+            document.getElementById('origin-city-dropdown-menu').classList.add('hidden');
+            document.getElementById('origin-city-search').value = '';
+            loadOriginCities(countryCode);
+            showNotification(`Origin city changed to ${city}`, 'info');
+        });
+        cityList.appendChild(item);
+    });
+}
+
+// Setup destination city dropdown
+function setupDestCityDropdown() {
+    const trigger = document.getElementById('dest-city-dropdown-trigger');
+    const menu = document.getElementById('dest-city-dropdown-menu');
+    const searchInput = document.getElementById('dest-city-search');
+    const cityList = document.getElementById('dest-city-list');
+    
+    // Toggle dropdown
+    trigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const countryCode = document.getElementById('dest_country').value;
+        if (countryCode) {
+            menu.classList.toggle('hidden');
+            if (!menu.classList.contains('hidden')) {
+                searchInput.focus();
+            }
+        }
+    });
+    
+    // Search functionality
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const countryCode = document.getElementById('dest_country').value;
+        const cities = citiesByCountry[countryCode] || [];
+        const filtered = cities.filter(c => c.toLowerCase().includes(query));
+        
+        cityList.innerHTML = '';
+        
+        // Add "Any city" if matches
+        if ('any city'.includes(query)) {
+            const anyItem = document.createElement('div');
+            anyItem.className = 'country-item';
+            anyItem.textContent = 'Any city';
+            anyItem.addEventListener('click', function() {
+                document.getElementById('dest_city').value = '';
+                document.getElementById('selected-dest-city-display').textContent = 'Any city';
+                document.getElementById('selected-dest-city-display').classList.add('text-gray-400');
+                menu.classList.add('hidden');
+                searchInput.value = '';
+                loadDestinationCities(countryCode);
+            });
+            cityList.appendChild(anyItem);
+        }
+        
+        filtered.forEach(city => {
+            const item = document.createElement('div');
+            item.className = 'country-item';
+            item.textContent = city;
+            item.addEventListener('click', function() {
+                document.getElementById('dest_city').value = city;
+                document.getElementById('selected-dest-city-display').textContent = city;
+                document.getElementById('selected-dest-city-display').classList.remove('text-gray-400');
+                menu.classList.add('hidden');
+                searchInput.value = '';
+                loadDestinationCities(countryCode);
+            });
+            cityList.appendChild(item);
+        });
+        
+        if (cityList.children.length === 0) {
+            cityList.innerHTML = '<div class="p-4 text-center text-sm text-gray-500">No cities found</div>';
+        }
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!trigger.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+    });
+}
+
+// Setup origin city dropdown
+function setupOriginCityDropdown() {
+    const trigger = document.getElementById('origin-city-dropdown-trigger');
+    const menu = document.getElementById('origin-city-dropdown-menu');
+    const searchInput = document.getElementById('origin-city-search');
+    const cityList = document.getElementById('origin-city-list');
+    
+    // Toggle dropdown
+    trigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const countryCode = document.getElementById('origin_country').value;
+        if (countryCode) {
+            menu.classList.toggle('hidden');
+            if (!menu.classList.contains('hidden')) {
+                searchInput.focus();
+            }
+        }
+    });
+    
+    // Search functionality
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const countryCode = document.getElementById('origin_country').value;
+        const cities = citiesByCountry[countryCode] || [];
+        const filtered = cities.filter(c => c.toLowerCase().includes(query));
+        
+        cityList.innerHTML = '';
+        
+        // Add "Any city" if matches
+        if ('any city'.includes(query)) {
+            const anyItem = document.createElement('div');
+            anyItem.className = 'country-item';
+            anyItem.textContent = 'Any city';
+            anyItem.addEventListener('click', function() {
+                document.getElementById('origin_city').value = '';
+                document.getElementById('selected-origin-city-display').textContent = 'Any city';
+                document.getElementById('selected-origin-city-display').classList.add('text-gray-400');
+                menu.classList.add('hidden');
+                searchInput.value = '';
+                loadOriginCities(countryCode);
+            });
+            cityList.appendChild(anyItem);
+        }
+        
+        filtered.forEach(city => {
+            const item = document.createElement('div');
+            item.className = 'country-item';
+            item.textContent = city;
+            item.addEventListener('click', function() {
+                document.getElementById('origin_city').value = city;
+                document.getElementById('selected-origin-city-display').textContent = city;
+                document.getElementById('selected-origin-city-display').classList.remove('text-gray-400');
+                menu.classList.add('hidden');
+                searchInput.value = '';
+                loadOriginCities(countryCode);
+            });
+            cityList.appendChild(item);
+        });
+        
+        if (cityList.children.length === 0) {
+            cityList.innerHTML = '<div class="p-4 text-center text-sm text-gray-500">No cities found</div>';
+        }
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!trigger.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+    });
 }
 
 // Show notification
@@ -400,12 +809,23 @@ function resetFilters() {
     });
     document.querySelector('[data-type="carrier"][data-value="all"]').classList.add('active');
     
-    // Reset inputs
+    // Reset origin country and city
     document.getElementById('origin_country').value = '';
+    document.getElementById('selected-origin-country-display').textContent = 'Any country';
+    document.getElementById('selected-origin-country-display').classList.add('text-gray-400');
     document.getElementById('origin_city').value = '';
-    document.getElementById('dest_country').value = 'US'; // Reset to US
-    document.getElementById('selected-country-display').textContent = 'United States (US)'; // Reset display
+    document.getElementById('selected-origin-city-display').textContent = 'Any city';
+    document.getElementById('selected-origin-city-display').classList.add('text-gray-400');
+    
+    // Reset dest to US
+    document.getElementById('dest_country').value = 'US';
+    document.getElementById('selected-country-display').textContent = 'United States (US)';
+    document.getElementById('selected-country-display').classList.remove('text-gray-400');
     document.getElementById('dest_city').value = '';
+    document.getElementById('selected-dest-city-display').textContent = 'Any city';
+    document.getElementById('selected-dest-city-display').classList.add('text-gray-400');
+    
+    // Reset dates
     document.getElementById('ship_from').value = '';
     document.getElementById('ship_to').value = '';
     document.getElementById('delivery_from').value = '';
@@ -415,6 +835,9 @@ function resetFilters() {
     selectedCarriers = ['all'];
     selectedStatuses = [];
     currentCursor = null;
+    
+    // Load US cities for destination
+    loadDestinationCities('US');
     
     // Clear table
     document.getElementById('results-table').innerHTML = '<tr><td colspan="7" class="text-center py-12"><i class="fas fa-spinner fa-spin text-3xl text-purple-500"></i><div class="mt-3 text-gray-500">Memuat data...</div></td></tr>';

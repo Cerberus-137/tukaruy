@@ -224,8 +224,43 @@ $stats = $api->getStats();
                         <!-- Asal -->
                         <div>
                             <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Asal Pengiriman</label>
-                            <input type="text" id="origin_country" placeholder="Negara (ID, US, GB...)" class="w-full mb-2 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm">
-                            <input type="text" id="origin_city" placeholder="Kota" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm">
+                            <div class="relative mb-2">
+                                <div id="origin-country-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                    <span id="selected-origin-country-display" class="text-gray-400">Any country</span>
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
+                                <input type="hidden" id="origin_country" value="">
+                                
+                                <!-- Dropdown Menu -->
+                                <div id="origin-country-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                                    <div class="p-2 border-b border-dark-400">
+                                        <input type="text" id="origin-country-search" placeholder="Search country..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                                    </div>
+                                    <div id="origin-country-list" class="overflow-y-auto max-h-52">
+                                        <!-- Countries will be populated by JS -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="relative">
+                                <div id="origin-city-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                    <span id="selected-origin-city-display" class="text-gray-400">Any city</span>
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
+                                <input type="hidden" id="origin_city" value="">
+                                
+                                <!-- City Dropdown Menu -->
+                                <div id="origin-city-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                                    <div class="p-2 border-b border-dark-400">
+                                        <input type="text" id="origin-city-search" placeholder="Search city..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                                    </div>
+                                    <div id="origin-city-list" class="overflow-y-auto max-h-52">
+                                        <div class="p-4 text-center text-sm text-gray-500">
+                                            Select a country first
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Tujuan -->
@@ -248,7 +283,26 @@ $stats = $api->getStats();
                                     </div>
                                 </div>
                             </div>
-                            <input type="text" id="dest_city" placeholder="Kota" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm">
+                            
+                            <div class="relative">
+                                <div id="dest-city-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                    <span id="selected-dest-city-display" class="text-gray-400">Any city</span>
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
+                                <input type="hidden" id="dest_city" value="">
+                                
+                                <!-- City Dropdown Menu -->
+                                <div id="dest-city-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                                    <div class="p-2 border-b border-dark-400">
+                                        <input type="text" id="dest-city-search" placeholder="Search city..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                                    </div>
+                                    <div id="dest-city-list" class="overflow-y-auto max-h-52">
+                                        <div class="p-4 text-center text-sm text-gray-500">
+                                            Select a country first
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Tanggal Kirim -->
