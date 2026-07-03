@@ -96,12 +96,9 @@ class TukeruyAPI {
         }
         
         // Destination filter
-        if (!empty($filters['dest_country']) || !empty($filters['dest_city']) || !empty($filters['dest_state'])) {
+        if (!empty($filters['dest_country'])) {
             $filter->dest = new stdClass();
-            
-            if (!empty($filters['dest_country'])) {
-                $filter->dest->country = $filters['dest_country'];
-            }
+            $filter->dest->country = $filters['dest_country'];
             
             if (!empty($filters['dest_state'])) {
                 $filter->dest->state = $filters['dest_state'];
@@ -113,12 +110,9 @@ class TukeruyAPI {
         }
         
         // Origin filter
-        if (!empty($filters['origin_country']) || !empty($filters['origin_city']) || !empty($filters['origin_state'])) {
+        if (!empty($filters['origin_country'])) {
             $filter->origin = new stdClass();
-            
-            if (!empty($filters['origin_country'])) {
-                $filter->origin->country = $filters['origin_country'];
-            }
+            $filter->origin->country = $filters['origin_country'];
             
             if (!empty($filters['origin_state'])) {
                 $filter->origin->state = $filters['origin_state'];
