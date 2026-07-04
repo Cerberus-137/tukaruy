@@ -39,17 +39,23 @@ class QRISPayAPI {
         $error = curl_error($ch);
         curl_close($ch);
         
+        // Log request for debugging
+        error_log('QRIS API Request: ' . $url . ' | Method: ' . $method);
+        error_log('QRIS API Response Code: ' . $httpCode);
+        error_log('QRIS API Response Body: ' . $response);
+        
         if ($error) {
             throw new Exception('cURL Error: ' . $error);
         }
         
-        if ($httpCode !== 200) {
-            $errorData = json_decode($response, true);
-            $errorMessage = $errorData['message'] ?? 'API request failed';
+        $decoded = json_decode($response, true);
+        
+        if ($httpCode !== 200 && $httpCode !== 201) {
+            $errorMessage = $decoded['message'] ?? $decoded['error'] ?? 'API request failed';
             throw new Exception($errorMessage);
         }
         
-        return json_decode($response, true);
+        return $decoded;
     }
     
     /**
@@ -70,24 +76,49 @@ class QRISPayAPI {
         
         $response = $this->makeRequest('/api/payment/qris/generate', 'POST', $data);
         
+        // Log full response for debugging
+        error_log('QRIS Generate Full Response: ' . json_encode($response));
+        
         // Handle different response formats
+        // Format 1: {status: "success", data: {...}}
         if (isset($response['status']) && $response['status'] === 'success' && isset($response['data'])) {
             $qrisData = $response['data'];
-            
-            // Normalize response format
-            return [
-                'qris_id' => $qrisData['qris_id'] ?? $qrisData['id'] ?? null,
-                'qris_image_url' => $qrisData['qris_image_url'] ?? $qrisData['image_url'] ?? $qrisData['qr_url'] ?? '',
-                'qris_string' => $qrisData['qris_string'] ?? $qrisData['qr_string'] ?? '',
-                'amount' => $qrisData['amount'] ?? $amount,
-                'payment_reference' => $qrisData['payment_reference'] ?? $paymentReference,
-                'expired_at' => $qrisData['expired_at'] ?? date('Y-m-d H:i:s', strtotime('+15 minutes')),
-                'expires_in_seconds' => $qrisData['expires_in_seconds'] ?? 900,
-                'status' => $qrisData['status'] ?? 'pending'
-            ];
+        }
+        // Format 2: Direct data without wrapper
+        else if (isset($response['qris_id']) || isset($response['id'])) {
+            $qrisData = $response;
+        }
+        // Format 3: {success: true, data: {...}}
+        else if (isset($response['success']) && $response['success'] && isset($response['data'])) {
+            $qrisData = $response['data'];
+        }
+        else {
+            error_log('QRIS Unknown Response Format: ' . json_encode($response));
+            throw new Exception('Unknown QRIS response format');
         }
         
-        throw new Exception('Invalid QRIS response format');
+        // Normalize response format - handle multiple possible field names
+        $normalized = [
+            'qris_id' => $qrisData['qris_id'] ?? $qrisData['id'] ?? $qrisData['transaction_id'] ?? null,
+            'qris_image_url' => $qrisData['qris_image_url'] ?? $qrisData['image_url'] ?? $qrisData['qr_url'] ?? $qrisData['qr_image'] ?? $qrisData['qr_code_url'] ?? '',
+            'qris_string' => $qrisData['qris_string'] ?? $qrisData['qr_string'] ?? $qrisData['qr_code'] ?? '',
+            'amount' => $qrisData['amount'] ?? $amount,
+            'payment_reference' => $qrisData['payment_reference'] ?? $qrisData['reference'] ?? $paymentReference,
+            'expired_at' => $qrisData['expired_at'] ?? $qrisData['expires_at'] ?? $qrisData['expiry_time'] ?? date('Y-m-d H:i:s', strtotime('+15 minutes')),
+            'expires_in_seconds' => $qrisData['expires_in_seconds'] ?? $qrisData['expires_in'] ?? 900,
+            'status' => $qrisData['status'] ?? 'pending'
+        ];
+        
+        // Validate required fields
+        if (empty($normalized['qris_id'])) {
+            throw new Exception('QRIS ID not found in response');
+        }
+        
+        if (empty($normalized['qris_image_url']) && empty($normalized['qris_string'])) {
+            error_log('Warning: No QR image URL or QR string in response');
+        }
+        
+        return $normalized;
     }
     
     /**

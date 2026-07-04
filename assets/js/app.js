@@ -411,15 +411,23 @@ function loadDestinationCities(countryCode) {
     const cities = citiesByCountry[countryCode] || [];
     const cityList = document.getElementById('dest-city-list');
     const hiddenInput = document.getElementById('dest_city');
+    const trigger = document.getElementById('dest-city-dropdown-trigger');
     
-    if (!cityList || !hiddenInput) return;
+    if (!cityList || !hiddenInput || !trigger) return;
     
+    // Clear existing content
     cityList.innerHTML = '';
     
     if (cities.length === 0) {
-        cityList.innerHTML = '<div class="p-4 text-center text-sm text-gray-500">No cities available</div>';
+        cityList.innerHTML = '<div class="p-4 text-center text-sm text-gray-500">No cities available for this country</div>';
+        trigger.classList.add('opacity-50', 'cursor-not-allowed');
+        trigger.style.pointerEvents = 'none';
         return;
     }
+    
+    // Enable trigger
+    trigger.classList.remove('opacity-50', 'cursor-not-allowed');
+    trigger.style.pointerEvents = 'auto';
     
     // Add "Any city" option
     const anyItem = document.createElement('div');
@@ -428,7 +436,8 @@ function loadDestinationCities(countryCode) {
         anyItem.classList.add('selected');
     }
     anyItem.textContent = 'Any city';
-    anyItem.addEventListener('click', function() {
+    anyItem.addEventListener('click', function(e) {
+        e.stopPropagation();
         hiddenInput.value = '';
         const display = document.getElementById('selected-dest-city-display');
         if (display) {
@@ -440,6 +449,11 @@ function loadDestinationCities(countryCode) {
         const search = document.getElementById('dest-city-search');
         if (search) search.value = '';
         loadDestinationCities(countryCode);
+        
+        // Auto-apply if enabled
+        if (autoApply) {
+            debounceSearch();
+        }
     });
     cityList.appendChild(anyItem);
     
@@ -451,7 +465,8 @@ function loadDestinationCities(countryCode) {
             item.classList.add('selected');
         }
         item.textContent = city;
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function(e) {
+            e.stopPropagation();
             hiddenInput.value = city;
             const display = document.getElementById('selected-dest-city-display');
             if (display) {
@@ -463,7 +478,7 @@ function loadDestinationCities(countryCode) {
             const search = document.getElementById('dest-city-search');
             if (search) search.value = '';
             loadDestinationCities(countryCode);
-            showNotification(`City changed to ${city}`, 'info');
+            showNotification(`Destination city changed to ${city}`, 'info');
             
             // Auto-apply if enabled
             if (autoApply) {
@@ -479,15 +494,23 @@ function loadOriginCities(countryCode) {
     const cities = citiesByCountry[countryCode] || [];
     const cityList = document.getElementById('origin-city-list');
     const hiddenInput = document.getElementById('origin_city');
+    const trigger = document.getElementById('origin-city-dropdown-trigger');
     
-    if (!cityList || !hiddenInput) return;
+    if (!cityList || !hiddenInput || !trigger) return;
     
+    // Clear existing content
     cityList.innerHTML = '';
     
     if (cities.length === 0) {
-        cityList.innerHTML = '<div class="p-4 text-center text-sm text-gray-500">No cities available</div>';
+        cityList.innerHTML = '<div class="p-4 text-center text-sm text-gray-500">No cities available for this country</div>';
+        trigger.classList.add('opacity-50', 'cursor-not-allowed');
+        trigger.style.pointerEvents = 'none';
         return;
     }
+    
+    // Enable trigger
+    trigger.classList.remove('opacity-50', 'cursor-not-allowed');
+    trigger.style.pointerEvents = 'auto';
     
     // Add "Any city" option
     const anyItem = document.createElement('div');
@@ -496,7 +519,8 @@ function loadOriginCities(countryCode) {
         anyItem.classList.add('selected');
     }
     anyItem.textContent = 'Any city';
-    anyItem.addEventListener('click', function() {
+    anyItem.addEventListener('click', function(e) {
+        e.stopPropagation();
         hiddenInput.value = '';
         const display = document.getElementById('selected-origin-city-display');
         if (display) {
@@ -508,6 +532,11 @@ function loadOriginCities(countryCode) {
         const search = document.getElementById('origin-city-search');
         if (search) search.value = '';
         loadOriginCities(countryCode);
+        
+        // Auto-apply if enabled
+        if (autoApply) {
+            debounceSearch();
+        }
     });
     cityList.appendChild(anyItem);
     
@@ -519,7 +548,8 @@ function loadOriginCities(countryCode) {
             item.classList.add('selected');
         }
         item.textContent = city;
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function(e) {
+            e.stopPropagation();
             hiddenInput.value = city;
             const display = document.getElementById('selected-origin-city-display');
             if (display) {
@@ -1085,31 +1115,56 @@ function createResultRow(result) {
     const carrierBadgeClass = getCarrierBadgeClass(result.carrier);
     const statusBadgeClass = getStatusBadgeClass(result.status);
     
-    // Format origin
-    const originParts = [];
-    if (result.origin?.country) originParts.push(result.origin.country);
-    if (result.origin?.state) originParts.push(result.origin.state);
-    if (result.origin?.city) originParts.push(result.origin.city);
-    const origin = originParts.length > 0 ? originParts.join(', ') : 'undefined';
+    // Format origin - API may omit origin entirely if not available
+    let origin = 'N/A';
+    if (result.origin && typeof result.origin === 'object') {
+        const originParts = [];
+        if (result.origin.city) originParts.push(result.origin.city);
+        if (result.origin.state) originParts.push(result.origin.state);
+        if (result.origin.country) originParts.push(result.origin.country);
+        if (originParts.length > 0) {
+            origin = originParts.join(', ');
+        }
+    }
     
-    // Format destination
-    const destParts = [];
-    if (result.dest?.country) destParts.push(result.dest.country);
-    if (result.dest?.state) destParts.push(result.dest.state);
-    if (result.dest?.city) destParts.push(result.dest.city);
-    if (result.dest?.zip) destParts.push(result.dest.zip);
-    const destination = destParts.length > 0 ? destParts.join(', ') : 'undefined';
+    // Format destination - should always be present according to API
+    let destination = 'N/A';
+    if (result.dest && typeof result.dest === 'object') {
+        const destParts = [];
+        if (result.dest.city) destParts.push(result.dest.city);
+        if (result.dest.state) destParts.push(result.dest.state);
+        if (result.dest.country) destParts.push(result.dest.country);
+        if (destParts.length > 0) {
+            destination = destParts.join(', ');
+        }
+    }
     
     // Format dates
-    const shipDate = result.ship_date ? new Date(result.ship_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+    let shipDate = 'N/A';
+    if (result.ship_date) {
+        try {
+            const date = new Date(result.ship_date);
+            shipDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        } catch (e) {
+            shipDate = result.ship_date;
+        }
+    }
     
-    // Format weight
-    const weight = (result.weight_grams && result.weight_grams > 0) ? `${(result.weight_grams / 453.592).toFixed(2)} lbs` : 'undefined';
+    // Format weight - API provides weight in grams
+    let weight = 'N/A';
+    if (result.weight_grams && result.weight_grams > 0) {
+        // Convert grams to pounds (1 lb = 453.592 grams)
+        const lbs = (result.weight_grams / 453.592).toFixed(2);
+        weight = `${lbs} lbs`;
+    }
+    
+    // Get carrier name
+    const carrierName = result.carrier ? result.carrier.toUpperCase() : 'N/A';
     
     row.innerHTML = `
         <td class="py-4 px-4">
             <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-md ${carrierBadgeClass}">
-                ${result.carrier?.toUpperCase() || 'N/A'}
+                ${carrierName}
             </span>
         </td>
         <td class="py-4 px-4">
@@ -1130,34 +1185,27 @@ function createResultRow(result) {
             <div class="text-sm text-gray-400">${weight}</div>
         </td>
         <td class="py-4 px-4 text-right">
-            <button onclick="showRevealModal('${result.tn_id}', ${result.reveal_cost_credits})" 
+            <button onclick="showRevealModal('${result.tn_id}', ${result.reveal_cost_credits || 1})" 
                     class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white text-sm font-medium rounded-lg transition shadow-sm">
-                Dapatkan
+                Get TN
             </button>
         </td>
     `;
     
     return row;
 }
-// Format location
+
+// Format location (kept for backward compatibility but not used in createResultRow)
 function formatLocation(location) {
-    if (!location) return 'undefined';
+    if (!location || typeof location !== 'object') return 'N/A';
     
     const parts = [];
     
-    if (location.city && location.city !== 'undefined') {
-        parts.push(location.city);
-    }
+    if (location.city) parts.push(location.city);
+    if (location.state) parts.push(location.state);
+    if (location.country) parts.push(location.country);
     
-    if (location.state && location.state !== 'undefined') {
-        parts.push(location.state);
-    }
-    
-    if (location.country && location.country !== 'undefined') {
-        parts.push(location.country);
-    }
-    
-    return parts.length > 0 ? parts.join(', ') : 'undefined';
+    return parts.length > 0 ? parts.join(', ') : 'N/A';
 }
 
 // Format status

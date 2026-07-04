@@ -23,7 +23,8 @@ class SaweriaAPI {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Authorization: Bearer ' . $this->token,
-            'Content-Type: application/json'
+            'Content-Type: application/json',
+            'Accept: application/json'
         ]);
         
         if ($method === 'POST') {
@@ -36,19 +37,81 @@ class SaweriaAPI {
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
+        
+        // Log for debugging
+        error_log('Saweria API Request: ' . $url . ' | Method: ' . $method);
+        error_log('Saweria API Response Code: ' . $httpCode);
+        error_log('Saweria API Response: ' . $response);
+        
         curl_close($ch);
         
         if ($error) {
             throw new Exception('cURL Error: ' . $error);
         }
         
+        $decoded = json_decode($response, true);
+        
         if ($httpCode !== 200 && $httpCode !== 201) {
-            $errorData = json_decode($response, true);
-            $errorMessage = $errorData['message'] ?? 'API request failed';
-            throw new Exception($errorMessage);
+            $errorMessage = 'API request failed';
+            if ($decoded) {
+                $errorMessage = $decoded['message'] ?? $decoded['error'] ?? $errorMessage;
+            }
+            throw new Exception($errorMessage . ' (HTTP ' . $httpCode . ')');
         }
         
-        return json_decode($response, true);
+        return $decoded;
+    }
+    
+    /**
+     * Get user profile/stream info
+     */
+    public function getProfile() {
+        try {
+            $response = $this->makeRequest('/stream');
+            
+            if (!isset($response['data'])) {
+                throw new Exception('Invalid profile response');
+            }
+            
+            return $response['data'];
+        } catch (Exception $e) {
+            error_log('Saweria getProfile Error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+    
+    /**
+     * Generate payment link (simplified version without creating donation)
+     */
+    public function generatePaymentLink($amount, $message = '', $donatorName = 'Anonymous') {
+        try {
+            // Get username from profile
+            $profile = $this->getProfile();
+            $username = $profile['username'] ?? $profile['user']['username'] ?? '';
+            
+            if (empty($username)) {
+                throw new Exception('Unable to get Saweria username from profile');
+            }
+            
+            // Generate unique ID for tracking
+            $donationId = 'saw_' . time() . '_' . substr(md5(uniqid()), 0, 8);
+            
+            // Saweria uses direct payment links with amount parameter
+            $paymentUrl = "https://saweria.co/{$username}?amount={$amount}&message=" . urlencode($message);
+            
+            return [
+                'donation_id' => $donationId,
+                'payment_url' => $paymentUrl,
+                'amount' => $amount,
+                'message' => $message,
+                'donator_name' => $donatorName,
+                'username' => $username,
+                'created_at' => date('Y-m-d H:i:s')
+            ];
+        } catch (Exception $e) {
+            error_log('Saweria generatePaymentLink Error: ' . $e->getMessage());
+            throw $e;
+        }
     }
     
     /**
