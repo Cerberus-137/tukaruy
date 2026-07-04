@@ -61,6 +61,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
     }
 }
+
+// Handle API settings update (admin only)
+$apiSuccess = '';
+$apiError = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_api_settings') {
+    if ($user['role'] !== 'admin') {
+        $apiError = 'Access denied';
+    } else {
+        try {
+            $pdo = getDBConnection();
+            
+            $tracktacoKey = $_POST['tracktaco_api_key'] ?? '';
+            $qrispayToken = $_POST['qrispay_api_token'] ?? '';
+            $saweriaToken = $_POST['saweria_api_token'] ?? '';
+            $qrispayEnabled = isset($_POST['qrispay_enabled']) ? 1 : 0;
+            $saweriaEnabled = isset($_POST['saweria_enabled']) ? 1 : 0;
+            
+            // Update or insert settings
+            $settings = [
+                'tracktaco_api_key' => $tracktacoKey,
+                'qrispay_api_token' => $qrispayToken,
+                'saweria_api_token' => $saweriaToken,
+                'payment_methods_qrispay' => $qrispayEnabled,
+                'payment_methods_saweria' => $saweriaEnabled
+            ];
+            
+            foreach ($settings as $key => $value) {
+                $stmt = $pdo->prepare("
+                    INSERT INTO admin_settings (setting_key, setting_value, updated_by) 
+                    VALUES (?, ?, ?) 
+                    ON DUPLICATE KEY UPDATE 
+                    setting_value = VALUES(setting_value), 
+                    updated_by = VALUES(updated_by), 
+                    updated_at = CURRENT_TIMESTAMP
+                ");
+                $stmt->execute([$key, $value, $user['id']]);
+            }
+            
+            $apiSuccess = 'API settings updated successfully';
+        } catch (Exception $e) {
+            $apiError = 'Failed to update API settings: ' . $e->getMessage();
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en" class="dark">
@@ -289,6 +333,104 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         </div>
                     </div>
                 </div>
+                
+                <?php if ($user['role'] === 'admin'): ?>
+                <!-- API Settings (Admin Only) -->
+                <div class="glass-effect rounded-2xl p-8">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <i class="fas fa-cog text-purple-400 text-xl"></i>
+                        <h2 class="text-xl font-semibold">API Settings</h2>
+                        <span class="bg-purple-500/20 text-purple-400 text-xs font-semibold px-2 py-1 rounded-full">Admin</span>
+                    </div>
+
+                    <?php if ($apiSuccess): ?>
+                    <div class="mb-6 bg-green-500/20 border border-green-500/50 text-green-400 px-4 py-3 rounded-lg text-sm">
+                        <i class="fas fa-check-circle mr-2"></i><?php echo htmlspecialchars($apiSuccess); ?>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if ($apiError): ?>
+                    <div class="mb-6 bg-red-500/20 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
+                        <i class="fas fa-exclamation-circle mr-2"></i><?php echo htmlspecialchars($apiError); ?>
+                    </div>
+                    <?php endif; ?>
+
+                    <form method="POST" action="">
+                        <input type="hidden" name="action" value="update_api_settings">
+                        
+                        <!-- TrackTaco API -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                <i class="fas fa-search mr-2 text-blue-400"></i>TrackTaco API Key
+                            </label>
+                            <input 
+                                type="text" 
+                                name="tracktaco_api_key" 
+                                value="<?php echo htmlspecialchars(getAdminSetting('tracktaco_api_key', '')); ?>"
+                                class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition font-mono text-sm"
+                                placeholder="tt_live_..."
+                            >
+                            <p class="mt-1 text-xs text-gray-500">Your TrackTaco API key for tracking number searches</p>
+                        </div>
+
+                        <!-- Payment Methods -->
+                        <div class="mb-6">
+                            <h3 class="text-lg font-medium text-gray-300 mb-4">Payment Methods</h3>
+                            
+                            <!-- QRIS Pay -->
+                            <div class="bg-slate-800/50 rounded-lg p-4 mb-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center space-x-3">
+                                        <i class="fas fa-qrcode text-blue-400"></i>
+                                        <span class="font-medium">QRIS Pay</span>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" name="qrispay_enabled" class="sr-only peer" <?php echo getAdminSetting('payment_methods_qrispay', '1') ? 'checked' : ''; ?>>
+                                        <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                    </label>
+                                </div>
+                                <input 
+                                    type="text" 
+                                    name="qrispay_api_token" 
+                                    value="<?php echo htmlspecialchars(getAdminSetting('qrispay_api_token', '')); ?>"
+                                    class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition font-mono text-sm"
+                                    placeholder="cki_..."
+                                >
+                                <p class="mt-1 text-xs text-gray-500">QRISPay API token for QRIS payments</p>
+                            </div>
+                            
+                            <!-- Saweria -->
+                            <div class="bg-slate-800/50 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center space-x-3">
+                                        <i class="fas fa-heart text-pink-400"></i>
+                                        <span class="font-medium">Saweria</span>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" name="saweria_enabled" class="sr-only peer" <?php echo getAdminSetting('payment_methods_saweria', '1') ? 'checked' : ''; ?>>
+                                        <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                    </label>
+                                </div>
+                                <input 
+                                    type="text" 
+                                    name="saweria_api_token" 
+                                    value="<?php echo htmlspecialchars(getAdminSetting('saweria_api_token', '')); ?>"
+                                    class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition font-mono text-sm"
+                                    placeholder="eyJ..."
+                                >
+                                <p class="mt-1 text-xs text-gray-500">Saweria JWT token for donation payments</p>
+                            </div>
+                        </div>
+
+                        <button 
+                            type="submit"
+                            class="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-medium px-6 py-3 rounded-lg transition"
+                        >
+                            <i class="fas fa-save mr-2"></i>Save API Settings
+                        </button>
+                    </form>
+                </div>
+                <?php endif; ?>
 
             </div>
 

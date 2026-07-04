@@ -8,60 +8,100 @@ require_once 'TukeruyAPI.php';
 // Require login
 if (!isLoggedIn()) {
     http_response_code(401);
-    echo json_encode([
-        'success' => false,
-        'error' => 'Unauthorized. Please login first.'
-    ]);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
     exit;
 }
 
 try {
     $user = getCurrentUser();
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    $tnId = $input['tn_id'] ?? '';
+    
+    if (empty($tnId)) {
+        throw new Exception('Tracking ID required');
+    }
+    
+    // Check if user has enough tickets
+    if ($user['tickets'] < 1) {
+        throw new Exception('Insufficient credits. Please top up your account.');
+    }
+    
+    // Initialize API
     $api = new TukeruyAPI();
     
-    // Get tn_id from POST
-    $input = json_decode(file_get_contents('php://input'), true);
-    $tnId = $input['tn_id'] ?? null;
-    
-    if (!$tnId) {
-        throw new Exception('tn_id is required');
-    }
-    
-    // Check if user has tickets
-    if ($user['tickets'] < 1) {
-        throw new Exception('Insufficient tickets. Please purchase tickets to continue.');
-    }
-    
     // Reveal tracking number
-    $result = $api->reveal($tnId);
+    $response = $api->reveal([$tnId]);
     
-    if (empty($result['results'])) {
-        throw new Exception('No results returned');
+    if (!isset($response['results'][0])) {
+        throw new Exception('Failed to reveal tracking number');
     }
     
-    $item = $result['results'][0];
+    $result = $response['results'][0];
     
-    if ($item['outcome'] !== 'revealed') {
-        $error = $item['error']['message'] ?? 'Unable to reveal tracking number';
-        throw new Exception($error);
+    if ($result['outcome'] !== 'revealed') {
+        $errorMessages = [
+            'already_revealed' => 'This tracking number has already been revealed by another customer',
+            'not_found' => 'Tracking number not found',
+            'insufficient_credits' => 'Insufficient credits',
+            'internal' => 'Internal server error. Please try again.'
+        ];
+        
+        $errorMessage = $errorMessages[$result['outcome']] ?? 'Failed to reveal tracking number';
+        throw new Exception($errorMessage);
     }
     
-    // Use ticket
-    $ticketResult = useTicket($user['id'], $tnId, $item['tracking_number'], $item['carrier']);
+    // Deduct ticket from user
+    $pdo = getDBConnection();
+    $pdo->beginTransaction();
     
-    if (!$ticketResult['success']) {
-        throw new Exception($ticketResult['message']);
+    try {
+        // Update user tickets
+        $stmt = $pdo->prepare("UPDATE users SET tickets = tickets - 1 WHERE id = ? AND tickets >= 1");
+        $stmt->execute([$user['id']]);
+        
+        if ($stmt->rowCount() === 0) {
+            throw new Exception('Insufficient credits or concurrent usage detected');
+        }
+        
+        // Log usage
+        $stmt = $pdo->prepare("
+            INSERT INTO ticket_usage (user_id, tn_id, tracking_number, carrier, tickets_used) 
+            VALUES (?, ?, ?, ?, 1)
+        ");
+        $stmt->execute([
+            $user['id'],
+            $tnId,
+            $result['tracking_number'],
+            $result['carrier']
+        ]);
+        
+        $pdo->commit();
+        
+        // Get updated user tickets
+        $newTicketCount = $user['tickets'] - 1;
+        
+        echo json_encode([
+            'success' => true,
+            'result' => [
+                'tracking_number' => $result['tracking_number'],
+                'carrier' => $result['carrier'],
+                'service' => $result['service'] ?? 'unknown',
+                'status' => $result['status'] ?? 'unknown',
+                'dest' => $result['dest'] ?? null,
+                'origin' => $result['origin'] ?? null,
+                'revealed_at' => $result['revealed_at'] ?? date('Y-m-d H:i:s')
+            ],
+            'credits_remaining' => $newTicketCount
+        ]);
+        
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        throw $e;
     }
-    
-    echo json_encode([
-        'success' => true,
-        'tracking_number' => $item['tracking_number'],
-        'carrier' => TukeruyAPI::formatCarrier($item['carrier']),
-        'status' => TukeruyAPI::formatStatus($item['status']),
-        'tickets_remaining' => $ticketResult['remaining_tickets']
-    ]);
     
 } catch (Exception $e) {
+    error_log('Reveal API Error: ' . $e->getMessage());
     http_response_code(400);
     echo json_encode([
         'success' => false,

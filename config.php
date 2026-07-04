@@ -18,6 +18,20 @@ define('API_BASE_URL', 'https://v2.tracktaco.com');
 // API Configuration - QRISPay
 define('QRISPAY_API_URL', 'https://api.qrispy.id');
 
+// Payment method configuration
+define('PAYMENT_METHODS', [
+    'qrispay' => [
+        'enabled' => true,
+        'name' => 'QRIS Pay',
+        'description' => 'Bayar dengan QRIS melalui e-wallet'
+    ],
+    'saweria' => [
+        'enabled' => true,
+        'name' => 'Saweria',
+        'description' => 'Donasi melalui Saweria'
+    ]
+]);
+
 // App configuration
 define('ITEMS_PER_PAGE', 25);
 define('MAX_ITEMS_PER_PAGE', 50);
@@ -94,4 +108,22 @@ function getTrackTacoAPIKey() {
 
 function getQRISPayAPIToken() {
     return getAdminSetting('qrispay_api_token', 'cki_PsO8fSC6e1ASeJq9AbTDpcjXjAk1VvvXxjbAl7MqxMr9fEi7');
+}
+
+function getSaweriaAPIToken() {
+    return getAdminSetting('saweria_api_token', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjdXJyZW5jeSI6IklEUiIsImlkIjoiNWNjODc1NTItMjUwMC00ZmE5LWFhZmYtYWY1MmM4MTZiZTBhIiwiZW1haWwiOiJtdWhhbW1hZGlsaGFtMTM3MTNAZ21haWwuY29tIiwidXNlcm5hbWUiOiJtaWxoYW02OSIsInRpZXJfa2V5IjoiQkFTSUMiLCJpc3MiOiJzYXdlcmlhLWxvZ2luIiwiaWF0IjoxNzgzMTYxMTc5LCJleHAiOjE3ODM0MjAzNzksImp0aSI6IjIzNTEyMzE5LTk4NjUtNDg2Mi1hMjQ1LWVhOGRjZTM0NTdhZSJ9.aiB1H9S5yo98OzJnx2IPKUch2FiMyq9TU5zVMJAcgdo');
+}
+
+// Check if payment method is enabled
+function isPaymentMethodEnabled($method) {
+    $methods = PAYMENT_METHODS;
+    return isset($methods[$method]) && $methods[$method]['enabled'];
+}
+
+// Get enabled payment methods
+function getEnabledPaymentMethods() {
+    $methods = PAYMENT_METHODS;
+    return array_filter($methods, function($method) {
+        return $method['enabled'];
+    });
 }

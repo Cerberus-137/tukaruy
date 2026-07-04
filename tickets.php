@@ -265,17 +265,58 @@ $packages = TICKET_PACKAGES;
                     </div>
                 </div>
                 
-                <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-4">
-                    <p class="text-sm text-blue-300">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        You will pay using <strong>QRIS</strong>. Scan the QR code with your banking app.
-                    </p>
+                <!-- Payment Method Selection -->
+                <div class="mb-6">
+                    <h4 class="text-sm font-medium text-gray-400 mb-3">Choose Payment Method:</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="payment-method-option" data-method="qrispay">
+                            <input type="radio" id="method-qrispay" name="payment_method" value="qrispay" checked class="sr-only">
+                            <label for="method-qrispay" class="block p-4 border border-gray-600 rounded-lg cursor-pointer hover:border-purple-500 transition selected">
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-qrcode text-blue-400"></i>
+                                    <div>
+                                        <div class="font-medium">QRIS Pay</div>
+                                        <div class="text-xs text-gray-400">Scan QR with e-wallet</div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="payment-method-option" data-method="saweria">
+                            <input type="radio" id="method-saweria" name="payment_method" value="saweria" class="sr-only">
+                            <label for="method-saweria" class="block p-4 border border-gray-600 rounded-lg cursor-pointer hover:border-purple-500 transition">
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-heart text-pink-400"></i>
+                                    <div>
+                                        <div class="font-medium">Saweria</div>
+                                        <div class="text-xs text-gray-400">Donate via Saweria</div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="payment-method-info mb-4">
+                    <div id="info-qrispay" class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                        <p class="text-sm text-blue-300">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            You will pay using <strong>QRIS</strong>. Scan the QR code with your banking app or e-wallet.
+                        </p>
+                    </div>
+                    
+                    <div id="info-saweria" class="bg-pink-500/10 border border-pink-500/30 rounded-lg p-4 hidden">
+                        <p class="text-sm text-pink-300">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            You will be redirected to <strong>Saweria</strong> to complete your donation payment.
+                        </p>
+                    </div>
                 </div>
                 
                 <div class="text-left space-y-2 text-sm text-gray-400">
                     <div class="flex justify-between">
                         <span>Payment method:</span>
-                        <span class="text-white font-medium">QRIS</span>
+                        <span class="text-white font-medium" id="selected-method-display">QRIS</span>
                     </div>
                     <div class="flex justify-between">
                         <span>You pay:</span>
@@ -287,6 +328,45 @@ $packages = TICKET_PACKAGES;
             document.getElementById('checkout-content').innerHTML = content;
             document.getElementById('checkout-modal').classList.remove('hidden');
             document.getElementById('checkout-modal').classList.add('flex');
+            
+            // Setup payment method selection
+            setupPaymentMethodSelection();
+        }
+        
+        function setupPaymentMethodSelection() {
+            const paymentOptions = document.querySelectorAll('.payment-method-option');
+            const methodDisplays = {
+                'qrispay': 'QRIS',
+                'saweria': 'Saweria'
+            };
+            
+            paymentOptions.forEach(option => {
+                const radio = option.querySelector('input[type="radio"]');
+                const label = option.querySelector('label');
+                
+                radio.addEventListener('change', function() {
+                    // Update visual selection
+                    paymentOptions.forEach(opt => {
+                        opt.querySelector('label').classList.remove('selected', 'border-purple-500', 'bg-purple-500/10');
+                        opt.querySelector('label').classList.add('border-gray-600');
+                    });
+                    
+                    if (this.checked) {
+                        label.classList.remove('border-gray-600');
+                        label.classList.add('selected', 'border-purple-500', 'bg-purple-500/10');
+                    }
+                    
+                    // Update method display
+                    document.getElementById('selected-method-display').textContent = methodDisplays[this.value];
+                    
+                    // Show/hide method info
+                    document.querySelectorAll('[id^="info-"]').forEach(info => info.classList.add('hidden'));
+                    document.getElementById('info-' + this.value).classList.remove('hidden');
+                });
+            });
+            
+            // Initialize first option
+            paymentOptions[0].querySelector('input').dispatchEvent(new Event('change'));
         }
 
         function closeCheckout() {
@@ -298,6 +378,8 @@ $packages = TICKET_PACKAGES;
             if (!selectedPackage) return;
             
             const payButton = document.getElementById('pay-button');
+            const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
+            
             payButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
             payButton.disabled = true;
             
@@ -308,7 +390,8 @@ $packages = TICKET_PACKAGES;
                     body: JSON.stringify({
                         credits: selectedPackage.credits,
                         amount: selectedPackage.price,
-                        total: selectedPackage.total
+                        total: selectedPackage.total,
+                        payment_method: selectedMethod
                     })
                 });
                 
@@ -320,15 +403,22 @@ $packages = TICKET_PACKAGES;
                     throw new Error(data.error || 'Payment failed');
                 }
                 
-                if (!data.qris) {
-                    throw new Error('No QRIS data received');
-                }
-                
                 // Close checkout modal
                 closeCheckout();
                 
-                // Show payment modal with QRIS
-                showPaymentModal(data.qris);
+                if (selectedMethod === 'saweria') {
+                    // Handle Saweria payment
+                    if (!data.saweria) {
+                        throw new Error('No Saweria data received');
+                    }
+                    showSaweriaModal(data.saweria);
+                } else {
+                    // Handle QRIS payment
+                    if (!data.qris) {
+                        throw new Error('No QRIS data received');
+                    }
+                    showPaymentModal(data.qris);
+                }
                 
             } catch (error) {
                 console.error('Payment error:', error); // Debug log
@@ -402,12 +492,89 @@ $packages = TICKET_PACKAGES;
             document.getElementById('payment-modal').classList.remove('flex');
         }
 
+        function showSaweriaModal(saweria) {
+            // For Saweria, we show a redirect modal instead of QR code
+            const qrisContainer = document.getElementById('qris-container');
+            const paymentInfo = document.getElementById('payment-info');
+            
+            // Update modal title
+            document.querySelector('#payment-modal h3').textContent = 'Saweria Payment';
+            
+            qrisContainer.innerHTML = `
+                <div class="bg-gradient-to-br from-pink-500 to-purple-600 p-8 rounded-lg text-center">
+                    <i class="fas fa-heart text-6xl text-white mb-4"></i>
+                    <h4 class="text-xl font-bold text-white mb-2">Ready to Pay</h4>
+                    <p class="text-pink-100">Click the button below to continue to Saweria</p>
+                </div>
+            `;
+            
+            paymentInfo.innerHTML = `
+                <div class="text-left bg-slate-800 rounded-lg p-4 mb-4">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-400">Amount:</span>
+                        <span class="font-bold">Rp ${saweria.amount.toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-400">Reference:</span>
+                        <span class="font-mono text-sm">${saweria.payment_reference}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Donation ID:</span>
+                        <span class="font-mono text-sm">${saweria.donation_id}</span>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <a href="${saweria.payment_url}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-medium py-3 px-4 rounded-lg transition text-center">
+                        <i class="fas fa-external-link-alt mr-2"></i>
+                        Pay via Saweria
+                    </a>
+                </div>
+                <p class="text-sm text-gray-400 mt-3 text-center">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    After payment, credits will be added automatically
+                </p>
+            `;
+            
+            document.getElementById('payment-modal').classList.remove('hidden');
+            document.getElementById('payment-modal').classList.add('flex');
+            
+            // Start checking payment status for Saweria
+            startSaweriaPaymentCheck(saweria.donation_id);
+        }
+        
+        function startSaweriaPaymentCheck(donationId) {
+            paymentCheckInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/payment/check.php?saweria_id=${donationId}`);
+                    const data = await response.json();
+                    
+                    if (data.status === 'paid') {
+                        clearInterval(paymentCheckInterval);
+                        closePayment();
+                        showSuccessMessage(data.tickets);
+                    }
+                } catch (error) {
+                    console.error('Saweria payment check error:', error);
+                }
+            }, 5000); // Check every 5 seconds for Saweria
+        }
+
+        const BASE_PRICE_PER_CREDIT = <?php echo BASE_PRICE_PER_CREDIT; ?>;
+        
         function showSuccessMessage(tickets) {
             alert(`Payment successful! ${tickets} credits have been added to your account.`);
             location.reload();
         }
-
-        const BASE_PRICE_PER_CREDIT = <?php echo BASE_PRICE_PER_CREDIT; ?>;
+        
+        // Add CSS for payment method selection
+        const style = document.createElement('style');
+        style.textContent = `
+            .payment-method-option label.selected {
+                border-color: #8b5cf6 !important;
+                background-color: rgba(139, 92, 246, 0.1) !important;
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 
 </body>

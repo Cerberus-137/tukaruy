@@ -185,10 +185,10 @@ $stats = [
                         <span class="text-xl font-bold">Tukeruy</span>
                     </div>
                     <div class="hidden md:flex items-center space-x-6 text-sm">
-                        <a href="#" class="text-white font-medium">Pelacakan</a>
-                        <a href="#" class="text-gray-400 hover:text-white transition">Riwayat</a>
-                        <a href="#" class="text-gray-400 hover:text-white transition">API</a>
-                        <a href="#" class="text-gray-400 hover:text-white transition">Bantuan</a>
+                        <a href="/track.php" class="text-white font-medium">Pelacakan</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition" onclick="showHistoryModal()">Riwayat</a>
+                        <a href="/tickets.php" class="text-gray-400 hover:text-white transition">Top Up</a>
+                        <a href="/settings.php" class="text-gray-400 hover:text-white transition">Settings</a>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -317,23 +317,49 @@ $stats = [
                                 </div>
                             </div>
                             
-                            <div class="relative">
-                                <div id="dest-city-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
-                                    <span id="selected-dest-city-display" class="text-gray-400">Any city</span>
+                            <div class="relative mb-2">
+                                <div id="dest-state-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                    <span id="selected-dest-state-display" class="text-gray-400">Any state</span>
                                     <i class="fas fa-chevron-down text-xs"></i>
                                 </div>
-                                <input type="hidden" id="dest_city" value="">
+                                <input type="hidden" id="dest_state" value="">
                                 
-                                <!-- City Dropdown Menu -->
-                                <div id="dest-city-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                                <!-- State Dropdown Menu -->
+                                <div id="dest-state-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
                                     <div class="p-2 border-b border-dark-400">
-                                        <input type="text" id="dest-city-search" placeholder="Search city..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                                        <input type="text" id="dest-state-search" placeholder="Search state..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
                                     </div>
-                                    <div id="dest-city-list" class="overflow-y-auto max-h-52">
+                                    <div id="dest-state-list" class="overflow-y-auto max-h-52">
                                         <div class="p-4 text-center text-sm text-gray-500">
                                             Select a country first
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="relative">
+                                    <div id="dest-city-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                        <span id="selected-dest-city-display" class="text-gray-400">Any city</span>
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </div>
+                                    <input type="hidden" id="dest_city" value="">
+                                    
+                                    <!-- City Dropdown Menu -->
+                                    <div id="dest-city-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                                        <div class="p-2 border-b border-dark-400">
+                                            <input type="text" id="dest-city-search" placeholder="Search city..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                                        </div>
+                                        <div id="dest-city-list" class="overflow-y-auto max-h-52">
+                                            <div class="p-4 text-center text-sm text-gray-500">
+                                                Select a country first
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="relative">
+                                    <input type="text" id="dest_zip" placeholder="Any ZIP" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
                                 </div>
                             </div>
                         </div>
@@ -359,6 +385,16 @@ $stats = [
                         <button onclick="resetFilters()" class="w-full bg-dark-300 hover:bg-dark-400 text-white font-medium py-3 rounded-lg transition">
                             <i class="fas fa-redo mr-2"></i>Reset
                         </button>
+
+                        <!-- Auto-apply filters toggle -->
+                        <div class="mt-4 flex items-center justify-between">
+                            <label class="text-xs font-medium text-gray-400 uppercase">Auto Apply</label>
+                            <div class="relative">
+                                <input type="checkbox" id="auto-apply" class="sr-only" checked>
+                                <div class="w-10 h-6 bg-dark-300 rounded-full shadow-inner"></div>
+                                <div class="absolute w-4 h-4 bg-purple-500 rounded-full shadow transition-transform duration-300 ease-in-out" style="top: 1px; left: 1px;"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </aside>
@@ -460,6 +496,26 @@ $stats = [
                 </div>
 
             </main>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="history-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center">
+        <div class="glass-effect rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[80vh] overflow-hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold">Riwayat Reveal</h3>
+                <button onclick="closeHistoryModal()" class="w-8 h-8 rounded-lg bg-dark-300 hover:bg-dark-400 transition flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="overflow-y-auto max-h-96">
+                <div id="history-content">
+                    <div class="text-center py-8">
+                        <i class="fas fa-spinner fa-spin text-3xl text-purple-500"></i>
+                        <div class="mt-3 text-gray-500">Loading history...</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

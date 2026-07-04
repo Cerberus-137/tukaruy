@@ -4,14 +4,41 @@ Modern SaaS platform for obtaining tracking numbers across multiple carriers (Fe
 
 ## 🚀 Features
 
+### Core Features
 - 🎨 Modern dark theme with glass-morphism effects
-- � User authentication & registration system
-- �🔍 Advanced filtering (60+ countries, 257+ cities)
-- � Integrated QRIS payment system (QRISPay)
+- 👤 User authentication & registration system
+- 🔍 **Advanced filtering system**:
+  - 60+ countries supported
+  - 257+ cities with search
+  - US state selection (50 states)
+  - ZIP code filtering
+  - Date range filters (shipping & delivery)
+  - Auto-apply filters with 800ms debounce
 - 🎫 Credit-based tracking reveal system
-- 📊 Real-time statistics dashboard
-- � Admin panel for API management
+- 📊 Real-time statistics dashboard (async loading)
 - 📱 Fully responsive design
+
+### Payment System
+- 💳 **Dual payment methods**:
+  - QRIS (QRISPay) - Instant QRIS code generation
+  - Saweria - Donation-based payment
+- 💰 Multiple ticket packages with bonus credits
+- 🔄 Real-time payment status checking
+- ✅ Automatic credit addition after payment
+
+### Admin Features
+- 🔧 Web-based API key management
+- 🎛️ Payment method toggles
+- 📈 Transaction monitoring
+- 👥 User management
+- 🔑 Secure settings interface
+
+### User Experience
+- ⚡ Fast page load (< 1 second)
+- 🔄 Auto-refresh statistics
+- 📜 Reveal history modal
+- 🔔 Real-time notifications
+- 🎯 Smart search with filters
 
 ## � Pricing & Packages
 
@@ -138,6 +165,24 @@ cd /var/www/tukeruy
 mysql -u root -p tukeruy < database.sql
 ```
 
+**Alternative: Run Migration Script**
+
+If you already have an existing database, run the migration script to update schema:
+
+```bash
+# Via browser
+https://tukaruy.online/migrate.php
+
+# Or via CLI
+php migrate.php
+```
+
+The migration script will:
+- Add new columns for dual payment system
+- Create indexes for better performance
+- Update admin_settings table
+- Safe to run multiple times (idempotent)
+
 ### Step 10: Configure Application
 
 ```bash
@@ -233,16 +278,51 @@ Login → Settings → Change Password
 
 ### 2. Configure API Keys (Admin Panel)
 
-Login as admin → Admin Panel → Update:
-- TrackTaco API Key
-- QRISPay API Token
+Login as admin → Settings → API Configuration:
+
+**Required API Keys:**
+- **TrackTaco API Key**: For tracking data access
+  - Get from: https://tracktaco.com/dashboard
+  - Format: `tt_live_xxxxxxxxxxxxx`
+  
+- **QRISPay API Token**: For QRIS payment (optional)
+  - Get from: https://qrispy.id/dashboard
+  - Format: `x-api-key: xxxxxxxxxxxxx`
+  - Enable/disable via toggle in settings
+  
+- **Saweria API Token**: For Saweria payment (optional)
+  - Get from: https://saweria.co/settings
+  - Format: JWT token
+  - Enable/disable via toggle in settings
+
+**Important Notes:**
+- At least one payment method must be enabled
+- Both payment methods can be enabled simultaneously
+- Users will see payment method selection if both are active
 
 ### 3. Test Payment System
 
+**Test QRIS Payment (QRISPay):**
 1. Create a test user account
 2. Go to "Buy Tickets"
-3. Select a package
-4. Test QRIS payment
+3. Select "QRIS" as payment method
+4. Choose a package
+5. Scan QRIS code with mobile banking
+6. Verify credits are added automatically
+
+**Test Saweria Payment:**
+1. Create a test user account
+2. Go to "Buy Tickets"
+3. Select "Saweria" as payment method
+4. Choose a package
+5. Complete donation on Saweria page
+6. Return to site (auto-redirect after payment)
+7. Verify credits are added
+
+**Important:**
+- Test with small amounts first (Starter package)
+- Keep payment receipts for reconciliation
+- Monitor payment logs in admin panel
 
 ### 4. Monitor Logs
 
@@ -263,13 +343,15 @@ tail -f /var/log/mysql/error.log
 tukeruy/
 ├── api/
 │   ├── payment/
-│   │   ├── create.php       # Create QRIS payment
+│   │   ├── create.php       # Create payment (QRIS/Saweria)
 │   │   └── check.php        # Check payment status
-│   ├── QRISPayAPI.php       # QRISPay integration
-│   ├── TukeruyAPI.php       # TrackTaco integration
-│   ├── search.php           # Search tracking numbers
-│   ├── reveal.php           # Reveal tracking number
-│   └── account.php          # Account management
+│   ├── QRISPayAPI.php       # QRISPay integration class
+│   ├── SaweriaAPI.php       # Saweria integration class (NEW)
+│   ├── TukeruyAPI.php       # TrackTaco integration class
+│   ├── search.php           # Advanced search with filters (NEW)
+│   ├── reveal.php           # Reveal tracking number (NEW)
+│   ├── account.php          # Account & history management (NEW)
+│   └── stats.php            # Statistics endpoint (async)
 ├── assets/
 │   ├── css/
 │   │   └── style.css
@@ -279,14 +361,17 @@ tukeruy/
 ├── auth.php                 # Authentication functions
 ├── config.php               # Configuration
 ├── database.sql             # Database schema
+├── migrate.php              # Database migration script (NEW)
 ├── index.php                # Landing page
 ├── login.php                # Login page
 ├── register.php             # Register page
 ├── logout.php               # Logout handler
-├── track.php                # Tracking dashboard
-├── tickets.php              # Buy tickets page
-├── settings.php             # User settings
-└── README.md
+├── track.php                # Enhanced tracking dashboard
+├── tickets.php              # Buy tickets (dual payment)
+├── settings.php             # User & admin settings
+├── CHANGELOG.md             # Version history (NEW)
+├── TROUBLESHOOTING.md       # Troubleshooting guide (NEW)
+└── README.md                # This file
 ```
 
 ## 🔐 Security
@@ -322,22 +407,59 @@ mysql -u root -p tukeruy < backup_YYYYMMDD.sql
 
 ## 💳 Payment Integration
 
-### QRISPay API
+The platform supports **two payment methods**, providing flexibility for users:
 
-The platform integrates with QRISPay (https://qrispy.id) for payment processing:
+### Payment Method 1: QRISPay (Recommended)
 
-- Generate QRIS codes instantly
-- Real-time payment verification
-- Auto-credit after payment
-- Secure transaction handling
+**Provider:** https://qrispy.id
 
-### Payment Flow
+**Features:**
+- ⚡ Instant QRIS code generation
+- 🔄 Real-time payment verification
+- 💳 All Indonesian e-wallets & mobile banking
+- ✅ Auto-credit after payment
 
+**Flow:**
 1. User selects credit package
-2. System generates QRIS code via QRISPay API
+2. System generates QRIS code via API
 3. User scans with mobile banking app
 4. System checks payment status every 3 seconds
 5. Credits added automatically after confirmation
+
+### Payment Method 2: Saweria
+
+**Provider:** https://saweria.co
+
+**Features:**
+- 💝 Donation-based payment system
+- 🌐 External payment page
+- 🔗 Redirect-based flow
+- ✅ Manual credit addition after verification
+
+**Flow:**
+1. User selects credit package
+2. System creates donation link via API
+3. User redirected to Saweria payment page
+4. After payment, user returns to site
+5. System verifies and adds credits
+
+### Payment Configuration
+
+Admin can enable/disable payment methods via Settings:
+```sql
+-- Check current payment method status
+SELECT * FROM admin_settings 
+WHERE setting_key IN ('qrispay_enabled', 'saweria_enabled');
+
+-- Enable/disable via admin UI
+Settings → API Configuration → Toggle switches
+```
+
+**Best Practice:**
+- Enable both for maximum flexibility
+- QRISPay for instant payments
+- Saweria as alternative option
+- At least one method must be active
 
 ## 👥 User Roles
 
