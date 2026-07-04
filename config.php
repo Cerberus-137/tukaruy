@@ -3,13 +3,13 @@
 
 // Database configuration
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'tukeruy');
+define('DB_NAME', 'tukarkuy');
 define('DB_USER', 'root');
 define('DB_PASS', 'Milham159753');
 
 // Site configuration
-define('SITE_NAME', 'Tukeruy');
-define('SITE_URL', 'https://tukaruy.online');
+define('SITE_NAME', 'Tukarkuy');
+define('SITE_URL', 'https://tukarkuy.web.id');
 define('BASE_PATH', '/');
 
 // API Configuration - TrackTaco
