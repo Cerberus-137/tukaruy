@@ -1033,6 +1033,12 @@ async function performSearch(filters, append = false) {
         
         const data = await response.json();
         
+        // Debug: Log the API response
+        console.log('API Response:', data);
+        if (data.results && data.results.length > 0) {
+            console.log('Sample result:', data.results[0]);
+        }
+        
         if (!data.success) {
             throw new Error(data.error || 'Search failed');
         }

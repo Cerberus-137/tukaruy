@@ -1,6 +1,6 @@
 <?php
 session_start();
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 require_once '../../config.php';
 require_once '../../auth.php';
 require_once '../QRISPayAPI.php';
@@ -9,13 +9,17 @@ require_once '../SaweriaAPI.php';
 // Require login
 if (!isLoggedIn()) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized'], JSON_UNESCAPED_SLASHES);
     exit;
 }
 
 try {
     $user = getCurrentUser();
     $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new Exception('Invalid JSON input');
+    }
     
     $credits = $input['credits'] ?? 0;
     $amount = $input['amount'] ?? 0;
@@ -77,9 +81,9 @@ try {
                 'payment_url' => $saweriaResponse['payment_url'],
                 'amount' => $amount,
                 'payment_reference' => $paymentRef,
-                'message' => $saweriaResponse['message']
+                'message' => $saweriaResponse['message'] ?? ''
             ]
-        ]);
+        ], JSON_UNESCAPED_SLASHES);
         
     } else {
         // Use QRIS Pay API (default)
@@ -89,20 +93,18 @@ try {
             $qrisResponse = $qrisPay->generateQRIS($amount, $paymentRef, SITE_URL . '/tickets.php');
         } catch (Exception $e) {
             error_log('QRISPay API Error: ' . $e->getMessage());
-            
-            // Better error message for QRIS generation
-            $errorMessage = $e->getMessage();
-            if (strpos($errorMessage, 'QRIS generated successfully') !== false) {
-                // This is actually a success case with confusing message
-                throw new Exception('QRIS code generated successfully but response format is invalid. Please try again.');
-            } else {
-                throw new Exception('Failed to generate QRIS: ' . $errorMessage);
-            }
+            throw new Exception('Failed to generate QRIS: ' . $e->getMessage());
         }
         
         // Validate QRIS response
         if (!isset($qrisResponse['qris_id'])) {
+            error_log('QRIS Response missing qris_id. Full response: ' . json_encode($qrisResponse));
             throw new Exception('Invalid QRIS response - missing QRIS ID');
+        }
+        
+        if (empty($qrisResponse['qris_image_url'])) {
+            error_log('QRIS Response missing qris_image_url. Full response: ' . json_encode($qrisResponse));
+            // Continue but log warning - will be handled by frontend
         }
         
         // Save to database
@@ -132,7 +134,7 @@ try {
                 'expires_in_seconds' => $qrisResponse['expires_in_seconds'] ?? 3600,
                 'payment_reference' => $qrisResponse['payment_reference'] ?? $paymentRef
             ]
-        ]);
+        ], JSON_UNESCAPED_SLASHES);
     }
     
 } catch (Exception $e) {
@@ -141,5 +143,5 @@ try {
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage()
-    ]);
+    ], JSON_UNESCAPED_SLASHES);
 }

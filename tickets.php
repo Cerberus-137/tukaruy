@@ -417,7 +417,10 @@ $packages = TICKET_PACKAGES;
             try {
                 const response = await fetch('/api/payment/create.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify({
                         credits: selectedPackage.credits,
                         amount: selectedPackage.price,
@@ -425,6 +428,14 @@ $packages = TICKET_PACKAGES;
                         payment_method: selectedMethod
                     })
                 });
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const textResponse = await response.text();
+                    console.error('Non-JSON response:', textResponse);
+                    throw new Error('Server returned non-JSON response. Please check server logs.');
+                }
                 
                 const data = await response.json();
                 
@@ -460,17 +471,51 @@ $packages = TICKET_PACKAGES;
         }
 
         function showPaymentModal(qris) {
+            console.log('showPaymentModal called with qris:', qris); // Debug log
+            
             const qrisContainer = document.getElementById('qris-container');
             const paymentInfo = document.getElementById('payment-info');
             
-            // Check if QRIS image URL exists
-            if (!qris.qris_image_url || qris.qris_image_url === '') {
+            // Validate QRIS data
+            if (!qris || typeof qris !== 'object') {
+                console.error('Invalid QRIS data:', qris);
+                qrisContainer.innerHTML = `
+                    <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-6 text-center">
+                        <i class="fas fa-exclamation-circle text-4xl text-red-400 mb-3"></i>
+                        <p class="text-sm text-red-300">
+                            <strong>Invalid QRIS response format</strong><br>
+                            Please try again or contact admin for assistance.
+                        </p>
+                        <div class="mt-4">
+                            <button onclick="closePayment(); location.reload();" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
+                                Try Again
+                            </button>
+                        </div>
+                    </div>
+                `;
+                paymentInfo.innerHTML = `
+                    <div class="text-center">
+                        <p class="text-sm text-red-400">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            QRIS data format invalid. Please contact admin via ticket.
+                        </p>
+                    </div>
+                `;
+                document.getElementById('payment-modal').classList.remove('hidden');
+                document.getElementById('payment-modal').classList.add('flex');
+                return;
+            }
+            
+            // Check if QRIS image URL exists and is valid
+            if (!qris.qris_image_url || qris.qris_image_url === '' || qris.qris_image_url === null) {
+                console.error('QRIS image URL missing or empty:', qris.qris_image_url);
                 qrisContainer.innerHTML = `
                     <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-6 text-center">
                         <i class="fas fa-exclamation-circle text-4xl text-red-400 mb-3"></i>
                         <p class="text-sm text-red-300">
                             <strong>QRIS code not available</strong><br>
-                            Please try again or contact admin for assistance.
+                            The QR code image was not generated.<br>
+                            ${qris.qris_id ? 'Payment ID: ' + qris.qris_id : ''}
                         </p>
                         <div class="mt-4">
                             <button onclick="closePayment(); location.reload();" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
@@ -484,15 +529,23 @@ $packages = TICKET_PACKAGES;
                     <div class="text-left bg-slate-800 rounded-lg p-4">
                         <div class="flex justify-between mb-2">
                             <span class="text-gray-400">Amount:</span>
-                            <span class="font-bold">Rp ${qris.amount.toLocaleString()}</span>
+                            <span class="font-bold">Rp ${(qris.amount || 0).toLocaleString()}</span>
                         </div>
+                        ${qris.payment_reference ? `
                         <div class="flex justify-between mb-2">
                             <span class="text-gray-400">Reference:</span>
                             <span class="font-mono text-sm">${qris.payment_reference}</span>
                         </div>
+                        ` : ''}
+                        ${qris.qris_id ? `
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-400">QRIS ID:</span>
+                            <span class="font-mono text-sm">${qris.qris_id}</span>
+                        </div>
+                        ` : ''}
                         <div class="flex justify-between">
                             <span class="text-gray-400">Status:</span>
-                            <span class="text-red-400">Failed</span>
+                            <span class="text-red-400">Failed - No QR Image</span>
                         </div>
                     </div>
                     <p class="text-sm text-red-400">
@@ -506,22 +559,24 @@ $packages = TICKET_PACKAGES;
                 return;
             }
             
+            // Display QRIS code successfully
             qrisContainer.innerHTML = `
                 <div class="bg-white p-6 rounded-xl inline-block shadow-2xl">
-                    <img src="${qris.qris_image_url}" alt="QRIS Code" class="w-72 h-72" onerror="this.parentElement.innerHTML='<div class=\\'text-red-500 p-6\\'>Failed to load QR code</div>'">
+                    <img src="${qris.qris_image_url}" alt="QRIS Code" class="w-72 h-72" 
+                         onerror="this.parentElement.innerHTML='<div class=\\'text-red-500 p-6 text-center\\'>Failed to load QR code<br><small>${qris.qris_image_url}</small></div>'">
                 </div>
             `;
             
-            const expiresIn = Math.floor(qris.expires_in_seconds / 60);
+            const expiresIn = Math.floor((qris.expires_in_seconds || 900) / 60);
             paymentInfo.innerHTML = `
                 <div class="text-left bg-slate-800 rounded-lg p-4">
                     <div class="flex justify-between mb-2">
                         <span class="text-gray-400">Amount:</span>
-                        <span class="font-bold">Rp ${qris.amount.toLocaleString()}</span>
+                        <span class="font-bold">Rp ${(qris.amount || 0).toLocaleString()}</span>
                     </div>
                     <div class="flex justify-between mb-2">
                         <span class="text-gray-400">Reference:</span>
-                        <span class="font-mono text-sm">${qris.payment_reference}</span>
+                        <span class="font-mono text-sm">${qris.payment_reference || 'N/A'}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-400">Expires in:</span>

@@ -161,19 +161,6 @@ class SaweriaAPI {
     }
     
     /**
-     * Get user profile/stream info
-     */
-    public function getProfile() {
-        $response = $this->makeRequest('/stream');
-        
-        if (!isset($response['data'])) {
-            throw new Exception('Failed to get profile information');
-        }
-        
-        return $response['data'];
-    }
-    
-    /**
      * Get overlays (donation alerts)
      */
     public function getOverlays() {
@@ -192,31 +179,5 @@ class SaweriaAPI {
         } catch (Exception $e) {
             return false;
         }
-    }
-    
-    /**
-     * Generate payment link
-     */
-    public function generatePaymentLink($amount, $message = '', $donatorName = 'Anonymous') {
-        // Saweria uses direct donation links
-        $profile = $this->getProfile();
-        $username = $profile['username'] ?? '';
-        
-        if (empty($username)) {
-            throw new Exception('Unable to get Saweria username');
-        }
-        
-        // Create donation first to get ID
-        $donation = $this->createDonation($amount, $message, $donatorName);
-        
-        // Return payment URL
-        return [
-            'donation_id' => $donation['id'],
-            'payment_url' => "https://saweria.co/{$username}",
-            'amount' => $amount,
-            'message' => $message,
-            'donator_name' => $donatorName,
-            'created_at' => date('Y-m-d H:i:s')
-        ];
     }
 }
