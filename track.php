@@ -230,14 +230,14 @@ $stats = [
             <!-- Filter Sidebar -->
             <aside class="w-80">
                 <div class="glass-effect rounded-2xl p-6 sticky top-24">
-                    <h3 class="font-semibold text-lg mb-6">Filter</h3>
+                    <h3 class="font-bold text-xl mb-6">Filters</h3>
                     
                     <div class="space-y-6">
                         <!-- Kurir -->
                         <div>
-                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Kurir</label>
+                            <label class="text-sm font-semibold text-gray-300 mb-3 block">Carrier</label>
                             <div class="grid grid-cols-2 gap-2">
-                                <button type="button" class="filter-btn active" data-type="carrier" data-value="all">Semua</button>
+                                <button type="button" class="filter-btn active" data-type="carrier" data-value="all">All</button>
                                 <button type="button" class="filter-btn" data-type="carrier" data-value="fedex">FedEx</button>
                                 <button type="button" class="filter-btn" data-type="carrier" data-value="dhl">DHL</button>
                                 <button type="button" class="filter-btn" data-type="carrier" data-value="ups">UPS</button>
@@ -246,111 +246,104 @@ $stats = [
 
                         <!-- Status -->
                         <div>
-                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Status</label>
-                            <div class="grid grid-cols-3 gap-2">
-                                <button type="button" class="filter-btn" data-type="status" data-value="pre-transit">Pra Kirim</button>
+                            <label class="text-sm font-semibold text-gray-300 mb-3 block">Status</label>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" class="filter-btn" data-type="status" data-value="pre-transit">Pre Transit</button>
                                 <button type="button" class="filter-btn" data-type="status" data-value="transit">Transit</button>
-                                <button type="button" class="filter-btn" data-type="status" data-value="delivered">Terkirim</button>
+                                <button type="button" class="filter-btn" data-type="status" data-value="delivered">Delivered</button>
                             </div>
                         </div>
 
                         <!-- Asal -->
                         <div>
-                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Asal Pengiriman</label>
-                            <div class="relative mb-2">
-                                <div id="origin-country-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
-                                    <span id="selected-origin-country-display" class="text-gray-400">Any country</span>
-                                    <i class="fas fa-chevron-down text-xs"></i>
+                            <label class="text-sm font-semibold text-gray-300 mb-3 block">ORIGIN</label>
+                            <div class="space-y-2">
+                                <div class="relative">
+                                    <div id="origin-country-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                        <span id="selected-origin-country-display" class="text-gray-400">Any country</span>
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </div>
+                                    <input type="hidden" id="origin_country" value="">
+                                    
+                                    <!-- Dropdown Menu -->
+                                    <div id="origin-country-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                                        <div class="p-2 border-b border-dark-400">
+                                            <input type="text" id="origin-country-search" placeholder="Search country..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                                        </div>
+                                        <div id="origin-country-list" class="overflow-y-auto max-h-52">
+                                            <!-- Countries will be populated by JS -->
+                                        </div>
+                                    </div>
                                 </div>
-                                <input type="hidden" id="origin_country" value="">
                                 
-                                <!-- Dropdown Menu -->
-                                <div id="origin-country-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
-                                    <div class="p-2 border-b border-dark-400">
-                                        <input type="text" id="origin-country-search" placeholder="Search country..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                                <div class="relative">
+                                    <div id="origin-city-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                        <span id="selected-origin-city-display" class="text-gray-400">Any city</span>
+                                        <i class="fas fa-chevron-down text-xs"></i>
                                     </div>
-                                    <div id="origin-country-list" class="overflow-y-auto max-h-52">
-                                        <!-- Countries will be populated by JS -->
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="relative">
-                                <div id="origin-city-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
-                                    <span id="selected-origin-city-display" class="text-gray-400">Any city</span>
-                                    <i class="fas fa-chevron-down text-xs"></i>
-                                </div>
-                                <input type="hidden" id="origin_city" value="">
-                                
-                                <!-- City Dropdown Menu -->
-                                <div id="origin-city-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
-                                    <div class="p-2 border-b border-dark-400">
-                                        <input type="text" id="origin-city-search" placeholder="Search city..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
-                                    </div>
-                                    <div id="origin-city-list" class="overflow-y-auto max-h-52">
-                                        <div class="p-4 text-center text-sm text-gray-500">
-                                            Select a country first
+                                    <input type="hidden" id="origin_city" value="">
+                                    
+                                    <!-- City Dropdown Menu -->
+                                    <div id="origin-city-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                                        <div class="p-2 border-b border-dark-400">
+                                            <input type="text" id="origin-city-search" placeholder="Search city..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                                        </div>
+                                        <div id="origin-city-list" class="overflow-y-auto max-h-52">
+                                            <div class="p-4 text-center text-sm text-gray-500">
+                                                Select a country first
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Ship Date Window -->
+                        <div>
+                            <label class="text-sm font-semibold text-gray-300 mb-3 block flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-purple-400"></i>
+                                SHIP DATE WINDOW
+                            </label>
+                            <div class="relative">
+                                <input type="date" id="ship_from" placeholder="Any ship date" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-purple-500">
+                            </div>
+                        </div>
+
                         <!-- Tujuan -->
                         <div>
-                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Tujuan</label>
-                            <div class="relative mb-2">
-                                <div id="country-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
-                                    <span id="selected-country-display">United States (US)</span>
-                                    <i class="fas fa-chevron-down text-xs"></i>
-                                </div>
-                                <input type="hidden" id="dest_country" value="US">
-                                
-                                <!-- Dropdown Menu -->
-                                <div id="country-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
-                                    <div class="p-2 border-b border-dark-400">
-                                        <input type="text" id="country-search" placeholder="Search country..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
-                                    </div>
-                                    <div id="country-list" class="overflow-y-auto max-h-52">
-                                        <!-- Countries will be populated by JS -->
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="relative mb-2">
-                                <div id="dest-state-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
-                                    <span id="selected-dest-state-display" class="text-gray-400">Any state</span>
-                                    <i class="fas fa-chevron-down text-xs"></i>
-                                </div>
-                                <input type="hidden" id="dest_state" value="">
-                                
-                                <!-- State Dropdown Menu -->
-                                <div id="dest-state-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
-                                    <div class="p-2 border-b border-dark-400">
-                                        <input type="text" id="dest-state-search" placeholder="Search state..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
-                                    </div>
-                                    <div id="dest-state-list" class="overflow-y-auto max-h-52">
-                                        <div class="p-4 text-center text-sm text-gray-500">
-                                            Select a country first
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-2 gap-2">
+                            <label class="text-sm font-semibold text-gray-300 mb-3 block">DESTINATION</label>
+                            <div class="space-y-2">
                                 <div class="relative">
-                                    <div id="dest-city-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
-                                        <span id="selected-dest-city-display" class="text-gray-400">Any city</span>
+                                    <div id="country-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                        <span id="selected-country-display">United States (US)</span>
                                         <i class="fas fa-chevron-down text-xs"></i>
                                     </div>
-                                    <input type="hidden" id="dest_city" value="">
+                                    <input type="hidden" id="dest_country" value="US">
                                     
-                                    <!-- City Dropdown Menu -->
-                                    <div id="dest-city-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                                    <!-- Dropdown Menu -->
+                                    <div id="country-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
                                         <div class="p-2 border-b border-dark-400">
-                                            <input type="text" id="dest-city-search" placeholder="Search city..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                                            <input type="text" id="country-search" placeholder="Search country..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
                                         </div>
-                                        <div id="dest-city-list" class="overflow-y-auto max-h-52">
+                                        <div id="country-list" class="overflow-y-auto max-h-52">
+                                            <!-- Countries will be populated by JS -->
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="relative">
+                                    <div id="dest-state-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                        <span id="selected-dest-state-display" class="text-gray-400">Any state</span>
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </div>
+                                    <input type="hidden" id="dest_state" value="">
+                                    
+                                    <!-- State Dropdown Menu -->
+                                    <div id="dest-state-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                                        <div class="p-2 border-b border-dark-400">
+                                            <input type="text" id="dest-state-search" placeholder="Search state..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                                        </div>
+                                        <div id="dest-state-list" class="overflow-y-auto max-h-52">
                                             <div class="p-4 text-center text-sm text-gray-500">
                                                 Select a country first
                                             </div>
@@ -358,42 +351,55 @@ $stats = [
                                     </div>
                                 </div>
                                 
-                                <div class="relative">
-                                    <input type="text" id="dest_zip" placeholder="Any ZIP" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+                                <div class="flex gap-2">
+                                    <div class="flex-1 relative">
+                                        <div id="dest-city-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                            <span id="selected-dest-city-display" class="text-gray-400">Any city</span>
+                                            <i class="fas fa-chevron-down text-xs"></i>
+                                        </div>
+                                        <input type="hidden" id="dest_city" value="">
+                                        
+                                        <!-- City Dropdown Menu -->
+                                        <div id="dest-city-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                                            <div class="p-2 border-b border-dark-400">
+                                                <input type="text" id="dest-city-search" placeholder="Search city..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                                            </div>
+                                            <div id="dest-city-list" class="overflow-y-auto max-h-52">
+                                                <div class="p-4 text-center text-sm text-gray-500">
+                                                    Select a country first
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="w-24">
+                                        <input type="text" id="dest_zip" placeholder="ZIP" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-purple-500">
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Tanggal Kirim -->
-                        <div>
-                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Tanggal Pengiriman</label>
-                            <input type="date" id="ship_from" class="w-full mb-2 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm">
-                            <input type="date" id="ship_to" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm">
-                        </div>
-
                         <!-- Estimasi Tiba -->
                         <div>
-                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Estimasi Tiba</label>
-                            <input type="date" id="delivery_from" class="w-full mb-2 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm">
-                            <input type="date" id="delivery_to" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm">
+                            <label class="text-sm font-semibold text-gray-300 mb-3 block flex items-center">
+                                <i class="fas fa-clock mr-2 text-purple-400"></i>
+                                EST. DELIVERY WINDOW
+                            </label>
+                            <div class="relative">
+                                <input type="date" id="delivery_from" placeholder="Jul 4, 2026 - Jul 6, 2026" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-purple-500">
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">Pre-transit labels have no delivery estimate yet.</p>
                         </div>
 
-                        <button onclick="applyFilters()" class="w-full bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-medium py-3 rounded-lg transition">
-                            <i class="fas fa-filter mr-2"></i>Terapkan Filter
-                        </button>
+                        <!-- Buttons -->
+                        <div class="pt-4 space-y-3">
+                            <button onclick="resetFilters()" class="w-full bg-dark-300 hover:bg-dark-400 text-white font-medium py-3 rounded-lg transition flex items-center justify-center">
+                                <i class="fas fa-redo mr-2"></i>Reset
+                            </button>
 
-                        <button onclick="resetFilters()" class="w-full bg-dark-300 hover:bg-dark-400 text-white font-medium py-3 rounded-lg transition">
-                            <i class="fas fa-redo mr-2"></i>Reset
-                        </button>
-
-                        <!-- Auto-apply filters toggle -->
-                        <div class="mt-4 flex items-center justify-between">
-                            <label class="text-xs font-medium text-gray-400 uppercase">Auto Apply</label>
-                            <div class="relative">
-                                <input type="checkbox" id="auto-apply" class="sr-only" checked>
-                                <div class="w-10 h-6 bg-dark-300 rounded-full shadow-inner"></div>
-                                <div class="absolute w-4 h-4 bg-purple-500 rounded-full shadow transition-transform duration-300 ease-in-out" style="top: 1px; left: 1px;"></div>
-                            </div>
+                            <button onclick="applyFilters()" class="w-full bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center shadow-lg">
+                                <i class="fas fa-search mr-2"></i>Search
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -405,83 +411,83 @@ $stats = [
                 <!-- Summary Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <div class="glass-effect rounded-xl p-6 hover-lift">
-                        <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center justify-between mb-3">
                             <span class="text-gray-400 text-sm">Total Resi</span>
                             <div class="w-10 h-10 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-box text-purple-400"></i>
                             </div>
                         </div>
-                        <div class="text-3xl font-bold" id="stat-total">
+                        <div class="text-3xl font-bold mb-1" id="stat-total">
                             <i class="fas fa-spinner fa-spin text-purple-400 text-xl"></i>
                         </div>
-                        <div class="text-xs text-gray-500 mt-1">Tersedia</div>
+                        <div class="text-xs text-gray-500">Tersedia</div>
                     </div>
 
                     <div class="glass-effect rounded-xl p-6 hover-lift">
-                        <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center justify-between mb-3">
                             <span class="text-gray-400 text-sm">FedEx</span>
                             <div class="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-truck text-blue-400"></i>
                             </div>
                         </div>
-                        <div class="text-3xl font-bold" id="stat-fedex">
+                        <div class="text-3xl font-bold mb-1" id="stat-fedex">
                             <i class="fas fa-spinner fa-spin text-blue-400 text-xl"></i>
                         </div>
-                        <div class="text-xs text-gray-500 mt-1">Paket</div>
+                        <div class="text-xs text-gray-500">Paket</div>
                     </div>
 
                     <div class="glass-effect rounded-xl p-6 hover-lift">
-                        <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center justify-between mb-3">
                             <span class="text-gray-400 text-sm">DHL</span>
                             <div class="w-10 h-10 bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-shipping-fast text-yellow-400"></i>
                             </div>
                         </div>
-                        <div class="text-3xl font-bold" id="stat-dhl">
+                        <div class="text-3xl font-bold mb-1" id="stat-dhl">
                             <i class="fas fa-spinner fa-spin text-yellow-400 text-xl"></i>
                         </div>
-                        <div class="text-xs text-gray-500 mt-1">Paket</div>
+                        <div class="text-xs text-gray-500">Paket</div>
                     </div>
 
                     <div class="glass-effect rounded-xl p-6 hover-lift">
-                        <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center justify-between mb-3">
                             <span class="text-gray-400 text-sm">UPS</span>
                             <div class="w-10 h-10 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-truck-fast text-green-400"></i>
                             </div>
                         </div>
-                        <div class="text-3xl font-bold" id="stat-ups">
+                        <div class="text-3xl font-bold mb-1" id="stat-ups">
                             <i class="fas fa-spinner fa-spin text-green-400 text-xl"></i>
                         </div>
-                        <div class="text-xs text-gray-500 mt-1">Paket</div>
+                        <div class="text-xs text-gray-500">Paket</div>
                     </div>
                 </div>
 
                 <!-- Results Table -->
                 <div class="glass-effect rounded-2xl p-6">
                     <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-lg font-semibold">Kandidat</h2>
-                        <span class="text-sm text-gray-400" id="result-count">~100 hasil</span>
+                        <h2 class="text-xl font-bold">Candidates</h2>
+                        <span class="text-sm text-gray-400" id="result-count">~384 matches</span>
                     </div>
 
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead>
                                 <tr class="border-b border-dark-400">
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Kurir</th>
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Status</th>
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Asal</th>
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Tujuan</th>
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Pengiriman</th>
-                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Berat</th>
-                                    <th class="text-right py-3 px-4 text-xs font-medium text-gray-400 uppercase">Aksi</th>
+                                    <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Carrier</th>
+                                    <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                                    <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Origin</th>
+                                    <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Destination</th>
+                                    <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Shipment</th>
+                                    <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Weight</th>
+                                    <th class="text-right py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="results-table">
                                 <tr>
                                     <td colspan="7" class="text-center py-12">
                                         <i class="fas fa-spinner fa-spin text-3xl text-purple-500"></i>
-                                        <div class="mt-3 text-gray-500">Memuat data...</div>
+                                        <div class="mt-3 text-gray-500">Loading data...</div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -489,8 +495,8 @@ $stats = [
                     </div>
 
                     <div class="mt-6 flex justify-center">
-                        <button id="load-more" onclick="loadMore()" class="hidden text-purple-400 hover:text-purple-300 text-sm font-medium">
-                            Muat Lebih Banyak
+                        <button id="load-more" onclick="loadMore()" class="hidden bg-dark-300 hover:bg-dark-400 text-purple-400 font-medium px-6 py-3 rounded-lg transition">
+                            Load more
                         </button>
                     </div>
                 </div>

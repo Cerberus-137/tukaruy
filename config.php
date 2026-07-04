@@ -38,13 +38,20 @@ define('MAX_ITEMS_PER_PAGE', 50);
 
 // Ticket packages (in IDR)
 // Format: [credits => [price, bonus, discount_percentage]]
+// QRIS has max payment of 499,000 IDR
 define('TICKET_PACKAGES', [
-    5 => ['price' => 250000, 'bonus' => 2, 'total' => 7, 'discount' => 0],
-    10 => ['price' => 500000, 'bonus' => 4, 'total' => 14, 'discount' => 0],
-    25 => ['price' => 1250000, 'bonus' => 10, 'total' => 35, 'discount' => 0],
-    50 => ['price' => 2500000, 'bonus' => 20, 'total' => 70, 'discount' => 0],
-    100 => ['price' => 5000000, 'bonus' => 50, 'total' => 150, 'discount' => 0]
+    1 => ['price' => 50000, 'bonus' => 0, 'total' => 1, 'discount' => 0],
+    3 => ['price' => 150000, 'bonus' => 0, 'total' => 3, 'discount' => 0],
+    5 => ['price' => 250000, 'bonus' => 0, 'total' => 5, 'discount' => 0],
+    9 => ['price' => 450000, 'bonus' => 0, 'total' => 9, 'discount' => 0], // Max for QRIS (under 499k)
+    10 => ['price' => 500000, 'bonus' => 1, 'total' => 11, 'discount' => 10],
+    25 => ['price' => 1250000, 'bonus' => 5, 'total' => 30, 'discount' => 15],
+    50 => ['price' => 2500000, 'bonus' => 10, 'total' => 60, 'discount' => 20],
+    100 => ['price' => 5000000, 'bonus' => 25, 'total' => 125, 'discount' => 25]
 ]);
+
+// Maximum amount for QRIS payment method (in IDR)
+define('QRIS_MAX_AMOUNT', 499000);
 
 // Base price per credit
 define('BASE_PRICE_PER_CREDIT', 50000); // Rp 50,000 per credit

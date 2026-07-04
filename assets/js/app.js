@@ -56,27 +56,27 @@ const citiesByCountry = {
            'TANGERANG', 'BOGOR', 'BATAM', 'PEKANBARU', 'BANDAR LAMPUNG', 'MALANG', 'PADANG',
            'DENPASAR', 'SAMARINDA', 'BANJARMASIN', 'JAMBI', 'CIREBON', 'SURAKARTA', 'BALIKPAPAN',
            'PONTIANAK', 'MANADO', 'YOGYAKARTA'],
-    'US': ['NEW YORK, NY', 'LOS ANGELES, CA', 'CHICAGO, IL', 'HOUSTON, TX', 'PHOENIX, AZ',
-           'PHILADELPHIA, PA', 'SAN ANTONIO, TX', 'SAN DIEGO, CA', 'DALLAS, TX', 'SAN JOSE, CA',
-           'AUSTIN, TX', 'JACKSONVILLE, FL', 'FORT WORTH, TX', 'COLUMBUS, OH', 'CHARLOTTE, NC',
-           'SAN FRANCISCO, CA', 'INDIANAPOLIS, IN', 'SEATTLE, WA', 'DENVER, CO', 'WASHINGTON, DC',
-           'BOSTON, MA', 'EL PASO, TX', 'NASHVILLE, TN', 'DETROIT, MI', 'OKLAHOMA CITY, OK',
-           'PORTLAND, OR', 'LAS VEGAS, NV', 'MEMPHIS, TN', 'LOUISVILLE, KY', 'BALTIMORE, MD',
-           'MILWAUKEE, WI', 'ALBUQUERQUE, NM', 'TUCSON, AZ', 'FRESNO, CA', 'MESA, AZ',
-           'SACRAMENTO, CA', 'ATLANTA, GA', 'KANSAS CITY, MO', 'COLORADO SPRINGS, CO', 'MIAMI, FL',
-           'RALEIGH, NC', 'OMAHA, NE', 'LONG BEACH, CA', 'VIRGINIA BEACH, VA', 'OAKLAND, CA'],
+    'US': ['NEW YORK', 'LOS ANGELES', 'CHICAGO', 'HOUSTON', 'PHOENIX',
+           'PHILADELPHIA', 'SAN ANTONIO', 'SAN DIEGO', 'DALLAS', 'SAN JOSE',
+           'AUSTIN', 'JACKSONVILLE', 'FORT WORTH', 'COLUMBUS', 'CHARLOTTE',
+           'SAN FRANCISCO', 'INDIANAPOLIS', 'SEATTLE', 'DENVER', 'WASHINGTON',
+           'BOSTON', 'EL PASO', 'NASHVILLE', 'DETROIT', 'OKLAHOMA CITY',
+           'PORTLAND', 'LAS VEGAS', 'MEMPHIS', 'LOUISVILLE', 'BALTIMORE',
+           'MILWAUKEE', 'ALBUQUERQUE', 'TUCSON', 'FRESNO', 'MESA',
+           'SACRAMENTO', 'ATLANTA', 'KANSAS CITY', 'COLORADO SPRINGS', 'MIAMI',
+           'RALEIGH', 'OMAHA', 'LONG BEACH', 'VIRGINIA BEACH', 'OAKLAND'],
     'GB': ['LONDON', 'BIRMINGHAM', 'MANCHESTER', 'LEEDS', 'GLASGOW', 'LIVERPOOL', 'NEWCASTLE',
            'SHEFFIELD', 'BRISTOL', 'EDINBURGH', 'LEICESTER', 'NOTTINGHAM', 'COVENTRY', 'HULL',
            'BRADFORD', 'CARDIFF', 'BELFAST', 'STOKE-ON-TRENT', 'WOLVERHAMPTON', 'PLYMOUTH',
            'DERBY', 'SOUTHAMPTON', 'PORTSMOUTH', 'BRIGHTON', 'READING'],
-    'AU': ['SYDNEY, NSW', 'MELBOURNE, VIC', 'BRISBANE, QLD', 'PERTH, WA', 'ADELAIDE, SA',
-           'GOLD COAST, QLD', 'NEWCASTLE, NSW', 'CANBERRA, ACT', 'SUNSHINE COAST, QLD',
-           'WOLLONGONG, NSW', 'HOBART, TAS', 'GEELONG, VIC', 'TOWNSVILLE, QLD', 'CAIRNS, QLD',
-           'DARWIN, NT', 'TOOWOOMBA, QLD', 'BALLARAT, VIC', 'BENDIGO, VIC', 'LAUNCESTON, TAS'],
-    'CA': ['TORONTO, ON', 'MONTREAL, QC', 'VANCOUVER, BC', 'CALGARY, AB', 'EDMONTON, AB',
-           'OTTAWA, ON', 'WINNIPEG, MB', 'QUEBEC CITY, QC', 'HAMILTON, ON', 'KITCHENER, ON',
-           'LONDON, ON', 'VICTORIA, BC', 'HALIFAX, NS', 'OSHAWA, ON', 'WINDSOR, ON',
-           'SASKATOON, SK', 'REGINA, SK', 'ST. JOHN\'S, NL', 'KELOWNA, BC', 'BARRIE, ON'],
+    'AU': ['SYDNEY', 'MELBOURNE', 'BRISBANE', 'PERTH', 'ADELAIDE',
+           'GOLD COAST', 'NEWCASTLE', 'CANBERRA', 'SUNSHINE COAST',
+           'WOLLONGONG', 'HOBART', 'GEELONG', 'TOWNSVILLE', 'CAIRNS',
+           'DARWIN', 'TOOWOOMBA', 'BALLARAT', 'BENDIGO', 'LAUNCESTON'],
+    'CA': ['TORONTO', 'MONTREAL', 'VANCOUVER', 'CALGARY', 'EDMONTON',
+           'OTTAWA', 'WINNIPEG', 'QUEBEC CITY', 'HAMILTON', 'KITCHENER',
+           'LONDON', 'VICTORIA', 'HALIFAX', 'OSHAWA', 'WINDSOR',
+           'SASKATOON', 'REGINA', 'ST. JOHN\'S', 'KELOWNA', 'BARRIE'],
     'JP': ['TOKYO', 'OSAKA', 'YOKOHAMA', 'NAGOYA', 'SAPPORO', 'FUKUOKA', 'KOBE', 'KYOTO',
            'KAWASAKI', 'SAITAMA', 'HIROSHIMA', 'SENDAI', 'KITAKYUSHU', 'CHIBA', 'SAKAI',
            'NIIGATA', 'HAMAMATSU', 'KUMAMOTO', 'SAGAMIHARA', 'SHIZUOKA', 'OKAYAMA'],
@@ -96,7 +96,25 @@ const citiesByCountry = {
            'DUISBURG', 'BOCHUM', 'WUPPERTAL', 'BIELEFELD', 'BONN', 'MÜNSTER'],
     'FR': ['PARIS', 'MARSEILLE', 'LYON', 'TOULOUSE', 'NICE', 'NANTES', 'STRASBOURG',
            'MONTPELLIER', 'BORDEAUX', 'LILLE', 'RENNES', 'REIMS', 'LE HAVRE', 'SAINT-ÉTIENNE',
-           'TOULON', 'GRENOBLE', 'DIJON', 'NÎMES', 'ANGERS', 'VILLEURBANNE']
+           'TOULON', 'GRENOBLE', 'DIJON', 'NÎMES', 'ANGERS', 'VILLEURBANNE'],
+    'CN': ['SHANGHAI', 'BEIJING', 'GUANGZHOU', 'SHENZHEN', 'CHENGDU', 'TIANJIN', 'WUHAN',
+           'HANGZHOU', 'NANJING', 'XI\'AN', 'CHONGQING', 'QINGDAO', 'SHENYANG', 'HARBIN'],
+    'KR': ['SEOUL', 'BUSAN', 'INCHEON', 'DAEGU', 'DAEJEON', 'GWANGJU', 'SUWON', 'ULSAN'],
+    'IN': ['MUMBAI', 'DELHI', 'BANGALORE', 'HYDERABAD', 'AHMEDABAD', 'CHENNAI', 'KOLKATA',
+           'PUNE', 'JAIPUR', 'LUCKNOW', 'KANPUR', 'NAGPUR', 'INDORE', 'BHOPAL'],
+    'BR': ['SÃO PAULO', 'RIO DE JANEIRO', 'BRASÍLIA', 'SALVADOR', 'FORTALEZA', 'BELO HORIZONTE',
+           'MANAUS', 'CURITIBA', 'RECIFE', 'PORTO ALEGRE', 'BELÉM', 'GOIÂNIA'],
+    'MX': ['MEXICO CITY', 'GUADALAJARA', 'MONTERREY', 'PUEBLA', 'TIJUANA', 'LEÓN',
+           'JUÁREZ', 'ZAPOPAN', 'MÉRIDA', 'CANCÚN', 'AGUASCALIENTES'],
+    'IT': ['ROME', 'MILAN', 'NAPLES', 'TURIN', 'PALERMO', 'GENOA', 'BOLOGNA', 'FLORENCE',
+           'VENICE', 'VERONA', 'CATANIA', 'BARI', 'MESSINA'],
+    'ES': ['MADRID', 'BARCELONA', 'VALENCIA', 'SEVILLE', 'ZARAGOZA', 'MÁLAGA', 'MURCIA',
+           'PALMA', 'LAS PALMAS', 'BILBAO', 'ALICANTE', 'CÓRDOBA'],
+    'NL': ['AMSTERDAM', 'ROTTERDAM', 'THE HAGUE', 'UTRECHT', 'EINDHOVEN', 'TILBURG',
+           'GRONINGEN', 'ALMERE', 'BREDA', 'NIJMEGEN'],
+    'AE': ['DUBAI', 'ABU DHABI', 'SHARJAH', 'AL AIN', 'AJMAN', 'RAS AL KHAIMAH'],
+    'SA': ['RIYADH', 'JEDDAH', 'MECCA', 'MEDINA', 'DAMMAM', 'KHOBAR', 'TABUK'],
+    'ZA': ['JOHANNESBURG', 'CAPE TOWN', 'DURBAN', 'PRETORIA', 'PORT ELIZABETH', 'BLOEMFONTEIN']
 };
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
@@ -1008,7 +1026,7 @@ async function performSearch(filters, append = false) {
         // Update result count
         const resultCount = document.getElementById('result-count');
         if (resultCount && data.total !== undefined) {
-            resultCount.textContent = data.total >= 100 ? '100+ hasil' : `${data.total} hasil`;
+            resultCount.textContent = data.total >= 100 ? '~100+ matches' : `~${data.total} matches`;
         }
         
     } catch (error) {
@@ -1062,34 +1080,59 @@ function displayResults(results, append = false) {
 // Create result table row
 function createResultRow(result) {
     const row = document.createElement('tr');
-    row.className = 'border-b border-dark-500/30 hover:bg-dark-300/20 transition';
+    row.className = 'border-b border-dark-400/50 hover:bg-dark-300/30 transition';
     
     const carrierBadgeClass = getCarrierBadgeClass(result.carrier);
     const statusBadgeClass = getStatusBadgeClass(result.status);
-    const origin = formatLocation(result.origin);
-    const destination = formatLocation(result.dest);
-    const shipDate = result.ship_date ? new Date(result.ship_date).toLocaleDateString() : 'N/A';
-    const weight = result.weight_grams ? `${(result.weight_grams / 1000).toFixed(2)} kg` : 'N/A';
+    
+    // Format origin
+    const originParts = [];
+    if (result.origin?.country) originParts.push(result.origin.country);
+    if (result.origin?.state) originParts.push(result.origin.state);
+    if (result.origin?.city) originParts.push(result.origin.city);
+    const origin = originParts.length > 0 ? originParts.join(', ') : 'undefined';
+    
+    // Format destination
+    const destParts = [];
+    if (result.dest?.country) destParts.push(result.dest.country);
+    if (result.dest?.state) destParts.push(result.dest.state);
+    if (result.dest?.city) destParts.push(result.dest.city);
+    if (result.dest?.zip) destParts.push(result.dest.zip);
+    const destination = destParts.length > 0 ? destParts.join(', ') : 'undefined';
+    
+    // Format dates
+    const shipDate = result.ship_date ? new Date(result.ship_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+    
+    // Format weight
+    const weight = (result.weight_grams && result.weight_grams > 0) ? `${(result.weight_grams / 453.592).toFixed(2)} lbs` : 'undefined';
     
     row.innerHTML = `
-        <td class="py-3 px-4">
-            <span class="inline-block px-2 py-1 text-xs font-medium rounded ${carrierBadgeClass}">
-                ${result.carrier.toUpperCase()}
+        <td class="py-4 px-4">
+            <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-md ${carrierBadgeClass}">
+                ${result.carrier?.toUpperCase() || 'N/A'}
             </span>
         </td>
-        <td class="py-3 px-4">
+        <td class="py-4 px-4">
             <span class="status-badge ${statusBadgeClass}">
                 ${formatStatus(result.status)}
             </span>
         </td>
-        <td class="py-3 px-4 text-sm">${origin}</td>
-        <td class="py-3 px-4 text-sm">${destination}</td>
-        <td class="py-3 px-4 text-sm text-gray-400">${shipDate}</td>
-        <td class="py-3 px-4 text-sm text-gray-400">${weight}</td>
-        <td class="py-3 px-4 text-right">
+        <td class="py-4 px-4">
+            <div class="text-sm text-gray-300">${origin}</div>
+        </td>
+        <td class="py-4 px-4">
+            <div class="text-sm text-gray-300">${destination}</div>
+        </td>
+        <td class="py-4 px-4">
+            <div class="text-sm text-gray-400">${shipDate}</div>
+        </td>
+        <td class="py-4 px-4">
+            <div class="text-sm text-gray-400">${weight}</div>
+        </td>
+        <td class="py-4 px-4 text-right">
             <button onclick="showRevealModal('${result.tn_id}', ${result.reveal_cost_credits})" 
-                    class="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition">
-                Get TN
+                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white text-sm font-medium rounded-lg transition shadow-sm">
+                Dapatkan
             </button>
         </td>
     `;
@@ -1098,24 +1141,31 @@ function createResultRow(result) {
 }
 // Format location
 function formatLocation(location) {
-    if (!location) return 'Unknown';
+    if (!location) return 'undefined';
     
-    let result = location.city || 'Unknown';
-    if (location.state) {
-        result += `, ${location.state}`;
+    const parts = [];
+    
+    if (location.city && location.city !== 'undefined') {
+        parts.push(location.city);
     }
-    if (location.country) {
-        result += `, ${location.country}`;
+    
+    if (location.state && location.state !== 'undefined') {
+        parts.push(location.state);
     }
-    return result;
+    
+    if (location.country && location.country !== 'undefined') {
+        parts.push(location.country);
+    }
+    
+    return parts.length > 0 ? parts.join(', ') : 'undefined';
 }
 
 // Format status
 function formatStatus(status) {
     const statusMap = {
-        'pre-transit': 'Pra Kirim',
+        'pre-transit': 'Pre Transit',
         'transit': 'Transit',
-        'delivered': 'Terkirim'
+        'delivered': 'Delivered'
     };
     return statusMap[status] || status;
 }

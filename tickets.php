@@ -98,9 +98,13 @@ $packages = TICKET_PACKAGES;
 
             <!-- Package Selection -->
             <div class="mb-6">
-                <h2 class="text-2xl font-semibold text-center mb-8">Pick a credit pack</h2>
+                <h2 class="text-2xl font-semibold text-center mb-4">Pick a credit pack</h2>
+                <p class="text-center text-sm text-gray-400 mb-8">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    QRIS payment has a maximum of Rp 499,000. For larger amounts, use Saweria or contact admin for custom packages.
+                </p>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     
                     <?php foreach ($packages as $credits => $package): ?>
                     <div class="package-card glass-effect rounded-2xl p-6 cursor-pointer <?php echo $credits == 10 ? 'popular' : ''; ?>" 
@@ -186,7 +190,11 @@ $packages = TICKET_PACKAGES;
                         </li>
                         <li class="flex items-start">
                             <i class="fas fa-check text-green-400 mr-3 mt-1"></i>
-                            <span>Secure payment via <strong class="text-white">QRIS</strong> (Quick Response Indonesian Standard)</span>
+                            <span>Secure payment via <strong class="text-white">QRIS</strong> (max Rp 499,000) or <strong class="text-white">Saweria</strong></span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-ticket text-purple-400 mr-3 mt-1"></i>
+                            <span>Need custom packages? <a href="mailto:support@tukaruy.online" class="text-purple-400 hover:text-purple-300 underline font-medium">Contact Admin</a> for bulk discounts and custom amounts</span>
                         </li>
                     </ul>
                 </div>
@@ -241,6 +249,10 @@ $packages = TICKET_PACKAGES;
         function selectPackage(credits, price, total, bonus) {
             selectedPackage = { credits, price, total, bonus };
             
+            // Check if price exceeds QRIS limit
+            const qrisMaxAmount = 499000;
+            const isOverQrisLimit = price > qrisMaxAmount;
+            
             const content = `
                 <div class="bg-slate-800 rounded-lg p-6 mb-6">
                     <div class="flex items-center justify-between mb-4">
@@ -265,26 +277,36 @@ $packages = TICKET_PACKAGES;
                     </div>
                 </div>
                 
+                ${isOverQrisLimit ? `
+                <div class="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-orange-300">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <strong>Note:</strong> This package exceeds QRIS limit (Rp 499,000). Please use Saweria payment method.
+                    </p>
+                </div>
+                ` : ''}
+                
                 <!-- Payment Method Selection -->
                 <div class="mb-6">
                     <h4 class="text-sm font-medium text-gray-400 mb-3">Choose Payment Method:</h4>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="payment-method-option" data-method="qrispay">
-                            <input type="radio" id="method-qrispay" name="payment_method" value="qrispay" checked class="sr-only">
-                            <label for="method-qrispay" class="block p-4 border border-gray-600 rounded-lg cursor-pointer hover:border-purple-500 transition selected">
+                        <div class="payment-method-option ${isOverQrisLimit ? 'opacity-50 cursor-not-allowed' : ''}" data-method="qrispay">
+                            <input type="radio" id="method-qrispay" name="payment_method" value="qrispay" ${!isOverQrisLimit ? 'checked' : 'disabled'} class="sr-only">
+                            <label for="method-qrispay" class="block p-4 border border-gray-600 rounded-lg ${!isOverQrisLimit ? 'cursor-pointer hover:border-purple-500' : 'cursor-not-allowed'} transition ${!isOverQrisLimit ? 'selected' : ''}">
                                 <div class="flex items-center space-x-3">
                                     <i class="fas fa-qrcode text-blue-400"></i>
                                     <div>
                                         <div class="font-medium">QRIS Pay</div>
                                         <div class="text-xs text-gray-400">Scan QR with e-wallet</div>
+                                        ${isOverQrisLimit ? '<div class="text-xs text-orange-400 mt-1">Max Rp 499,000</div>' : ''}
                                     </div>
                                 </div>
                             </label>
                         </div>
                         
                         <div class="payment-method-option" data-method="saweria">
-                            <input type="radio" id="method-saweria" name="payment_method" value="saweria" class="sr-only">
-                            <label for="method-saweria" class="block p-4 border border-gray-600 rounded-lg cursor-pointer hover:border-purple-500 transition">
+                            <input type="radio" id="method-saweria" name="payment_method" value="saweria" ${isOverQrisLimit ? 'checked' : ''} class="sr-only">
+                            <label for="method-saweria" class="block p-4 border border-gray-600 rounded-lg cursor-pointer hover:border-purple-500 transition ${isOverQrisLimit ? 'selected' : ''}">
                                 <div class="flex items-center space-x-3">
                                     <i class="fas fa-heart text-pink-400"></i>
                                     <div>
@@ -298,14 +320,14 @@ $packages = TICKET_PACKAGES;
                 </div>
                 
                 <div class="payment-method-info mb-4">
-                    <div id="info-qrispay" class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                    <div id="info-qrispay" class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 ${isOverQrisLimit ? 'hidden' : ''}">
                         <p class="text-sm text-blue-300">
                             <i class="fas fa-info-circle mr-2"></i>
                             You will pay using <strong>QRIS</strong>. Scan the QR code with your banking app or e-wallet.
                         </p>
                     </div>
                     
-                    <div id="info-saweria" class="bg-pink-500/10 border border-pink-500/30 rounded-lg p-4 hidden">
+                    <div id="info-saweria" class="bg-pink-500/10 border border-pink-500/30 rounded-lg p-4 ${!isOverQrisLimit ? 'hidden' : ''}">
                         <p class="text-sm text-pink-300">
                             <i class="fas fa-info-circle mr-2"></i>
                             You will be redirected to <strong>Saweria</strong> to complete your donation payment.
@@ -316,7 +338,7 @@ $packages = TICKET_PACKAGES;
                 <div class="text-left space-y-2 text-sm text-gray-400">
                     <div class="flex justify-between">
                         <span>Payment method:</span>
-                        <span class="text-white font-medium" id="selected-method-display">QRIS</span>
+                        <span class="text-white font-medium" id="selected-method-display">${isOverQrisLimit ? 'Saweria' : 'QRIS'}</span>
                     </div>
                     <div class="flex justify-between">
                         <span>You pay:</span>
@@ -330,10 +352,10 @@ $packages = TICKET_PACKAGES;
             document.getElementById('checkout-modal').classList.add('flex');
             
             // Setup payment method selection
-            setupPaymentMethodSelection();
+            setupPaymentMethodSelection(isOverQrisLimit);
         }
         
-        function setupPaymentMethodSelection() {
+        function setupPaymentMethodSelection(isOverQrisLimit) {
             const paymentOptions = document.querySelectorAll('.payment-method-option');
             const methodDisplays = {
                 'qrispay': 'QRIS',
@@ -344,11 +366,17 @@ $packages = TICKET_PACKAGES;
                 const radio = option.querySelector('input[type="radio"]');
                 const label = option.querySelector('label');
                 
+                if (radio.disabled) return; // Skip disabled options
+                
                 radio.addEventListener('change', function() {
                     // Update visual selection
                     paymentOptions.forEach(opt => {
-                        opt.querySelector('label').classList.remove('selected', 'border-purple-500', 'bg-purple-500/10');
-                        opt.querySelector('label').classList.add('border-gray-600');
+                        const optRadio = opt.querySelector('input[type="radio"]');
+                        const optLabel = opt.querySelector('label');
+                        if (!optRadio.disabled) {
+                            optLabel.classList.remove('selected', 'border-purple-500', 'bg-purple-500/10');
+                            optLabel.classList.add('border-gray-600');
+                        }
                     });
                     
                     if (this.checked) {
@@ -365,8 +393,11 @@ $packages = TICKET_PACKAGES;
                 });
             });
             
-            // Initialize first option
-            paymentOptions[0].querySelector('input').dispatchEvent(new Event('change'));
+            // Initialize selected option
+            const checkedRadio = document.querySelector('input[name="payment_method"]:checked');
+            if (checkedRadio) {
+                checkedRadio.dispatchEvent(new Event('change'));
+            }
         }
 
         function closeCheckout() {
@@ -432,9 +463,52 @@ $packages = TICKET_PACKAGES;
             const qrisContainer = document.getElementById('qris-container');
             const paymentInfo = document.getElementById('payment-info');
             
+            // Check if QRIS image URL exists
+            if (!qris.qris_image_url || qris.qris_image_url === '') {
+                qrisContainer.innerHTML = `
+                    <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-6 text-center">
+                        <i class="fas fa-exclamation-circle text-4xl text-red-400 mb-3"></i>
+                        <p class="text-sm text-red-300">
+                            <strong>QRIS code not available</strong><br>
+                            Please try again or contact admin for assistance.
+                        </p>
+                        <div class="mt-4">
+                            <button onclick="closePayment(); location.reload();" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
+                                Try Again
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                paymentInfo.innerHTML = `
+                    <div class="text-left bg-slate-800 rounded-lg p-4">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-400">Amount:</span>
+                            <span class="font-bold">Rp ${qris.amount.toLocaleString()}</span>
+                        </div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-400">Reference:</span>
+                            <span class="font-mono text-sm">${qris.payment_reference}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Status:</span>
+                            <span class="text-red-400">Failed</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-red-400">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        QRIS generation failed. Please contact admin via ticket.
+                    </p>
+                `;
+                
+                document.getElementById('payment-modal').classList.remove('hidden');
+                document.getElementById('payment-modal').classList.add('flex');
+                return;
+            }
+            
             qrisContainer.innerHTML = `
-                <div class="bg-white p-4 rounded-lg inline-block">
-                    <img src="${qris.qris_image_url}" alt="QRIS Code" class="w-64 h-64">
+                <div class="bg-white p-6 rounded-xl inline-block shadow-2xl">
+                    <img src="${qris.qris_image_url}" alt="QRIS Code" class="w-72 h-72" onerror="this.parentElement.innerHTML='<div class=\\'text-red-500 p-6\\'>Failed to load QR code</div>'">
                 </div>
             `;
             
@@ -454,7 +528,7 @@ $packages = TICKET_PACKAGES;
                         <span class="text-yellow-400" id="countdown">${expiresIn} minutes</span>
                     </div>
                 </div>
-                <p class="text-sm text-gray-400">
+                <p class="text-sm text-gray-400 text-center">
                     <i class="fas fa-mobile-alt mr-2"></i>
                     Open your mobile banking app and scan the QR code above
                 </p>

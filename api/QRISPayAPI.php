@@ -70,11 +70,24 @@ class QRISPayAPI {
         
         $response = $this->makeRequest('/api/payment/qris/generate', 'POST', $data);
         
-        if ($response['status'] !== 'success') {
-            throw new Exception('Failed to generate QRIS');
+        // Handle different response formats
+        if (isset($response['status']) && $response['status'] === 'success' && isset($response['data'])) {
+            $qrisData = $response['data'];
+            
+            // Normalize response format
+            return [
+                'qris_id' => $qrisData['qris_id'] ?? $qrisData['id'] ?? null,
+                'qris_image_url' => $qrisData['qris_image_url'] ?? $qrisData['image_url'] ?? $qrisData['qr_url'] ?? '',
+                'qris_string' => $qrisData['qris_string'] ?? $qrisData['qr_string'] ?? '',
+                'amount' => $qrisData['amount'] ?? $amount,
+                'payment_reference' => $qrisData['payment_reference'] ?? $paymentReference,
+                'expired_at' => $qrisData['expired_at'] ?? date('Y-m-d H:i:s', strtotime('+15 minutes')),
+                'expires_in_seconds' => $qrisData['expires_in_seconds'] ?? 900,
+                'status' => $qrisData['status'] ?? 'pending'
+            ];
         }
         
-        return $response['data'];
+        throw new Exception('Invalid QRIS response format');
     }
     
     /**

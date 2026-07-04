@@ -26,6 +26,11 @@ try {
         throw new Exception('Invalid package');
     }
     
+    // Validate QRIS maximum amount
+    if ($paymentMethod === 'qrispay' && $amount > QRIS_MAX_AMOUNT) {
+        throw new Exception('QRIS payment maximum is Rp ' . number_format(QRIS_MAX_AMOUNT) . '. Please select Saweria for larger amounts or contact admin for custom packages.');
+    }
+    
     // Check if payment method is enabled
     if (!isPaymentMethodEnabled($paymentMethod)) {
         throw new Exception('Payment method not available');
