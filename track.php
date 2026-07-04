@@ -1,0 +1,483 @@
+<?php
+session_start();
+require_once 'config.php';
+require_once 'auth.php';
+require_once 'api/TukeruyAPI.php';
+
+// Require login
+requireLogin('/login.php');
+
+$user = getCurrentUser();
+$api = new TukeruyAPI();
+
+// Get stats with error handling
+try {
+    $stats = $api->getStats();
+} catch (Exception $e) {
+    $stats = [
+        'credits' => 0,
+        'total' => 0,
+        'fedex' => 0,
+        'dhl' => 0,
+        'ups' => 0
+    ];
+}
+?>
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tukeruy - Dashboard Pelacakan Pengiriman</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            100: '#1a1a1a',
+                            200: '#2a2a2a',
+                            300: '#3a3a3a',
+                            400: '#4a4a4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-effect {
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-pre-transit {
+            background: rgba(168, 85, 247, 0.2);
+            color: #c084fc;
+        }
+        .badge-transit {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+        .badge-delivered {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+        .filter-btn {
+            padding: 8px 16px;
+            background: rgba(42, 42, 42, 0.8);
+            border: 1px solid rgba(74, 74, 74, 0.5);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .filter-btn:hover {
+            background: rgba(58, 58, 58, 0.8);
+            color: #fff;
+        }
+        .filter-btn.active {
+            background: rgba(139, 92, 246, 0.3);
+            border-color: #8b5cf6;
+            color: #c084fc;
+        }
+        .country-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            font-size: 0.875rem;
+        }
+        .country-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+        }
+        .country-item.selected {
+            background: rgba(139, 92, 246, 0.3);
+            color: #c084fc;
+        }
+        #country-dropdown-menu {
+            animation: slideDown 0.2s ease-out;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(26, 26, 26, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.5);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.7);
+        }
+        .loading-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        .badge-info {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: rgba(139, 92, 246, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+            animation: slideInRight 0.3s ease-out;
+            z-index: 1000;
+        }
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    
+    <!-- Top Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 px-6 py-4">
+        <div class="max-w-[1600px] mx-auto">
+            <div class="glass-effect rounded-2xl px-6 py-3 flex items-center justify-between">
+                <div class="flex items-center space-x-8">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-shipping-fast text-white text-sm"></i>
+                        </div>
+                        <span class="text-xl font-bold">Tukeruy</span>
+                    </div>
+                    <div class="hidden md:flex items-center space-x-6 text-sm">
+                        <a href="#" class="text-white font-medium">Pelacakan</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition">Riwayat</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition">API</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition">Bantuan</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-400">Tickets: <span class="text-white font-semibold" id="credits-display"><?php echo number_format($user['tickets']); ?></span></span>
+                    <div class="relative group">
+                        <button class="w-8 h-8 rounded-lg bg-dark-300 hover:bg-dark-400 transition flex items-center justify-center">
+                            <i class="fas fa-user text-sm"></i>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-dark-200 border border-dark-400 rounded-lg shadow-lg hidden group-hover:block z-50">
+                            <div class="p-3 border-b border-dark-400">
+                                <p class="text-sm font-medium"><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></p>
+                                <p class="text-xs text-gray-400"><?php echo htmlspecialchars($user['email']); ?></p>
+                            </div>
+                            <a href="/settings.php" class="block px-3 py-2 text-sm hover:bg-dark-300 transition">
+                                <i class="fas fa-cog mr-2"></i>Settings
+                            </a>
+                            <a href="/tickets.php" class="block px-3 py-2 text-sm hover:bg-dark-300 transition">
+                                <i class="fas fa-ticket mr-2"></i>Buy Tickets
+                            </a>
+                            <?php if ($user['role'] === 'admin'): ?>
+                            <a href="/admin" class="block px-3 py-2 text-sm hover:bg-dark-300 transition text-purple-400">
+                                <i class="fas fa-shield-alt mr-2"></i>Admin Panel
+                            </a>
+                            <?php endif; ?>
+                            <a href="/logout.php" class="block px-3 py-2 text-sm hover:bg-dark-300 transition text-red-400">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-24 px-6 pb-6">
+        <div class="max-w-[1600px] mx-auto flex gap-6">
+            
+            <!-- Filter Sidebar -->
+            <aside class="w-80">
+                <div class="glass-effect rounded-2xl p-6 sticky top-24">
+                    <h3 class="font-semibold text-lg mb-6">Filter</h3>
+                    
+                    <div class="space-y-6">
+                        <!-- Kurir -->
+                        <div>
+                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Kurir</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" class="filter-btn active" data-type="carrier" data-value="all">Semua</button>
+                                <button type="button" class="filter-btn" data-type="carrier" data-value="fedex">FedEx</button>
+                                <button type="button" class="filter-btn" data-type="carrier" data-value="dhl">DHL</button>
+                                <button type="button" class="filter-btn" data-type="carrier" data-value="ups">UPS</button>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div>
+                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Status</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button type="button" class="filter-btn" data-type="status" data-value="pre-transit">Pra Kirim</button>
+                                <button type="button" class="filter-btn" data-type="status" data-value="transit">Transit</button>
+                                <button type="button" class="filter-btn" data-type="status" data-value="delivered">Terkirim</button>
+                            </div>
+                        </div>
+
+                        <!-- Asal -->
+                        <div>
+                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Asal Pengiriman</label>
+                            <div class="relative mb-2">
+                                <div id="origin-country-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                    <span id="selected-origin-country-display" class="text-gray-400">Any country</span>
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
+                                <input type="hidden" id="origin_country" value="">
+                                
+                                <!-- Dropdown Menu -->
+                                <div id="origin-country-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                                    <div class="p-2 border-b border-dark-400">
+                                        <input type="text" id="origin-country-search" placeholder="Search country..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                                    </div>
+                                    <div id="origin-country-list" class="overflow-y-auto max-h-52">
+                                        <!-- Countries will be populated by JS -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="relative">
+                                <div id="origin-city-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                    <span id="selected-origin-city-display" class="text-gray-400">Any city</span>
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
+                                <input type="hidden" id="origin_city" value="">
+                                
+                                <!-- City Dropdown Menu -->
+                                <div id="origin-city-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                                    <div class="p-2 border-b border-dark-400">
+                                        <input type="text" id="origin-city-search" placeholder="Search city..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                                    </div>
+                                    <div id="origin-city-list" class="overflow-y-auto max-h-52">
+                                        <div class="p-4 text-center text-sm text-gray-500">
+                                            Select a country first
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tujuan -->
+                        <div>
+                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Tujuan</label>
+                            <div class="relative mb-2">
+                                <div id="country-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                    <span id="selected-country-display">United States (US)</span>
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
+                                <input type="hidden" id="dest_country" value="US">
+                                
+                                <!-- Dropdown Menu -->
+                                <div id="country-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                                    <div class="p-2 border-b border-dark-400">
+                                        <input type="text" id="country-search" placeholder="Search country..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                                    </div>
+                                    <div id="country-list" class="overflow-y-auto max-h-52">
+                                        <!-- Countries will be populated by JS -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="relative">
+                                <div id="dest-city-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                    <span id="selected-dest-city-display" class="text-gray-400">Any city</span>
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
+                                <input type="hidden" id="dest_city" value="">
+                                
+                                <!-- City Dropdown Menu -->
+                                <div id="dest-city-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-dark-200 border border-dark-400 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                                    <div class="p-2 border-b border-dark-400">
+                                        <input type="text" id="dest-city-search" placeholder="Search city..." class="w-full bg-dark-300 border border-dark-400 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                                    </div>
+                                    <div id="dest-city-list" class="overflow-y-auto max-h-52">
+                                        <div class="p-4 text-center text-sm text-gray-500">
+                                            Select a country first
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tanggal Kirim -->
+                        <div>
+                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Tanggal Pengiriman</label>
+                            <input type="date" id="ship_from" class="w-full mb-2 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm">
+                            <input type="date" id="ship_to" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm">
+                        </div>
+
+                        <!-- Estimasi Tiba -->
+                        <div>
+                            <label class="text-xs font-medium text-gray-400 uppercase mb-3 block">Estimasi Tiba</label>
+                            <input type="date" id="delivery_from" class="w-full mb-2 bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm">
+                            <input type="date" id="delivery_to" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-3 py-2 text-sm">
+                        </div>
+
+                        <button onclick="applyFilters()" class="w-full bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-medium py-3 rounded-lg transition">
+                            <i class="fas fa-filter mr-2"></i>Terapkan Filter
+                        </button>
+
+                        <button onclick="resetFilters()" class="w-full bg-dark-300 hover:bg-dark-400 text-white font-medium py-3 rounded-lg transition">
+                            <i class="fas fa-redo mr-2"></i>Reset
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="flex-1">
+                
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="glass-effect rounded-xl p-6 hover-lift">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-gray-400 text-sm">Total Resi</span>
+                            <div class="w-10 h-10 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-box text-purple-400"></i>
+                            </div>
+                        </div>
+                        <div class="text-3xl font-bold"><?php echo number_format($stats['total']); ?></div>
+                        <div class="text-xs text-gray-500 mt-1">Tersedia</div>
+                    </div>
+
+                    <div class="glass-effect rounded-xl p-6 hover-lift">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-gray-400 text-sm">FedEx</span>
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-truck text-blue-400"></i>
+                            </div>
+                        </div>
+                        <div class="text-3xl font-bold"><?php echo number_format($stats['fedex']); ?></div>
+                        <div class="text-xs text-gray-500 mt-1">Paket</div>
+                    </div>
+
+                    <div class="glass-effect rounded-xl p-6 hover-lift">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-gray-400 text-sm">DHL</span>
+                            <div class="w-10 h-10 bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-shipping-fast text-yellow-400"></i>
+                            </div>
+                        </div>
+                        <div class="text-3xl font-bold"><?php echo number_format($stats['dhl']); ?></div>
+                        <div class="text-xs text-gray-500 mt-1">Paket</div>
+                    </div>
+
+                    <div class="glass-effect rounded-xl p-6 hover-lift">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-gray-400 text-sm">UPS</span>
+                            <div class="w-10 h-10 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-truck-fast text-green-400"></i>
+                            </div>
+                        </div>
+                        <div class="text-3xl font-bold"><?php echo number_format($stats['ups']); ?></div>
+                        <div class="text-xs text-gray-500 mt-1">Paket</div>
+                    </div>
+                </div>
+
+                <!-- Results Table -->
+                <div class="glass-effect rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-lg font-semibold">Kandidat</h2>
+                        <span class="text-sm text-gray-400" id="result-count">~100 hasil</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-dark-400">
+                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Kurir</th>
+                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Status</th>
+                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Asal</th>
+                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Tujuan</th>
+                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Pengiriman</th>
+                                    <th class="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">Berat</th>
+                                    <th class="text-right py-3 px-4 text-xs font-medium text-gray-400 uppercase">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-table">
+                                <tr>
+                                    <td colspan="7" class="text-center py-12">
+                                        <i class="fas fa-spinner fa-spin text-3xl text-purple-500"></i>
+                                        <div class="mt-3 text-gray-500">Memuat data...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-6 flex justify-center">
+                        <button id="load-more" onclick="loadMore()" class="hidden text-purple-400 hover:text-purple-300 text-sm font-medium">
+                            Muat Lebih Banyak
+                        </button>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Reveal Modal -->
+    <div id="reveal-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center">
+        <div class="glass-effect rounded-2xl p-8 max-w-lg w-full mx-4">
+            <h3 class="text-xl font-bold mb-4">Tampilkan Nomor Resi</h3>
+            <p class="text-gray-400 mb-6">Ini akan menggunakan 1 kredit untuk menampilkan nomor resi.</p>
+            <div id="modal-content" class="mb-6"></div>
+            <div class="flex gap-3">
+                <button onclick="closeModal()" class="flex-1 bg-dark-300 hover:bg-dark-400 text-white font-medium py-2.5 rounded-lg">
+                    Batal
+                </button>
+                <button id="confirm-btn" class="flex-1 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-medium py-2.5 rounded-lg">
+                    Konfirmasi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,407 @@
+<?php
+session_start();
+require_once 'config.php';
+require_once 'auth.php';
+
+// Require login
+requireLogin('/login.php');
+
+$user = getCurrentUser();
+$packages = TICKET_PACKAGES;
+?>
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Tickets - <?php echo SITE_NAME; ?></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-effect {
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .package-card {
+            transition: all 0.3s ease;
+        }
+        .package-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);
+        }
+        .package-card.popular {
+            border: 2px solid #8b5cf6;
+            position: relative;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    
+    <!-- Top Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 px-6 py-4 bg-black/80 backdrop-blur-md border-b border-gray-800">
+        <div class="max-w-[1600px] mx-auto">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-8">
+                    <a href="/track.php" class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-shipping-fast text-white text-sm"></i>
+                        </div>
+                        <span class="text-xl font-bold">Tukeruy</span>
+                    </a>
+                    <div class="hidden md:flex items-center space-x-6 text-sm">
+                        <a href="/track.php" class="text-gray-400 hover:text-white transition">Tracking</a>
+                        <a href="/tickets.php" class="text-white font-medium">Buy Tickets</a>
+                        <a href="/settings.php" class="text-gray-400 hover:text-white transition">Settings</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-400">Tickets: <span class="text-white font-semibold"><?php echo number_format($user['tickets']); ?></span></span>
+                    <div class="relative group">
+                        <button class="w-8 h-8 rounded-lg bg-dark-300 hover:bg-dark-400 transition flex items-center justify-center">
+                            <i class="fas fa-user text-sm"></i>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-lg hidden group-hover:block">
+                            <a href="/settings.php" class="block px-4 py-2 text-sm hover:bg-slate-700 transition">Settings</a>
+                            <a href="/logout.php" class="block px-4 py-2 text-sm text-red-400 hover:bg-slate-700 transition">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-24 px-6 pb-12">
+        <div class="max-w-7xl mx-auto">
+            
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-bold mb-4">Billing & Credits</h1>
+                <p class="text-xl text-gray-400">Pick a credit pack and start tracking</p>
+            </div>
+
+            <!-- Current Balance -->
+            <div class="max-w-md mx-auto mb-12">
+                <div class="glass-effect rounded-2xl p-8 text-center">
+                    <p class="text-sm text-gray-400 mb-2">Current balance</p>
+                    <div class="text-5xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-4">
+                        <?php echo number_format($user['tickets']); ?>
+                    </div>
+                    <p class="text-sm text-gray-400">credits</p>
+                </div>
+            </div>
+
+            <!-- Package Selection -->
+            <div class="mb-6">
+                <h2 class="text-2xl font-semibold text-center mb-8">Pick a credit pack</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                    
+                    <?php foreach ($packages as $credits => $package): ?>
+                    <div class="package-card glass-effect rounded-2xl p-6 cursor-pointer <?php echo $credits == 10 ? 'popular' : ''; ?>" 
+                         onclick="selectPackage(<?php echo $credits; ?>, <?php echo $package['price']; ?>, <?php echo $package['total']; ?>, <?php echo $package['bonus']; ?>)">
+                        
+                        <?php if ($credits == 10): ?>
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                            MOST POPULAR
+                        </div>
+                        <?php endif; ?>
+                        
+                        <div class="text-center mb-4">
+                            <?php if ($package['bonus'] > 0): ?>
+                            <div class="inline-block bg-green-500/20 text-green-400 text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                                Save <?php echo round(($package['bonus'] / $credits) * 100); ?>%
+                            </div>
+                            <?php endif; ?>
+                            
+                            <div class="flex items-center justify-center space-x-2 mb-2">
+                                <i class="fas fa-ticket text-2xl text-purple-400"></i>
+                                <span class="text-xs text-gray-400">Pack</span>
+                            </div>
+                            
+                            <div class="text-4xl font-bold text-white mb-2">
+                                <?php echo $credits; ?>
+                            </div>
+                            
+                            <div class="text-sm text-gray-400 mb-1">
+                                <?php echo number_format($package['price']); ?> IDR
+                            </div>
+                            
+                            <div class="text-xs text-gray-500">
+                                Rp <?php echo number_format($package['price'] / $credits); ?> / credit
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2 text-sm">
+                            <?php if ($package['bonus'] > 0): ?>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-gray-400">Base credits:</span>
+                                <span class="text-white"><?php echo $credits; ?></span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-green-400">Bonus:</span>
+                                <span class="text-green-400">+<?php echo $package['bonus']; ?></span>
+                            </div>
+                            <div class="border-t border-gray-700 pt-2 flex items-center justify-between text-xs">
+                                <span class="text-gray-400 font-semibold">Total:</span>
+                                <span class="text-white font-bold"><?php echo $package['total']; ?> credits</span>
+                            </div>
+                            <?php else: ?>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-gray-400">Total credits:</span>
+                                <span class="text-white font-bold"><?php echo $package['total']; ?></span>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                    
+                </div>
+            </div>
+
+            <!-- Info -->
+            <div class="max-w-2xl mx-auto mt-12">
+                <div class="glass-effect rounded-2xl p-6">
+                    <h3 class="font-semibold mb-4 flex items-center">
+                        <i class="fas fa-info-circle text-blue-400 mr-2"></i>
+                        How it works
+                    </h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-400 mr-3 mt-1"></i>
+                            <span>Each credit allows you to reveal <strong class="text-white">1 tracking number</strong></span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-400 mr-3 mt-1"></i>
+                            <span>Credits never expire - use them whenever you need</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-400 mr-3 mt-1"></i>
+                            <span>Larger packages include <strong class="text-white">bonus credits</strong> for better value</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-400 mr-3 mt-1"></i>
+                            <span>Secure payment via <strong class="text-white">QRIS</strong> (Quick Response Indonesian Standard)</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden items-center justify-center p-6">
+        <div class="glass-effect rounded-2xl p-8 max-w-lg w-full">
+            <h3 class="text-2xl font-bold mb-6">Checkout</h3>
+            
+            <div id="checkout-content">
+                <!-- Will be populated by JavaScript -->
+            </div>
+            
+            <div class="mt-6 flex gap-3">
+                <button onclick="closeCheckout()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-lg transition">
+                    Cancel
+                </button>
+                <button id="pay-button" onclick="processPayment()" class="flex-1 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-medium py-3 rounded-lg transition">
+                    Pay Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal (QRIS) -->
+    <div id="payment-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden items-center justify-center p-6">
+        <div class="glass-effect rounded-2xl p-8 max-w-md w-full text-center">
+            <h3 class="text-2xl font-bold mb-4">Scan QRIS Code</h3>
+            
+            <div id="qris-container" class="mb-6">
+                <!-- QRIS code will be displayed here -->
+            </div>
+            
+            <div id="payment-info" class="space-y-3 mb-6">
+                <!-- Payment info will be displayed here -->
+            </div>
+            
+            <button onclick="closePayment()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-lg transition">
+                Cancel Payment
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let selectedPackage = null;
+        let paymentCheckInterval = null;
+
+        function selectPackage(credits, price, total, bonus) {
+            selectedPackage = { credits, price, total, bonus };
+            
+            const content = `
+                <div class="bg-slate-800 rounded-lg p-6 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-lg font-semibold">${credits} Credits Pack</span>
+                        <span class="text-2xl font-bold text-purple-400">Rp ${price.toLocaleString()}</span>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">List price (Rp ${(BASE_PRICE_PER_CREDIT).toLocaleString()} × ${credits}):</span>
+                            <span>Rp ${(credits * BASE_PRICE_PER_CREDIT).toLocaleString()}</span>
+                        </div>
+                        ${bonus > 0 ? `
+                        <div class="flex justify-between text-green-400">
+                            <span>Bonus credits:</span>
+                            <span>+${bonus}</span>
+                        </div>
+                        ` : ''}
+                        <div class="border-t border-gray-700 pt-2 flex justify-between font-bold">
+                            <span>Total credits:</span>
+                            <span class="text-purple-400">${total} credits</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-blue-300">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        You will pay using <strong>QRIS</strong>. Scan the QR code with your banking app.
+                    </p>
+                </div>
+                
+                <div class="text-left space-y-2 text-sm text-gray-400">
+                    <div class="flex justify-between">
+                        <span>Payment method:</span>
+                        <span class="text-white font-medium">QRIS</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>You pay:</span>
+                        <span class="text-white font-bold text-lg">Rp ${price.toLocaleString()}</span>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('checkout-content').innerHTML = content;
+            document.getElementById('checkout-modal').classList.remove('hidden');
+            document.getElementById('checkout-modal').classList.add('flex');
+        }
+
+        function closeCheckout() {
+            document.getElementById('checkout-modal').classList.add('hidden');
+            document.getElementById('checkout-modal').classList.remove('flex');
+        }
+
+        async function processPayment() {
+            if (!selectedPackage) return;
+            
+            const payButton = document.getElementById('pay-button');
+            payButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+            payButton.disabled = true;
+            
+            try {
+                const response = await fetch('/api/payment/create.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        credits: selectedPackage.credits,
+                        amount: selectedPackage.price,
+                        total: selectedPackage.total
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error);
+                }
+                
+                // Close checkout modal
+                closeCheckout();
+                
+                // Show payment modal with QRIS
+                showPaymentModal(data.qris);
+                
+            } catch (error) {
+                alert('Payment failed: ' + error.message);
+                payButton.innerHTML = 'Pay Now';
+                payButton.disabled = false;
+            }
+        }
+
+        function showPaymentModal(qris) {
+            const qrisContainer = document.getElementById('qris-container');
+            const paymentInfo = document.getElementById('payment-info');
+            
+            qrisContainer.innerHTML = `
+                <div class="bg-white p-4 rounded-lg inline-block">
+                    <img src="${qris.qris_image_url}" alt="QRIS Code" class="w-64 h-64">
+                </div>
+            `;
+            
+            const expiresIn = Math.floor(qris.expires_in_seconds / 60);
+            paymentInfo.innerHTML = `
+                <div class="text-left bg-slate-800 rounded-lg p-4">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-400">Amount:</span>
+                        <span class="font-bold">Rp ${qris.amount.toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-400">Reference:</span>
+                        <span class="font-mono text-sm">${qris.payment_reference}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Expires in:</span>
+                        <span class="text-yellow-400" id="countdown">${expiresIn} minutes</span>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-400">
+                    <i class="fas fa-mobile-alt mr-2"></i>
+                    Open your mobile banking app and scan the QR code above
+                </p>
+            `;
+            
+            document.getElementById('payment-modal').classList.remove('hidden');
+            document.getElementById('payment-modal').classList.add('flex');
+            
+            // Start checking payment status
+            startPaymentCheck(qris.qris_id);
+        }
+
+        function startPaymentCheck(qrisId) {
+            paymentCheckInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/payment/check.php?qris_id=${qrisId}`);
+                    const data = await response.json();
+                    
+                    if (data.status === 'paid') {
+                        clearInterval(paymentCheckInterval);
+                        closePayment();
+                        showSuccessMessage(data.tickets);
+                    }
+                } catch (error) {
+                    console.error('Payment check error:', error);
+                }
+            }, 3000); // Check every 3 seconds
+        }
+
+        function closePayment() {
+            if (paymentCheckInterval) {
+                clearInterval(paymentCheckInterval);
+            }
+            document.getElementById('payment-modal').classList.add('hidden');
+            document.getElementById('payment-modal').classList.remove('flex');
+        }
+
+        function showSuccessMessage(tickets) {
+            alert(`Payment successful! ${tickets} credits have been added to your account.`);
+            location.reload();
+        }
+
+        const BASE_PRICE_PER_CREDIT = <?php echo BASE_PRICE_PER_CREDIT; ?>;
+    </script>
+
+</body>
+</html>

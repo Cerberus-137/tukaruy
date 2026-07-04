@@ -11,7 +11,7 @@ class TukeruyAPI {
     
     public function __construct() {
         $this->baseUrl = API_BASE_URL;
-        $this->apiKey = API_KEY;
+        $this->apiKey = getTrackTacoAPIKey();
     }
     
     /**

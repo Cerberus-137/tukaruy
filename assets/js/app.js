@@ -904,8 +904,8 @@ async function revealTracking(tnId) {
             throw new Error(data.error);
         }
         
-        // Update credits
-        document.getElementById('credits-display').textContent = data.credits_remaining.toLocaleString();
+        // Update tickets (changed from credits)
+        document.getElementById('credits-display').textContent = data.tickets_remaining.toLocaleString();
         
         // Show success notification
         showNotification(`Tracking number revealed: ${data.tracking_number}`, 'success');
