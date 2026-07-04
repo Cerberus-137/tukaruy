@@ -1,8 +1,8 @@
 -- Database schema for Tukeruy
 -- Run this SQL in your MySQL database
 
-CREATE DATABASE IF NOT EXISTS tukeruy;
-USE tukeruy;
+CREATE DATABASE IF NOT EXISTS tukarkuy;
+USE tukarkuy;
 
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
