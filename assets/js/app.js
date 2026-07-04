@@ -149,11 +149,42 @@ document.addEventListener('DOMContentLoaded', function() {
     setupOriginCityDropdown();
     console.log('Tukeruy initialized');
     
+    // Load stats in background (non-blocking)
+    loadStats();
+    
     // Auto-load data on page load with default filters (US)
     setTimeout(() => {
         autoLoadInitialData();
     }, 500);
 });
+
+// Load stats asynchronously
+async function loadStats() {
+    try {
+        // Use faster stats endpoint
+        const response = await fetch('api/stats.php');
+        const data = await response.json();
+        
+        if (data.success && data.stats) {
+            document.getElementById('stat-total').textContent = data.stats.total >= 100 ? '100+' : data.stats.total;
+            document.getElementById('stat-fedex').textContent = data.stats.fedex >= 100 ? '100+' : data.stats.fedex;
+            document.getElementById('stat-dhl').textContent = data.stats.dhl >= 100 ? '100+' : data.stats.dhl;
+            document.getElementById('stat-ups').textContent = data.stats.ups >= 100 ? '100+' : data.stats.ups;
+        } else {
+            // Fallback to zeros
+            document.getElementById('stat-total').textContent = '0';
+            document.getElementById('stat-fedex').textContent = '0';
+            document.getElementById('stat-dhl').textContent = '0';
+            document.getElementById('stat-ups').textContent = '0';
+        }
+    } catch (error) {
+        console.error('Failed to load stats:', error);
+        document.getElementById('stat-total').textContent = '0';
+        document.getElementById('stat-fedex').textContent = '0';
+        document.getElementById('stat-dhl').textContent = '0';
+        document.getElementById('stat-ups').textContent = '0';
+    }
+}
 
 // Setup country dropdown
 function setupCountryDropdown() {

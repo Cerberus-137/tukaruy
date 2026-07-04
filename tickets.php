@@ -314,8 +314,14 @@ $packages = TICKET_PACKAGES;
                 
                 const data = await response.json();
                 
+                console.log('Payment response:', data); // Debug log
+                
                 if (!data.success) {
-                    throw new Error(data.error);
+                    throw new Error(data.error || 'Payment failed');
+                }
+                
+                if (!data.qris) {
+                    throw new Error('No QRIS data received');
                 }
                 
                 // Close checkout modal
@@ -325,6 +331,7 @@ $packages = TICKET_PACKAGES;
                 showPaymentModal(data.qris);
                 
             } catch (error) {
+                console.error('Payment error:', error); // Debug log
                 alert('Payment failed: ' + error.message);
                 payButton.innerHTML = 'Pay Now';
                 payButton.disabled = false;

@@ -2,26 +2,20 @@
 session_start();
 require_once 'config.php';
 require_once 'auth.php';
-require_once 'api/TukeruyAPI.php';
 
 // Require login
 requireLogin('/login.php');
 
 $user = getCurrentUser();
-$api = new TukeruyAPI();
 
-// Get stats with error handling
-try {
-    $stats = $api->getStats();
-} catch (Exception $e) {
-    $stats = [
-        'credits' => 0,
-        'total' => 0,
-        'fedex' => 0,
-        'dhl' => 0,
-        'ups' => 0
-    ];
-}
+// Don't call API on page load - stats will be loaded via JavaScript
+// This prevents page lag from slow API calls
+$stats = [
+    'total' => 0,
+    'fedex' => 0,
+    'dhl' => 0,
+    'ups' => 0
+];
 ?>
 <!DOCTYPE html>
 <html lang="id" class="dark">
@@ -381,7 +375,9 @@ try {
                                 <i class="fas fa-box text-purple-400"></i>
                             </div>
                         </div>
-                        <div class="text-3xl font-bold"><?php echo number_format($stats['total']); ?></div>
+                        <div class="text-3xl font-bold" id="stat-total">
+                            <i class="fas fa-spinner fa-spin text-purple-400 text-xl"></i>
+                        </div>
                         <div class="text-xs text-gray-500 mt-1">Tersedia</div>
                     </div>
 
@@ -392,7 +388,9 @@ try {
                                 <i class="fas fa-truck text-blue-400"></i>
                             </div>
                         </div>
-                        <div class="text-3xl font-bold"><?php echo number_format($stats['fedex']); ?></div>
+                        <div class="text-3xl font-bold" id="stat-fedex">
+                            <i class="fas fa-spinner fa-spin text-blue-400 text-xl"></i>
+                        </div>
                         <div class="text-xs text-gray-500 mt-1">Paket</div>
                     </div>
 
@@ -403,7 +401,9 @@ try {
                                 <i class="fas fa-shipping-fast text-yellow-400"></i>
                             </div>
                         </div>
-                        <div class="text-3xl font-bold"><?php echo number_format($stats['dhl']); ?></div>
+                        <div class="text-3xl font-bold" id="stat-dhl">
+                            <i class="fas fa-spinner fa-spin text-yellow-400 text-xl"></i>
+                        </div>
                         <div class="text-xs text-gray-500 mt-1">Paket</div>
                     </div>
 
@@ -414,7 +414,9 @@ try {
                                 <i class="fas fa-truck-fast text-green-400"></i>
                             </div>
                         </div>
-                        <div class="text-3xl font-bold"><?php echo number_format($stats['ups']); ?></div>
+                        <div class="text-3xl font-bold" id="stat-ups">
+                            <i class="fas fa-spinner fa-spin text-green-400 text-xl"></i>
+                        </div>
                         <div class="text-xs text-gray-500 mt-1">Paket</div>
                     </div>
                 </div>

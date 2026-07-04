@@ -29,7 +29,18 @@ try {
     
     // Generate QRIS code
     $qrisPay = new QRISPayAPI();
-    $qris = $qrisPay->generateQRIS($amount, $paymentRef, SITE_URL . '/tickets.php');
+    
+    try {
+        $qrisResponse = $qrisPay->generateQRIS($amount, $paymentRef, SITE_URL . '/tickets.php');
+    } catch (Exception $e) {
+        error_log('QRISPay API Error: ' . $e->getMessage());
+        throw new Exception('Failed to generate QRIS: ' . $e->getMessage());
+    }
+    
+    // Validate QRIS response
+    if (!isset($qrisResponse['qris_id'])) {
+        throw new Exception('Invalid QRIS response');
+    }
     
     // Save to database
     $pdo = getDBConnection();
@@ -39,20 +50,28 @@ try {
     ");
     $stmt->execute([
         $user['id'],
-        $qris['qris_id'],
+        $qrisResponse['qris_id'],
         $amount,
         $total,
         $paymentRef,
-        $qris['qris_image_url'],
-        $qris['expired_at']
+        $qrisResponse['qris_image_url'],
+        $qrisResponse['expired_at']
     ]);
     
     echo json_encode([
         'success' => true,
-        'qris' => $qris
+        'qris' => [
+            'qris_id' => $qrisResponse['qris_id'],
+            'qris_image_url' => $qrisResponse['qris_image_url'],
+            'amount' => $qrisResponse['amount'],
+            'expired_at' => $qrisResponse['expired_at'],
+            'expires_in_seconds' => $qrisResponse['expires_in_seconds'],
+            'payment_reference' => $qrisResponse['payment_reference']
+        ]
     ]);
     
 } catch (Exception $e) {
+    error_log('Payment Creation Error: ' . $e->getMessage());
     http_response_code(400);
     echo json_encode([
         'success' => false,
