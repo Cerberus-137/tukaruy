@@ -128,6 +128,18 @@ document.addEventListener('DOMContentLoaded', function() {
     setupAutoApplyToggle();
     setupFilterChangeListeners();
     setupShipDatePicker(); // Add Ship Date calendar
+    
+    // Add click event for ship date trigger button
+    const shipDateTrigger = document.getElementById('ship-date-trigger');
+    if (shipDateTrigger) {
+        shipDateTrigger.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Ship date trigger clicked');
+            toggleShipDateCalendar();
+        });
+    }
+    
     console.log('Tukeruy initialized');
     
     // Load stats in background (non-blocking)

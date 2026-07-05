@@ -462,7 +462,7 @@ $stats = [
                                 </button>
                             </label>
                             <div class="relative">
-                                <button type="button" id="ship-date-trigger" class="modern-dropdown" onclick="toggleShipDateCalendar()">
+                                <button type="button" id="ship-date-trigger" class="modern-dropdown" style="cursor: pointer;">
                                     <span id="selected-ship-date-display" class="text-gray-400">Select date range...</span>
                                     <i class="fas fa-calendar-alt text-xs text-purple-400"></i>
                                 </button>
