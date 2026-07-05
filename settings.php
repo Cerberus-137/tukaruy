@@ -140,9 +140,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         <span class="text-xl font-bold">Tukarkuy</span>
                     </a>
                     <div class="hidden md:flex items-center space-x-6 text-sm">
-                        <a href="/track" class="text-gray-400 hover:text-white transition">Tracking</a>
-                        <a href="/tickets" class="text-gray-400 hover:text-white transition">Buy Tickets</a>
-                        <a href="/settings" class="text-white font-medium">Settings</a>
+                        <a href="/track" class="text-gray-400 hover:text-white transition">Pelacakan</a>
+                        <a href="/tickets" class="text-gray-400 hover:text-white transition">Top Up</a>
+                        <a href="/settings" class="text-white font-medium">Pengaturan</a>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">

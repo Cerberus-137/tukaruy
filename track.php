@@ -188,7 +188,7 @@ $stats = [
                         <a href="/track" class="text-white font-medium">Pelacakan</a>
                         <a href="#" class="text-gray-400 hover:text-white transition" onclick="showHistoryModal()">Riwayat</a>
                         <a href="/tickets" class="text-gray-400 hover:text-white transition">Top Up</a>
-                        <a href="/settings" class="text-gray-400 hover:text-white transition">Settings</a>
+                        <a href="/settings" class="text-gray-400 hover:text-white transition">Pengaturan</a>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -203,10 +203,10 @@ $stats = [
                                 <p class="text-xs text-gray-400"><?php echo htmlspecialchars($user['email']); ?></p>
                             </div>
                             <a href="/settings" class="block px-3 py-2 text-sm hover:bg-dark-300 transition">
-                                <i class="fas fa-cog mr-2"></i>Settings
+                                <i class="fas fa-cog mr-2"></i>Pengaturan
                             </a>
                             <a href="/tickets" class="block px-3 py-2 text-sm hover:bg-dark-300 transition">
-                                <i class="fas fa-ticket mr-2"></i>Buy Tickets
+                                <i class="fas fa-ticket mr-2"></i>Top Up
                             </a>
                             <?php if ($user['role'] === 'admin'): ?>
                             <a href="/admin" class="block px-3 py-2 text-sm hover:bg-dark-300 transition text-purple-400">

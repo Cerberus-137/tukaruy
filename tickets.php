@@ -54,9 +54,9 @@ $packages = TICKET_PACKAGES;
                         <span class="text-xl font-bold">Tukarkuy</span>
                     </a>
                     <div class="hidden md:flex items-center space-x-6 text-sm">
-                        <a href="/track" class="text-gray-400 hover:text-white transition">Tracking</a>
-                        <a href="/tickets" class="text-white font-medium">Buy Tickets</a>
-                        <a href="/settings" class="text-gray-400 hover:text-white transition">Settings</a>
+                        <a href="/track" class="text-gray-400 hover:text-white transition">Pelacakan</a>
+                        <a href="/tickets" class="text-white font-medium">Top Up</a>
+                        <a href="/settings" class="text-gray-400 hover:text-white transition">Pengaturan</a>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -247,6 +247,7 @@ $packages = TICKET_PACKAGES;
         let paymentCheckInterval = null;
 
         function selectPackage(credits, price, total, bonus) {
+            console.log('selectPackage called with:', { credits, price, total, bonus });
             selectedPackage = { credits, price, total, bonus };
             
             // Check if price exceeds QRIS limit
@@ -350,6 +351,7 @@ $packages = TICKET_PACKAGES;
             document.getElementById('checkout-content').innerHTML = content;
             document.getElementById('checkout-modal').classList.remove('hidden');
             document.getElementById('checkout-modal').classList.add('flex');
+            console.log('Modal shown - classes:', document.getElementById('checkout-modal').className);
             
             // Setup payment method selection
             setupPaymentMethodSelection(isOverQrisLimit);
