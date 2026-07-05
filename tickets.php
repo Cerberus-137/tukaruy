@@ -597,15 +597,26 @@ $packages = TICKET_PACKAGES;
         }
 
         function startPaymentCheck(qrisId) {
+            let checkCount = 0;
+            const maxChecks = 40; // Max 2 minutes of checking (40 * 3 seconds)
+            
             paymentCheckInterval = setInterval(async () => {
+                checkCount++;
                 try {
                     const response = await fetch(`/api/payment/check?qris_id=${qrisId}`);
                     const data = await response.json();
                     
+                    console.log(`Payment check #${checkCount}:`, data);
+                    
                     if (data.status === 'paid') {
+                        console.log('✅ Payment confirmed as paid!');
                         clearInterval(paymentCheckInterval);
                         closePayment();
                         showSuccessMessage(data.tickets);
+                    } else if (checkCount >= maxChecks) {
+                        console.warn('⚠️ Payment check timeout after 2 minutes');
+                        clearInterval(paymentCheckInterval);
+                        showWarningMessage('Payment check timeout. Please refresh the page to check status.');
                     }
                 } catch (error) {
                     console.error('Payment check error:', error);
@@ -672,16 +683,30 @@ $packages = TICKET_PACKAGES;
         }
         
         function startSaweriaPaymentCheck(donationId) {
+            let checkCount = 0;
+            const maxChecks = 40; // Max 2 minutes of checking
+            
             paymentCheckInterval = setInterval(async () => {
+                checkCount++;
                 try {
                     const response = await fetch(`/api/payment/check?saweria_id=${donationId}`);
                     const data = await response.json();
                     
+                    console.log(`Saweria payment check #${checkCount}:`, data);
+                    
                     if (data.status === 'paid') {
+                        console.log('✅ Saweria payment confirmed as paid!');
                         clearInterval(paymentCheckInterval);
                         closePayment();
                         showSuccessMessage(data.tickets);
+                    } else if (checkCount >= maxChecks) {
+                        console.warn('⚠️ Saweria payment check timeout after 2 minutes');
+                        clearInterval(paymentCheckInterval);
+                        showWarningMessage('Payment check timeout. Please refresh the page to check status.');
                     }
+                } catch (error) {
+                    console.error('Saweria payment check error:', error);
+                }
                 } catch (error) {
                     console.error('Saweria payment check error:', error);
                 }

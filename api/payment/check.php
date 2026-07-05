@@ -49,35 +49,54 @@ try {
         try {
             $statusResponse = $qrisPay->checkPaymentStatus($qrisId);
             
-            if ($statusResponse['status'] === 'paid' || $statusResponse['status'] === 'success') {
+            error_log('QRIS Status Response: ' . json_encode($statusResponse));
+            
+            // Check if payment is paid (case-insensitive)
+            $paymentStatus = isset($statusResponse['status']) ? strtolower($statusResponse['status']) : '';
+            
+            if ($paymentStatus === 'paid' || $paymentStatus === 'success' || $paymentStatus === 'completed') {
+                error_log('Payment confirmed as paid for QRIS ID: ' . $qrisId);
+                
                 $pdo->beginTransaction();
                 
-                // Update payment status
-                $stmt = $pdo->prepare("UPDATE payments SET status = 'paid', paid_at = NOW() WHERE id = ?");
-                $stmt->execute([$payment['id']]);
-                
-                // Add tickets to user
-                $stmt = $pdo->prepare("UPDATE users SET tickets = tickets + ? WHERE id = ?");
-                $stmt->execute([$payment['tickets'], $user['id']]);
-                
-                $pdo->commit();
-                
-                echo json_encode([
-                    'success' => true,
-                    'status' => 'paid',
-                    'tickets' => $payment['tickets']
-                ]);
+                try {
+                    // Update payment status
+                    $stmt = $pdo->prepare("UPDATE payments SET status = 'paid', paid_at = NOW() WHERE id = ?");
+                    $stmt->execute([$payment['id']]);
+                    error_log('Payment status updated to paid');
+                    
+                    // Add tickets to user
+                    $stmt = $pdo->prepare("UPDATE users SET tickets = tickets + ? WHERE id = ?");
+                    $stmt->execute([$payment['tickets'], $user['id']]);
+                    error_log('Tickets added to user: ' . $payment['tickets']);
+                    
+                    $pdo->commit();
+                    
+                    echo json_encode([
+                        'success' => true,
+                        'status' => 'paid',
+                        'tickets' => $payment['tickets']
+                    ]);
+                } catch (Exception $dbError) {
+                    $pdo->rollBack();
+                    error_log('Database error updating payment: ' . $dbError->getMessage());
+                    throw $dbError;
+                }
             } else {
+                error_log('Payment not yet paid. Current status: ' . $paymentStatus);
                 echo json_encode([
                     'success' => true,
-                    'status' => $payment['status']
+                    'status' => $payment['status'],
+                    'api_status' => $paymentStatus
                 ]);
             }
         } catch (Exception $e) {
             // If API check fails, return current status
+            error_log('QRIS API check failed: ' . $e->getMessage());
             echo json_encode([
                 'success' => true,
-                'status' => $payment['status']
+                'status' => $payment['status'],
+                'error' => $e->getMessage()
             ]);
         }
         
@@ -104,25 +123,38 @@ try {
         $saweria = new SaweriaAPI();
         
         try {
+            error_log('Checking Saweria donation status for ID: ' . $saweriaId);
+            
             if ($saweria->isDonationPaid($saweriaId)) {
+                error_log('Saweria donation confirmed as paid');
+                
                 $pdo->beginTransaction();
                 
-                // Update payment status
-                $stmt = $pdo->prepare("UPDATE payments SET status = 'paid', paid_at = NOW() WHERE id = ?");
-                $stmt->execute([$payment['id']]);
-                
-                // Add tickets to user
-                $stmt = $pdo->prepare("UPDATE users SET tickets = tickets + ? WHERE id = ?");
-                $stmt->execute([$payment['tickets'], $user['id']]);
-                
-                $pdo->commit();
-                
-                echo json_encode([
-                    'success' => true,
-                    'status' => 'paid',
-                    'tickets' => $payment['tickets']
-                ]);
+                try {
+                    // Update payment status
+                    $stmt = $pdo->prepare("UPDATE payments SET status = 'paid', paid_at = NOW() WHERE id = ?");
+                    $stmt->execute([$payment['id']]);
+                    error_log('Payment status updated to paid');
+                    
+                    // Add tickets to user
+                    $stmt = $pdo->prepare("UPDATE users SET tickets = tickets + ? WHERE id = ?");
+                    $stmt->execute([$payment['tickets'], $user['id']]);
+                    error_log('Tickets added to user: ' . $payment['tickets']);
+                    
+                    $pdo->commit();
+                    
+                    echo json_encode([
+                        'success' => true,
+                        'status' => 'paid',
+                        'tickets' => $payment['tickets']
+                    ]);
+                } catch (Exception $dbError) {
+                    $pdo->rollBack();
+                    error_log('Database error updating payment: ' . $dbError->getMessage());
+                    throw $dbError;
+                }
             } else {
+                error_log('Saweria donation not yet paid');
                 echo json_encode([
                     'success' => true,
                     'status' => $payment['status']
@@ -130,9 +162,11 @@ try {
             }
         } catch (Exception $e) {
             // If API check fails, return current status
+            error_log('Saweria API check failed: ' . $e->getMessage());
             echo json_encode([
                 'success' => true,
-                'status' => $payment['status']
+                'status' => $payment['status'],
+                'error' => $e->getMessage()
             ]);
         }
     }
