@@ -118,38 +118,104 @@ const citiesByCountry = {
 };
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    setupFilterButtons();
-    setDefaultStatus();
-    setupCountryDropdown();
-    setupOriginCountryDropdown();
-    setupDestCityDropdown();
-    setupOriginCityDropdown();
-    setupDestStateDropdown();
-    setupAutoApplyToggle();
-    setupFilterChangeListeners();
-    setupShipDatePicker(); // Add Ship Date calendar
+    console.log('=== Tukeruy Track Page Initializing ===');
     
-    // Add click event for ship date trigger button - FIXED
-    const shipDateTrigger = document.getElementById('ship-date-trigger');
-    if (shipDateTrigger) {
-        console.log('Ship date trigger found, attaching event listener');
-        shipDateTrigger.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Ship date trigger clicked!');
-            toggleShipDateCalendar();
-            return false;
-        }, { capture: true }); // Use capture phase to catch event early
-        
-        // Also handle mousedown as backup
-        shipDateTrigger.addEventListener('mousedown', function(e) {
-            console.log('Ship date trigger mousedown');
-        });
-    } else {
-        console.error('Ship date trigger button not found!');
+    try {
+        setupFilterButtons();
+        console.log('✓ Filter buttons setup');
+    } catch (e) {
+        console.error('✗ Filter buttons error:', e);
     }
     
-    console.log('Tukeruy initialized');
+    try {
+        setDefaultStatus();
+        console.log('✓ Default status set');
+    } catch (e) {
+        console.error('✗ Default status error:', e);
+    }
+    
+    try {
+        setupCountryDropdown();
+        console.log('✓ Country dropdown setup');
+    } catch (e) {
+        console.error('✗ Country dropdown error:', e);
+    }
+    
+    try {
+        setupOriginCountryDropdown();
+        console.log('✓ Origin country dropdown setup');
+    } catch (e) {
+        console.error('✗ Origin country dropdown error:', e);
+    }
+    
+    try {
+        setupDestCityDropdown();
+        console.log('✓ Dest city dropdown setup');
+    } catch (e) {
+        console.error('✗ Dest city dropdown error:', e);
+    }
+    
+    try {
+        setupOriginCityDropdown();
+        console.log('✓ Origin city dropdown setup');
+    } catch (e) {
+        console.error('✗ Origin city dropdown error:', e);
+    }
+    
+    try {
+        setupDestStateDropdown();
+        console.log('✓ Dest state dropdown setup');
+    } catch (e) {
+        console.error('✗ Dest state dropdown error:', e);
+    }
+    
+    try {
+        setupAutoApplyToggle();
+        console.log('✓ Auto-apply toggle setup');
+    } catch (e) {
+        console.error('✗ Auto-apply toggle error:', e);
+    }
+    
+    try {
+        setupFilterChangeListeners();
+        console.log('✓ Filter change listeners setup');
+    } catch (e) {
+        console.error('✗ Filter change listeners error:', e);
+    }
+    
+    try {
+        setupShipDatePicker();
+        console.log('✓ Ship date picker setup');
+    } catch (e) {
+        console.error('✗ Ship date picker error:', e);
+    }
+    
+    // Add click event for ship date trigger button - FIXED
+    try {
+        const shipDateTrigger = document.getElementById('ship-date-trigger');
+        if (shipDateTrigger) {
+            console.log('Ship date trigger found, attaching event listener');
+            shipDateTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Ship date trigger clicked!');
+                toggleShipDateCalendar();
+                return false;
+            }, { capture: true }); // Use capture phase to catch event early
+            
+            // Also handle mousedown as backup
+            shipDateTrigger.addEventListener('mousedown', function(e) {
+                console.log('Ship date trigger mousedown');
+            });
+            console.log('✓ Ship date trigger event listeners attached');
+        } else {
+            console.error('✗ Ship date trigger button not found!');
+        }
+    } catch (e) {
+        console.error('✗ Ship date trigger setup error:', e);
+    }
+    
+    console.log('=== Tukeruy Track Page Initialized ===');
     
     // Load stats in background (non-blocking)
     loadStats();

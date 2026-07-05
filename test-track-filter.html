@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Track Filters</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .modern-dropdown {
+            width: 100%;
+            background: rgba(26, 26, 26, 0.6);
+            border: 1.5px solid rgba(74, 74, 74, 0.4);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 0.875rem;
+            color: #e5e7eb;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        .modern-dropdown:hover {
+            background: rgba(58, 58, 58, 0.6);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+        .country-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            font-size: 0.875rem;
+        }
+        .country-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">🧪 Track Filter Test</h1>
+        
+        <div class="space-y-6">
+            <!-- Test 1: Country Dropdown -->
+            <div class="bg-slate-800 rounded-xl p-6">
+                <h2 class="text-xl font-bold mb-4">Test 1: Country Dropdown</h2>
+                <div class="w-full max-w-md">
+                    <div class="relative">
+                        <div id="country-dropdown-trigger" class="modern-dropdown">
+                            <span id="selected-country-display">United States (US)</span>
+                            <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                        </div>
+                        <input type="hidden" id="dest_country" value="US">
+                        
+                        <div id="country-dropdown-menu" class="hidden absolute z-10 w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg max-h-64 overflow-hidden">
+                            <div class="p-2 border-b border-slate-700">
+                                <input type="text" id="country-search" placeholder="Search country..." class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500">
+                            </div>
+                            <div id="country-list" class="overflow-y-auto max-h-52">
+                                <!-- Will be populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <pre id="test1-log" class="mt-4 bg-slate-900 p-4 rounded text-xs text-green-400"></pre>
+            </div>
+            
+            <!-- Test 2: Ship Date Button -->
+            <div class="bg-slate-800 rounded-xl p-6">
+                <h2 class="text-xl font-bold mb-4">Test 2: Ship Date Button</h2>
+                <div class="w-full max-w-md">
+                    <button 
+                        type="button" 
+                        id="ship-date-trigger" 
+                        class="w-full bg-[#1a1a1a99] border border-[#4a4a4a66] rounded-[10px] px-4 py-3 text-sm text-left transition-all duration-150 hover:bg-[#3a3a3a99] hover:border-[#8b5cf680] focus:outline-none focus:border-purple-500 flex items-center justify-between"
+                        style="cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 10;">
+                        <span id="selected-ship-date-display" class="text-gray-400">Select date range...</span>
+                        <i class="fas fa-calendar-alt text-xs text-purple-400"></i>
+                    </button>
+                </div>
+                <pre id="test2-log" class="mt-4 bg-slate-900 p-4 rounded text-xs text-green-400"></pre>
+            </div>
+            
+            <!-- Test 3: Filter Buttons -->
+            <div class="bg-slate-800 rounded-xl p-6">
+                <h2 class="text-xl font-bold mb-4">Test 3: Carrier Filter Buttons</h2>
+                <div class="grid grid-cols-2 gap-2 max-w-md">
+                    <button type="button" class="segmented-btn active" data-type="carrier" data-value="all" style="padding:12px 16px; background:rgba(26,26,26,0.6); border:1.5px solid rgba(74,74,74,0.4); border-radius:10px; cursor:pointer;">
+                        <i class="fas fa-boxes text-sm mr-2"></i>All
+                    </button>
+                    <button type="button" class="segmented-btn" data-type="carrier" data-value="fedex" style="padding:12px 16px; background:rgba(26,26,26,0.6); border:1.5px solid rgba(74,74,74,0.4); border-radius:10px; cursor:pointer;">
+                        <i class="fas fa-truck text-sm mr-2"></i>FedEx
+                    </button>
+                </div>
+                <pre id="test3-log" class="mt-4 bg-slate-900 p-4 rounded text-xs text-green-400"></pre>
+            </div>
+            
+            <!-- Console Log -->
+            <div class="bg-slate-800 rounded-xl p-6">
+                <h2 class="text-xl font-bold mb-4">Console Log</h2>
+                <pre id="console-log" class="bg-slate-900 p-4 rounded text-xs overflow-auto max-h-96"></pre>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const logs = [];
+        function log(msg, testId = null) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMsg = `[${timestamp}] ${msg}`;
+            logs.push(logMsg);
+            document.getElementById('console-log').textContent = logs.join('\n');
+            
+            if (testId) {
+                const testLog = document.getElementById(testId);
+                if (testLog) {
+                    testLog.textContent += logMsg + '\n';
+                }
+            }
+        }
+        
+        // Simplified country data
+        const countries = [
+            { code: 'US', name: 'United States' },
+            { code: 'GB', name: 'United Kingdom' },
+            { code: 'CA', name: 'Canada' }
+        ];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            log('DOM Content Loaded');
+            
+            // Test 1: Country Dropdown
+            try {
+                const trigger = document.getElementById('country-dropdown-trigger');
+                const menu = document.getElementById('country-dropdown-menu');
+                const searchInput = document.getElementById('country-search');
+                const countryList = document.getElementById('country-list');
+                const hiddenInput = document.getElementById('dest_country');
+                const display = document.getElementById('selected-country-display');
+                
+                if (trigger && menu && countryList) {
+                    log('✓ Country dropdown elements found', 'test1-log');
+                    
+                    // Populate list
+                    countries.forEach(country => {
+                        const item = document.createElement('div');
+                        item.className = 'country-item';
+                        item.innerHTML = `${country.name} <span class="text-gray-500 text-xs">(${country.code})</span>`;
+                        item.addEventListener('click', function() {
+                            hiddenInput.value = country.code;
+                            display.textContent = `${country.name} (${country.code})`;
+                            menu.classList.add('hidden');
+                            log(`✓ Selected: ${country.name}`, 'test1-log');
+                        });
+                        countryList.appendChild(item);
+                    });
+                    
+                    // Toggle
+                    trigger.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        menu.classList.toggle('hidden');
+                        log('✓ Dropdown toggled', 'test1-log');
+                    });
+                    
+                    // Close on outside click
+                    document.addEventListener('click', function(e) {
+                        if (!trigger.contains(e.target) && !menu.contains(e.target)) {
+                            menu.classList.add('hidden');
+                        }
+                    });
+                    
+                    log('✓ Country dropdown setup complete', 'test1-log');
+                } else {
+                    log('✗ Country dropdown elements NOT found', 'test1-log');
+                }
+            } catch (e) {
+                log('✗ Country dropdown error: ' + e.message, 'test1-log');
+            }
+            
+            // Test 2: Ship Date Button
+            try {
+                const shipDateBtn = document.getElementById('ship-date-trigger');
+                if (shipDateBtn) {
+                    log('✓ Ship date button found', 'test2-log');
+                    
+                    shipDateBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        log('✓ Ship date button clicked!', 'test2-log');
+                        alert('Ship date button is clickable!');
+                    });
+                    
+                    log('✓ Ship date button setup complete', 'test2-log');
+                } else {
+                    log('✗ Ship date button NOT found', 'test2-log');
+                }
+            } catch (e) {
+                log('✗ Ship date button error: ' + e.message, 'test2-log');
+            }
+            
+            // Test 3: Filter Buttons
+            try {
+                const filterBtns = document.querySelectorAll('.segmented-btn');
+                log(`✓ Found ${filterBtns.length} filter buttons`, 'test3-log');
+                
+                filterBtns.forEach((btn, index) => {
+                    btn.addEventListener('click', function() {
+                        const value = this.dataset.value;
+                        log(`✓ Filter button clicked: ${value}`, 'test3-log');
+                        
+                        // Toggle active class
+                        filterBtns.forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                    });
+                });
+                
+                log('✓ Filter buttons setup complete', 'test3-log');
+            } catch (e) {
+                log('✗ Filter buttons error: ' + e.message, 'test3-log');
+            }
+        });
+    </script>
+</body>
+</html>
