@@ -71,6 +71,41 @@ CREATE TABLE IF NOT EXISTS admin_settings (
     INDEX idx_setting_key (setting_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Ticket packages (with prices managed from admin panel)
+CREATE TABLE IF NOT EXISTS ticket_packages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    credits INT NOT NULL UNIQUE,
+    price INT NOT NULL,
+    bonus INT DEFAULT 0,
+    total_credits INT NOT NULL,
+    discount_percentage INT DEFAULT 0,
+    active BOOLEAN DEFAULT 1,
+    order_index INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by INT DEFAULT NULL,
+    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_credits (credits),
+    INDEX idx_active (active),
+    INDEX idx_order (order_index)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Payment methods configuration
+CREATE TABLE IF NOT EXISTS payment_methods (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    method_name ENUM('qrispay', 'saweria') UNIQUE NOT NULL,
+    display_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    enabled BOOLEAN DEFAULT 1,
+    icon VARCHAR(100),
+    sort_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by INT DEFAULT NULL,
+    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_enabled (enabled)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Insert default admin user (password: admin123)
 INSERT INTO users (email, password, first_name, last_name, company, role, tickets) 
 VALUES (
@@ -94,6 +129,21 @@ INSERT INTO admin_settings (setting_key, setting_value) VALUES
 ('payment_methods_qrispay', '1'),
 ('payment_methods_saweria', '1');
 
+-- Insert default ticket packages
+INSERT INTO ticket_packages (credits, price, bonus, total_credits, discount_percentage, active, order_index) VALUES
+(1, 50000, 0, 1, 0, 1, 1),
+(3, 150000, 0, 3, 0, 1, 2),
+(5, 250000, 0, 5, 0, 1, 3),
+(9, 450000, 0, 9, 0, 1, 4),
+(10, 500000, 1, 11, 10, 1, 5),
+(25, 1250000, 5, 30, 15, 1, 6),
+(50, 2500000, 10, 60, 20, 1, 7),
+(100, 5000000, 25, 125, 25, 1, 8);
+
+-- Insert default payment methods
+INSERT INTO payment_methods (method_name, display_name, description, enabled, icon, sort_order) VALUES
+('qrispay', 'QRIS Pay', 'Bayar dengan QRIS melalui e-wallet', 1, 'qr-code', 1),
+('saweria', 'Saweria', 'Donasi melalui Saweria', 0, 'hand-holding-heart', 2);
 -- Update existing payments table structure (if exists)
 ALTER TABLE payments 
 ADD COLUMN payment_method ENUM('qrispay', 'saweria') DEFAULT 'qrispay' AFTER user_id,
