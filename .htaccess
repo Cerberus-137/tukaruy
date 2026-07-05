@@ -4,9 +4,9 @@ RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-# Don't rewrite API endpoints - they need .php extension
-RewriteCond %{REQUEST_URI} !^/api/
-RewriteCond %{REQUEST_URI} !^/admin/api/
+# Skip rewrite for API endpoints - they need .php extension
+RewriteRule ^api/ - [L]
+RewriteRule ^admin/api/ - [L]
 
 # Remove .php extension for non-API files
 RewriteCond %{REQUEST_FILENAME} !-d

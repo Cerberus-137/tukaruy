@@ -1,12 +1,19 @@
 <?php
 session_start();
+
+// Enhanced error logging
+error_log("🔍 Search API Request - Method: " . $_SERVER['REQUEST_METHOD'] . ", URI: " . $_SERVER['REQUEST_URI']);
+
 header('Content-Type: application/json');
+header('Cache-Control: no-cache, must-revalidate');
+
 require_once '../config.php';
 require_once '../auth.php';
 require_once 'TukeruyAPI.php';
 
 // Require login
 if (!isLoggedIn()) {
+    error_log("❌ Search API: Not logged in");
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
     exit;
@@ -14,6 +21,7 @@ if (!isLoggedIn()) {
 
 try {
     $input = json_decode(file_get_contents('php://input'), true);
+    error_log("📋 Search API: Filters received - " . json_encode($input));
     
     // Initialize API
     $api = new TukeruyAPI();
@@ -67,8 +75,12 @@ try {
     // Cursor for pagination
     $cursor = $input['cursor'] ?? null;
     
+    error_log("🔎 Search API: Processing filters - " . json_encode($filters));
+    
     // Perform search
     $result = $api->search($filters, ITEMS_PER_PAGE, $cursor);
+    
+    error_log("✅ Search API: Found " . count($result['results'] ?? []) . " results");
     
     echo json_encode([
         'success' => true,
@@ -78,7 +90,8 @@ try {
     ]);
     
 } catch (Exception $e) {
-    error_log('Search API Error: ' . $e->getMessage());
+    error_log('❌ Search API Error: ' . $e->getMessage());
+    error_log('❌ Stack trace: ' . $e->getTraceAsString());
     http_response_code(500);
     echo json_encode([
         'success' => false,

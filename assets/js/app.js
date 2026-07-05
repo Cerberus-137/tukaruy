@@ -1128,9 +1128,14 @@ function applyFilters() {
 // Perform search
 async function performSearch(filters, append = false) {
     try {
+        console.log('🔍 Performing search with filters:', filters);
+        
         // Show loading state
         const tableBody = document.getElementById('results-table');
-        if (!tableBody) return;
+        if (!tableBody) {
+            console.error('❌ Results table not found!');
+            return;
+        }
         
         if (!append) {
             tableBody.innerHTML = `
@@ -1149,6 +1154,7 @@ async function performSearch(filters, append = false) {
         }
         
         // Make API request
+        console.log('📡 Sending request to api/search');
         const response = await fetch('api/search', {
             method: 'POST',
             headers: {
@@ -1157,12 +1163,42 @@ async function performSearch(filters, append = false) {
             body: JSON.stringify(filters)
         });
         
+        console.log('📥 Response status:', response.status);
+        console.log('📥 Response content-type:', response.headers.get('content-type'));
+        
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('❌ Non-JSON response received:', text.substring(0, 500));
+            
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-12">
+                        <i class="fas fa-exclamation-triangle text-3xl text-red-500"></i>
+                        <div class="mt-3 text-red-400 font-semibold">Server Error</div>
+                        <div class="text-sm text-gray-500 mt-2">API returned HTML instead of JSON</div>
+                        <div class="text-xs text-gray-600 mt-2 max-w-md mx-auto">
+                            This usually means:<br>
+                            1. The API endpoint is not being reached<br>
+                            2. There's a PHP error in the API file<br>
+                            3. .htaccess is redirecting incorrectly
+                        </div>
+                        <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-sm">
+                            Refresh Page
+                        </button>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
         const data = await response.json();
+        console.log('✅ API Response received:', data);
         
         // Debug: Log the API response
-        console.log('API Response:', data);
         if (data.results && data.results.length > 0) {
-            console.log('Sample result:', data.results[0]);
+            console.log('📊 Sample result:', data.results[0]);
         }
         
         if (!data.success) {
