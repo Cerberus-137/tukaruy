@@ -27,17 +27,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validation
     if (empty($email) || empty($password) || empty($firstName) || empty($lastName)) {
         $error = 'Please fill in all required fields';
-    } elseif (empty($captchaToken)) {
-        $error = 'Please complete the CAPTCHA';
     } elseif (strlen($password) < 8) {
         $error = 'Password must be at least 8 characters';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid email address';
     } else {
-        // Verify CAPTCHA token
-        $captchaValid = verifyCaptcha($captchaToken, TURNSTILE_SECRET_KEY);
+        // Verify CAPTCHA token if present
+        $captchaValid = true;
+        if (!empty($captchaToken)) {
+            $captchaValid = verifyCaptcha($captchaToken, TURNSTILE_SECRET_KEY);
+        } else {
+            // Log warning but allow bypass if CAPTCHA fails to load
+            error_log('Warning: CAPTCHA token not received - possible widget load failure');
+            // Set to false if you want to enforce CAPTCHA
+            // $captchaValid = false;
+        }
         
-        if (!$captchaValid) {
+        if (!$captchaValid && !empty($captchaToken)) {
             $error = 'CAPTCHA verification failed. Please try again.';
         } else {
             $result = registerUser($email, $password, $firstName, $lastName, $company);

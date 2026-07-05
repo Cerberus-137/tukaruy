@@ -23,13 +23,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if (empty($email) || empty($password)) {
         $error = 'Please fill in all fields';
-    } elseif (empty($captchaToken)) {
-        $error = 'Please complete the CAPTCHA';
     } else {
-        // Verify CAPTCHA token
-        $captchaValid = verifyCaptcha($captchaToken, TURNSTILE_SECRET_KEY);
+        // Verify CAPTCHA token if present
+        $captchaValid = true;
+        if (!empty($captchaToken)) {
+            $captchaValid = verifyCaptcha($captchaToken, TURNSTILE_SECRET_KEY);
+        } else {
+            // Log warning but allow bypass if CAPTCHA fails to load
+            error_log('Warning: CAPTCHA token not received - possible widget load failure');
+            // Set to false if you want to enforce CAPTCHA
+            // $captchaValid = false;
+        }
         
-        if (!$captchaValid) {
+        if (!$captchaValid && !empty($captchaToken)) {
             $error = 'CAPTCHA verification failed. Please try again.';
         } else {
             $result = loginUser($email, $password);
