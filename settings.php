@@ -133,21 +133,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         <div class="max-w-[1600px] mx-auto">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-8">
-                    <a href="/track.php" class="flex items-center space-x-3">
+                    <a href="/track" class="flex items-center space-x-3">
                         <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
                             <i class="fas fa-shipping-fast text-white text-sm"></i>
                         </div>
                         <span class="text-xl font-bold">Tukeruy</span>
                     </a>
                     <div class="hidden md:flex items-center space-x-6 text-sm">
-                        <a href="/track.php" class="text-gray-400 hover:text-white transition">Tracking</a>
-                        <a href="/tickets.php" class="text-gray-400 hover:text-white transition">Buy Tickets</a>
-                        <a href="/settings.php" class="text-white font-medium">Settings</a>
+                        <a href="/track" class="text-gray-400 hover:text-white transition">Tracking</a>
+                        <a href="/tickets" class="text-gray-400 hover:text-white transition">Buy Tickets</a>
+                        <a href="/settings" class="text-white font-medium">Settings</a>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
                     <span class="text-sm text-gray-400">Tickets: <span class="text-white font-semibold"><?php echo number_format($user['tickets']); ?></span></span>
-                    <a href="/logout.php" class="text-red-400 hover:text-red-300 text-sm">
+                    <a href="/logout" class="text-red-400 hover:text-red-300 text-sm">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </div>

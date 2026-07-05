@@ -47,16 +47,16 @@ $packages = TICKET_PACKAGES;
         <div class="max-w-[1600px] mx-auto">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-8">
-                    <a href="/track.php" class="flex items-center space-x-3">
+                    <a href="/track" class="flex items-center space-x-3">
                         <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
                             <i class="fas fa-shipping-fast text-white text-sm"></i>
                         </div>
                         <span class="text-xl font-bold">Tukeruy</span>
                     </a>
                     <div class="hidden md:flex items-center space-x-6 text-sm">
-                        <a href="/track.php" class="text-gray-400 hover:text-white transition">Tracking</a>
-                        <a href="/tickets.php" class="text-white font-medium">Buy Tickets</a>
-                        <a href="/settings.php" class="text-gray-400 hover:text-white transition">Settings</a>
+                        <a href="/track" class="text-gray-400 hover:text-white transition">Tracking</a>
+                        <a href="/tickets" class="text-white font-medium">Buy Tickets</a>
+                        <a href="/settings" class="text-gray-400 hover:text-white transition">Settings</a>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -66,8 +66,8 @@ $packages = TICKET_PACKAGES;
                             <i class="fas fa-user text-sm"></i>
                         </button>
                         <div class="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-lg hidden group-hover:block">
-                            <a href="/settings.php" class="block px-4 py-2 text-sm hover:bg-slate-700 transition">Settings</a>
-                            <a href="/logout.php" class="block px-4 py-2 text-sm text-red-400 hover:bg-slate-700 transition">Logout</a>
+                            <a href="/settings" class="block px-4 py-2 text-sm hover:bg-slate-700 transition">Settings</a>
+                            <a href="/logout" class="block px-4 py-2 text-sm text-red-400 hover:bg-slate-700 transition">Logout</a>
                         </div>
                     </div>
                 </div>
@@ -415,7 +415,7 @@ $packages = TICKET_PACKAGES;
             payButton.disabled = true;
             
             try {
-                const response = await fetch('/api/payment/create.php', {
+                const response = await fetch('/api/payment/create', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -599,7 +599,7 @@ $packages = TICKET_PACKAGES;
         function startPaymentCheck(qrisId) {
             paymentCheckInterval = setInterval(async () => {
                 try {
-                    const response = await fetch(`/api/payment/check.php?qris_id=${qrisId}`);
+                    const response = await fetch(`/api/payment/check?qris_id=${qrisId}`);
                     const data = await response.json();
                     
                     if (data.status === 'paid') {
@@ -674,7 +674,7 @@ $packages = TICKET_PACKAGES;
         function startSaweriaPaymentCheck(donationId) {
             paymentCheckInterval = setInterval(async () => {
                 try {
-                    const response = await fetch(`/api/payment/check.php?saweria_id=${donationId}`);
+                    const response = await fetch(`/api/payment/check?saweria_id=${donationId}`);
                     const data = await response.json();
                     
                     if (data.status === 'paid') {

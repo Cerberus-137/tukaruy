@@ -5,7 +5,7 @@ require_once 'auth.php';
 
 // Redirect if already logged in
 if (isLoggedIn()) {
-    header('Location: /track.php');
+    header('Location: /track');
     exit;
 }
 ?>
@@ -47,8 +47,8 @@ if (isLoggedIn()) {
                     <span class="text-2xl font-bold gradient-text">TUKERUY</span>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="/login.php" class="text-gray-600 hover:text-gray-900 font-medium transition">Log In</a>
-                    <a href="/register.php" class="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white px-6 py-2 rounded-lg font-medium transition">Sign Up</a>
+                    <a href="/login" class="text-gray-600 hover:text-gray-900 font-medium transition">Log In</a>
+                    <a href="/register" class="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white px-6 py-2 rounded-lg font-medium transition">Sign Up</a>
                 </div>
             </div>
         </div>
@@ -66,7 +66,7 @@ if (isLoggedIn()) {
                         Use our tracking service to quickly track packages and obtain tracking numbers to the city and state or country of the recipient.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4">
-                        <a href="/register.php" class="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition text-center">
+                        <a href="/register" class="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition text-center">
                             Get Started Free
                         </a>
                         <a href="#features" class="border-2 border-gray-300 hover:border-gray-400 text-gray-700 px-8 py-4 rounded-lg font-semibold text-lg transition text-center">
@@ -204,7 +204,7 @@ if (isLoggedIn()) {
                             <span>Advanced Filters</span>
                         </li>
                     </ul>
-                    <a href="/register.php" class="block w-full text-center bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-semibold transition">
+                    <a href="/register" class="block w-full text-center bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-semibold transition">
                         Get Started
                     </a>
                 </div>
@@ -235,7 +235,7 @@ if (isLoggedIn()) {
                             <span>Priority Support</span>
                         </li>
                     </ul>
-                    <a href="/register.php" class="block w-full text-center bg-white hover:bg-gray-100 text-purple-600 py-3 rounded-lg font-semibold transition">
+                    <a href="/register" class="block w-full text-center bg-white hover:bg-gray-100 text-purple-600 py-3 rounded-lg font-semibold transition">
                         Get Started
                     </a>
                 </div>
@@ -267,7 +267,7 @@ if (isLoggedIn()) {
                             <span>Best Value</span>
                         </li>
                     </ul>
-                    <a href="/register.php" class="block w-full text-center bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-semibold transition">
+                    <a href="/register" class="block w-full text-center bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-semibold transition">
                         Get Started
                     </a>
                 </div>
@@ -280,7 +280,7 @@ if (isLoggedIn()) {
         <div class="max-w-4xl mx-auto px-6 text-center text-white">
             <h2 class="text-4xl font-bold mb-4">Ready to Get Started?</h2>
             <p class="text-xl mb-8 opacity-90">Join thousands of users tracking packages worldwide</p>
-            <a href="/register.php" class="inline-block bg-white hover:bg-gray-100 text-purple-600 px-8 py-4 rounded-lg font-semibold text-lg transition">
+            <a href="/register" class="inline-block bg-white hover:bg-gray-100 text-purple-600 px-8 py-4 rounded-lg font-semibold text-lg transition">
                 Create Free Account
             </a>
         </div>
@@ -304,7 +304,7 @@ if (isLoggedIn()) {
                     <ul class="space-y-2 text-sm">
                         <li><a href="#features" class="hover:text-white transition">Features</a></li>
                         <li><a href="#pricing" class="hover:text-white transition">Pricing</a></li>
-                        <li><a href="/track.php" class="hover:text-white transition">Tracking</a></li>
+                        <li><a href="/track" class="hover:text-white transition">Tracking</a></li>
                     </ul>
                 </div>
                 <div>

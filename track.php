@@ -185,10 +185,10 @@ $stats = [
                         <span class="text-xl font-bold">Tukeruy</span>
                     </div>
                     <div class="hidden md:flex items-center space-x-6 text-sm">
-                        <a href="/track.php" class="text-white font-medium">Pelacakan</a>
+                        <a href="/track" class="text-white font-medium">Pelacakan</a>
                         <a href="#" class="text-gray-400 hover:text-white transition" onclick="showHistoryModal()">Riwayat</a>
-                        <a href="/tickets.php" class="text-gray-400 hover:text-white transition">Top Up</a>
-                        <a href="/settings.php" class="text-gray-400 hover:text-white transition">Settings</a>
+                        <a href="/tickets" class="text-gray-400 hover:text-white transition">Top Up</a>
+                        <a href="/settings" class="text-gray-400 hover:text-white transition">Settings</a>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -202,10 +202,10 @@ $stats = [
                                 <p class="text-sm font-medium"><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></p>
                                 <p class="text-xs text-gray-400"><?php echo htmlspecialchars($user['email']); ?></p>
                             </div>
-                            <a href="/settings.php" class="block px-3 py-2 text-sm hover:bg-dark-300 transition">
+                            <a href="/settings" class="block px-3 py-2 text-sm hover:bg-dark-300 transition">
                                 <i class="fas fa-cog mr-2"></i>Settings
                             </a>
-                            <a href="/tickets.php" class="block px-3 py-2 text-sm hover:bg-dark-300 transition">
+                            <a href="/tickets" class="block px-3 py-2 text-sm hover:bg-dark-300 transition">
                                 <i class="fas fa-ticket mr-2"></i>Buy Tickets
                             </a>
                             <?php if ($user['role'] === 'admin'): ?>
@@ -213,7 +213,7 @@ $stats = [
                                 <i class="fas fa-shield-alt mr-2"></i>Admin Panel
                             </a>
                             <?php endif; ?>
-                            <a href="/logout.php" class="block px-3 py-2 text-sm hover:bg-dark-300 transition text-red-400">
+                            <a href="/logout" class="block px-3 py-2 text-sm hover:bg-dark-300 transition text-red-400">
                                 <i class="fas fa-sign-out-alt mr-2"></i>Logout
                             </a>
                         </div>

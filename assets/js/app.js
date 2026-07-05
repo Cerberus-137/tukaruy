@@ -119,6 +119,7 @@ const citiesByCountry = {
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     setupFilterButtons();
+    setDefaultStatus();
     setupCountryDropdown();
     setupOriginCountryDropdown();
     setupDestCityDropdown();
@@ -140,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Load stats asynchronously
 async function loadStats() {
     try {
-        const response = await fetch('api/stats.php');
+        const response = await fetch('api/stats');
         const data = await response.json();
         
         if (data.success && data.stats) {
@@ -228,6 +229,15 @@ function handleStatusClick(btn, value) {
     // Auto-apply if enabled
     if (autoApply) {
         debounceSearch();
+    }
+}
+
+// Set default status to pre-transit on page load
+function setDefaultStatus() {
+    const preTransitBtn = document.querySelector('[data-type="status"][data-value="pre-transit"]');
+    if (preTransitBtn && !preTransitBtn.classList.contains('active')) {
+        preTransitBtn.classList.add('active');
+        selectedStatuses = ['pre-transit'];
     }
 }
 
@@ -920,6 +930,34 @@ function setupFilterChangeListeners() {
             });
         }
     });
+    
+    // Load available ship dates
+    loadAvailableShipDates();
+}
+
+// Load available ship dates from API
+async function loadAvailableShipDates() {
+    try {
+        const response = await fetch('api/ship-dates', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.dates) {
+            // Store available dates in window for use in date picker
+            window.availableShipDates = data.dates.map(d => d.date);
+            console.log('Available ship dates loaded:', window.availableShipDates.length, 'dates');
+            
+            // You can update date pickers to highlight available dates
+            // Or show counts next to dates (implement as needed)
+        }
+    } catch (error) {
+        console.warn('Failed to load available ship dates:', error);
+    }
 }
 
 // Debounced search
@@ -1023,7 +1061,7 @@ async function performSearch(filters, append = false) {
         }
         
         // Make API request
-        const response = await fetch('api/search.php', {
+        const response = await fetch('api/search', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1314,7 +1352,7 @@ async function revealTrackingNumber(tnId) {
             </div>
         `;
         
-        const response = await fetch('api/reveal.php', {
+        const response = await fetch('api/reveal', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1485,7 +1523,7 @@ function closeHistoryModal() {
 // Load history
 async function loadHistory() {
     try {
-        const response = await fetch('api/account.php?history=true');
+        const response = await fetch('api/account?history=true');
         const data = await response.json();
         
         if (data.success && data.history) {

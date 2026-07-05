@@ -3,9 +3,13 @@ session_start();
 require_once 'config.php';
 require_once 'auth.php';
 
+// Cloudflare Turnstile config
+define('TURNSTILE_SITE_KEY', '0x4AAAAAADv5iD6IFqguAWUU');
+define('TURNSTILE_SECRET_KEY', '0x4AAAAAADv5iGUdF-BTe-Rgo6BLfApsm4Q');
+
 // Redirect if already logged in
 if (isLoggedIn()) {
-    header('Location: /track.php');
+    header('Location: /track');
     exit;
 }
 
@@ -15,19 +19,67 @@ $success = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
+    $captchaToken = $_POST['cf-turnstile-response'] ?? '';
     
     if (empty($email) || empty($password)) {
         $error = 'Please fill in all fields';
+    } elseif (empty($captchaToken)) {
+        $error = 'Please complete the CAPTCHA';
     } else {
-        $result = loginUser($email, $password);
+        // Verify CAPTCHA token
+        $captchaValid = verifyCaptcha($captchaToken, TURNSTILE_SECRET_KEY);
         
-        if ($result['success']) {
-            header('Location: /track.php');
-            exit;
+        if (!$captchaValid) {
+            $error = 'CAPTCHA verification failed. Please try again.';
         } else {
-            $error = $result['message'];
+            $result = loginUser($email, $password);
+            
+            if ($result['success']) {
+                header('Location: /track');
+                exit;
+            } else {
+                $error = $result['message'];
+            }
         }
     }
+}
+
+/**
+ * Verify Cloudflare Turnstile CAPTCHA token
+ */
+function verifyCaptcha($token, $secretKey) {
+    $url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+    
+    $data = [
+        'secret' => $secretKey,
+        'response' => $token
+    ];
+    
+    $options = [
+        'http' => [
+            'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+            'method'  => 'POST',
+            'content' => http_build_query($data),
+            'timeout' => 10
+        ]
+    ];
+    
+    $context = stream_context_create($options);
+    $result = @file_get_contents($url, false, $context);
+    
+    if ($result === false) {
+        error_log('CAPTCHA verification failed: Unable to reach Cloudflare API');
+        return false;
+    }
+    
+    $decoded = json_decode($result, true);
+    
+    if (!isset($decoded['success']) || !$decoded['success']) {
+        error_log('CAPTCHA verification failed: ' . json_encode($decoded));
+        return false;
+    }
+    
+    return true;
 }
 ?>
 <!DOCTYPE html>
@@ -38,6 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Sign In - <?php echo SITE_NAME; ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body {
@@ -111,14 +164,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         >
                     </div>
 
-                    <!-- CAPTCHA Placeholder -->
-                    <div class="bg-slate-700/50 border border-slate-600 rounded-lg p-4 flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <i class="fas fa-check-circle text-green-400 text-xl"></i>
-                            <span class="text-sm text-gray-300">Success!</span>
-                        </div>
-                        <img src="https://www.gstatic.com/recaptcha/api2/logo_48.png" alt="reCAPTCHA" class="h-8 opacity-50">
-                    </div>
+                    <!-- Cloudflare Turnstile CAPTCHA -->
+                    <div class="cf-turnstile" data-sitekey="<?php echo TURNSTILE_SITE_KEY; ?>" data-theme="dark"></div>
 
                     <button 
                         type="submit"
@@ -132,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="mt-6 text-center">
                 <p class="text-sm text-gray-400">
                     New here? 
-                    <a href="/register.php" class="text-purple-400 hover:text-purple-300 font-medium transition">Create an account</a>
+                    <a href="/register" class="text-purple-400 hover:text-purple-300 font-medium transition">Create an account</a>
                 </p>
             </div>
         </div>
