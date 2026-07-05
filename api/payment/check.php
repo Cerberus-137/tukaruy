@@ -54,8 +54,10 @@ try {
             // Check if payment is paid (case-insensitive)
             $paymentStatus = isset($statusResponse['status']) ? strtolower($statusResponse['status']) : '';
             
-            if ($paymentStatus === 'paid' || $paymentStatus === 'success' || $paymentStatus === 'completed') {
-                error_log('Payment confirmed as paid for QRIS ID: ' . $qrisId);
+            error_log('Payment Status for QRIS ID ' . $qrisId . ': ' . $paymentStatus);
+            
+            if ($paymentStatus === 'paid' || $paymentStatus === 'success' || $paymentStatus === 'completed' || $paymentStatus === 'settlement') {
+                error_log('Payment confirmed as PAID for QRIS ID: ' . $qrisId);
                 
                 $pdo->beginTransaction();
                 
@@ -63,40 +65,51 @@ try {
                     // Update payment status
                     $stmt = $pdo->prepare("UPDATE payments SET status = 'paid', paid_at = NOW() WHERE id = ?");
                     $stmt->execute([$payment['id']]);
-                    error_log('Payment status updated to paid');
+                    error_log('✅ Payment status updated to PAID in database');
                     
                     // Add tickets to user
                     $stmt = $pdo->prepare("UPDATE users SET tickets = tickets + ? WHERE id = ?");
                     $stmt->execute([$payment['tickets'], $user['id']]);
-                    error_log('Tickets added to user: ' . $payment['tickets']);
+                    error_log('✅ Tickets added to user: ' . $payment['tickets'] . ' tickets for user ID: ' . $user['id']);
+                    
+                    // Get updated user tickets
+                    $stmt = $pdo->prepare("SELECT tickets FROM users WHERE id = ?");
+                    $stmt->execute([$user['id']]);
+                    $updatedUser = $stmt->fetch();
+                    $newBalance = $updatedUser['tickets'];
+                    
+                    error_log('✅ User new ticket balance: ' . $newBalance);
                     
                     $pdo->commit();
                     
                     echo json_encode([
                         'success' => true,
                         'status' => 'paid',
-                        'tickets' => $payment['tickets']
+                        'tickets_added' => $payment['tickets'],
+                        'new_balance' => $newBalance,
+                        'message' => 'Payment successful! ' . $payment['tickets'] . ' credits have been added to your account.'
                     ]);
                 } catch (Exception $dbError) {
                     $pdo->rollBack();
-                    error_log('Database error updating payment: ' . $dbError->getMessage());
+                    error_log('❌ Database error updating payment: ' . $dbError->getMessage());
                     throw $dbError;
                 }
             } else {
-                error_log('Payment not yet paid. Current status: ' . $paymentStatus);
+                error_log('⏳ Payment not yet paid. Current status: ' . $paymentStatus);
                 echo json_encode([
                     'success' => true,
-                    'status' => $payment['status'],
-                    'api_status' => $paymentStatus
+                    'status' => 'pending',
+                    'api_status' => $paymentStatus,
+                    'message' => 'Payment is still pending. Please complete the payment.'
                 ]);
             }
         } catch (Exception $e) {
             // If API check fails, return current status
-            error_log('QRIS API check failed: ' . $e->getMessage());
+            error_log('❌ QRIS API check failed: ' . $e->getMessage());
             echo json_encode([
                 'success' => true,
                 'status' => $payment['status'],
-                'error' => $e->getMessage()
+                'error' => 'Unable to verify payment status: ' . $e->getMessage()
             ]);
         }
         

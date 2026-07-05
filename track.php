@@ -25,6 +25,9 @@ $stats = [
     <title>Tukarkuy - Dashboard Pelacakan Pengiriman</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Flatpickr for date range picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -169,6 +172,67 @@ $stats = [
                 opacity: 1;
             }
         }
+        
+        /* Flatpickr Dark Theme */
+        .flatpickr-calendar {
+            background: #1a1a1a !important;
+            border: 1px solid rgba(139, 92, 246, 0.3) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+        }
+        .flatpickr-months {
+            background: #2a2a2a !important;
+        }
+        .flatpickr-month {
+            color: #fff !important;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months {
+            background: #2a2a2a !important;
+            color: #fff !important;
+        }
+        .flatpickr-current-month input.cur-year {
+            color: #fff !important;
+        }
+        .flatpickr-weekday {
+            color: #9ca3af !important;
+        }
+        .flatpickr-day {
+            color: #fff !important;
+        }
+        .flatpickr-day:hover {
+            background: rgba(139, 92, 246, 0.3) !important;
+            border-color: rgba(139, 92, 246, 0.5) !important;
+        }
+        .flatpickr-day.selected {
+            background: rgba(139, 92, 246, 0.8) !important;
+            border-color: #8b5cf6 !important;
+        }
+        .flatpickr-day.inRange {
+            background: rgba(139, 92, 246, 0.2) !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+        .flatpickr-day.disabled {
+            color: #4a4a4a !important;
+        }
+        .flatpickr-day.today {
+            border-color: rgba(59, 130, 246, 0.8) !important;
+        }
+        .numInputWrapper:hover {
+            background: rgba(139, 92, 246, 0.1) !important;
+        }
+        /* Custom ship date count badges */
+        .flatpickr-day.has-tn::after {
+            content: attr(data-count);
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            background: rgba(139, 92, 246, 0.8);
+            color: #fff;
+            font-size: 8px;
+            padding: 1px 3px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body class="bg-black text-gray-100 min-h-screen">
@@ -305,7 +369,18 @@ $stats = [
                                 SHIP DATE WINDOW
                             </label>
                             <div class="relative">
-                                <input type="date" id="ship_from" placeholder="Any ship date" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-purple-500">
+                                <button type="button" id="ship-date-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                    <span id="selected-ship-date-display" class="text-gray-400">Select date range...</span>
+                                    <i class="fas fa-calendar-alt text-xs text-purple-400"></i>
+                                </button>
+                                <input type="hidden" id="ship_from" value="">
+                                <input type="hidden" id="ship_to" value="">
+                            </div>
+                            <div class="mt-2 text-xs text-gray-400 flex items-center justify-between">
+                                <span>Available tracking numbers by ship date</span>
+                                <button type="button" onclick="clearShipDateRange()" class="text-purple-400 hover:text-purple-300" title="Clear date range">
+                                    <i class="fas fa-times-circle"></i>
+                                </button>
                             </div>
                         </div>
 

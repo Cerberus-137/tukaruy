@@ -127,6 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupDestStateDropdown();
     setupAutoApplyToggle();
     setupFilterChangeListeners();
+    setupShipDatePicker(); // Add Ship Date calendar
     console.log('Tukeruy initialized');
     
     // Load stats in background (non-blocking)
@@ -1299,33 +1300,29 @@ function loadMore() {
     }
 }
 
-// Show reveal modal
+// Show reveal modal - NEW VERSION with loading state
 function showRevealModal(tnId, cost) {
     currentTnId = tnId;
     
     const modalContent = document.getElementById('modal-content');
     if (!modalContent) return;
     
+    // Show loading state while fetching shipment details
     modalContent.innerHTML = `
-        <div class="flex items-center space-x-3 p-4 bg-dark-300 rounded-lg">
-            <i class="fas fa-box text-purple-400 text-lg"></i>
-            <div>
-                <div class="font-medium">Tracking Number ID: ${tnId}</div>
-                <div class="text-sm text-gray-400">Cost: ${cost} credit${cost > 1 ? 's' : ''}</div>
-            </div>
+        <div class="text-center py-8">
+            <i class="fas fa-spinner fa-spin text-3xl text-purple-500"></i>
+            <div class="mt-3 text-gray-400">Loading shipment details...</div>
         </div>
     `;
-    
-    const confirmBtn = document.getElementById('confirm-btn');
-    if (confirmBtn) {
-        confirmBtn.onclick = () => revealTrackingNumber(tnId);
-    }
     
     const modal = document.getElementById('reveal-modal');
     if (modal) {
         modal.classList.remove('hidden');
         modal.classList.add('flex');
     }
+    
+    // Fetch tracking number details FIRST before showing modal
+    revealTrackingNumber(tnId);
 }
 
 // Close modal
@@ -1338,19 +1335,11 @@ function closeModal() {
     currentTnId = null;
 }
 
-// Reveal tracking number
+// Reveal tracking number - ENHANCED VERSION with full shipment details
 async function revealTrackingNumber(tnId) {
     try {
         const modalContent = document.getElementById('modal-content');
         if (!modalContent) return;
-        
-        // Show loading in modal
-        modalContent.innerHTML = `
-            <div class="text-center py-4">
-                <i class="fas fa-spinner fa-spin text-2xl text-purple-500"></i>
-                <div class="mt-2 text-gray-400">Revealing tracking number...</div>
-            </div>
-        `;
         
         const response = await fetch('api/reveal', {
             method: 'POST',
@@ -1365,22 +1354,125 @@ async function revealTrackingNumber(tnId) {
         if (data.success && data.result) {
             const result = data.result;
             
-            // Show success with tracking number
+            // Format dates
+            let shipDate = 'N/A';
+            if (result.ship_date) {
+                try {
+                    const date = new Date(result.ship_date);
+                    shipDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                } catch (e) {
+                    shipDate = result.ship_date;
+                }
+            }
+            
+            let deliveryDate = 'N/A';
+            if (result.delivery_date) {
+                try {
+                    const date = new Date(result.delivery_date);
+                    deliveryDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                } catch (e) {
+                    deliveryDate = result.delivery_date;
+                }
+            }
+            
+            // Format origin
+            let origin = 'N/A';
+            if (result.origin && typeof result.origin === 'object') {
+                const originParts = [];
+                if (result.origin.city) originParts.push(result.origin.city);
+                if (result.origin.state) originParts.push(result.origin.state);
+                if (result.origin.country) originParts.push(result.origin.country);
+                if (originParts.length > 0) {
+                    origin = originParts.join(', ');
+                }
+            }
+            
+            // Format destination
+            let destination = 'N/A';
+            if (result.dest && typeof result.dest === 'object') {
+                const destParts = [];
+                if (result.dest.city) destParts.push(result.dest.city);
+                if (result.dest.state) destParts.push(result.dest.state);
+                if (result.dest.country) destParts.push(result.dest.country);
+                if (destParts.length > 0) {
+                    destination = destParts.join(', ');
+                }
+            }
+            
+            // Format weight
+            let weight = 'N/A';
+            if (result.weight_grams && result.weight_grams > 0) {
+                const lbs = (result.weight_grams / 453.592).toFixed(2);
+                weight = `${lbs} lbs`;
+            }
+            
+            // Get carrier badge class
+            const carrierBadgeClass = getCarrierBadgeClass(result.carrier);
+            const statusBadgeClass = getStatusBadgeClass(result.status);
+            
+            // Show detailed shipment information with tracking number
             modalContent.innerHTML = `
                 <div class="space-y-4">
-                    <div class="text-center">
-                        <i class="fas fa-check-circle text-4xl text-green-500"></i>
-                        <h4 class="text-lg font-semibold mt-2">Success!</h4>
-                    </div>
-                    <div class="bg-dark-300 rounded-lg p-4">
-                        <div class="text-center">
-                            <div class="text-sm text-gray-400 mb-1">Tracking Number</div>
-                            <div class="text-2xl font-mono font-bold text-white select-all">${result.tracking_number}</div>
-                            <div class="text-sm text-gray-400 mt-2">${result.carrier.toUpperCase()}</div>
+                    <!-- Header -->
+                    <div class="text-center border-b border-gray-700 pb-4">
+                        <div class="inline-flex items-center space-x-2 mb-2">
+                            <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                            <h4 class="text-lg font-semibold">Tracking Number Revealed</h4>
                         </div>
                     </div>
-                    <div class="text-xs text-gray-500 text-center">
-                        Credits remaining: ${data.credits_remaining}
+                    
+                    <!-- Tracking Number -->
+                    <div class="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-lg p-4">
+                        <div class="text-center">
+                            <div class="text-xs text-gray-400 mb-1">TRACKING NUMBER</div>
+                            <div class="text-2xl font-mono font-bold text-white select-all mb-2">${result.tracking_number}</div>
+                            <span class="inline-flex items-center px-3 py-1 text-sm font-semibold rounded-md ${carrierBadgeClass}">
+                                ${result.carrier ? result.carrier.toUpperCase() : 'N/A'}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Shipment Details -->
+                    <div class="bg-dark-300 rounded-lg p-4 space-y-3">
+                        <div class="flex justify-between items-center pb-2 border-b border-gray-700">
+                            <span class="text-sm text-gray-400">Status</span>
+                            <span class="status-badge ${statusBadgeClass}">
+                                ${formatStatus(result.status)}
+                            </span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Origin</span>
+                            <span class="text-sm text-white font-medium text-right">${origin}</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Destination</span>
+                            <span class="text-sm text-white font-medium text-right">${destination}</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Ship Date</span>
+                            <span class="text-sm text-white">${shipDate}</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Delivery Date</span>
+                            <span class="text-sm text-white">${deliveryDate}</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Weight</span>
+                            <span class="text-sm text-white">${weight}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Credits Info -->
+                    <div class="text-center pt-2">
+                        <div class="inline-flex items-center space-x-2 text-xs text-gray-400">
+                            <i class="fas fa-ticket"></i>
+                            <span>Credits remaining: <span class="text-white font-semibold">${data.credits_remaining}</span></span>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1395,7 +1487,14 @@ async function revealTrackingNumber(tnId) {
             const confirmBtn = document.getElementById('confirm-btn');
             if (confirmBtn) {
                 confirmBtn.textContent = 'Close';
+                confirmBtn.className = 'w-full bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-medium py-3 rounded-lg transition';
                 confirmBtn.onclick = closeModal;
+            }
+            
+            // Hide cancel button
+            const cancelBtn = document.getElementById('cancel-btn');
+            if (cancelBtn) {
+                cancelBtn.style.display = 'none';
             }
             
         } else {
@@ -1408,10 +1507,11 @@ async function revealTrackingNumber(tnId) {
         const modalContent = document.getElementById('modal-content');
         if (modalContent) {
             modalContent.innerHTML = `
-                <div class="text-center py-4">
-                    <i class="fas fa-exclamation-triangle text-3xl text-red-500"></i>
-                    <div class="mt-2 text-red-400">Error: ${error.message}</div>
-                    <button onclick="revealTrackingNumber('${tnId}')" class="mt-3 text-purple-400 hover:text-purple-300 text-sm">
+                <div class="text-center py-6">
+                    <i class="fas fa-exclamation-triangle text-4xl text-red-500"></i>
+                    <div class="mt-3 text-lg font-semibold text-red-400">Error</div>
+                    <div class="mt-2 text-sm text-gray-400">${error.message}</div>
+                    <button onclick="showRevealModal('${tnId}', 1)" class="mt-4 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium rounded-lg transition">
                         Try again
                     </button>
                 </div>
@@ -1648,3 +1748,140 @@ function showNotification(message, type = 'info') {
         setTimeout(() => notification.remove(), 300);
     }, 3000);
 }
+
+
+// Setup Ship Date Picker with Flatpickr
+let shipDatePicker = null;
+function setupShipDatePicker() {
+    const trigger = document.getElementById('ship-date-trigger');
+    const shipFrom = document.getElementById('ship_from');
+    const shipTo = document.getElementById('ship_to');
+    const display = document.getElementById('selected-ship-date-display');
+    
+    if (!trigger || !shipFrom || !shipTo || !display) return;
+    
+    // Initialize Flatpickr
+    shipDatePicker = flatpickr(trigger, {
+        mode: 'range',
+        dateFormat: 'Y-m-d',
+        showMonths: 1,
+        inline: false,
+        minDate: '2020-01-01',
+        maxDate: new Date(new Date().getFullYear() + 1, 11, 31),
+        onChange: function(selectedDates, dateStr, instance) {
+            if (selectedDates.length === 2) {
+                // Both dates selected
+                const startDate = selectedDates[0];
+                const endDate = selectedDates[1];
+                
+                // Format dates
+                const formatDate = (date) => {
+                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                };
+                
+                // Update hidden inputs
+                shipFrom.value = instance.formatDate(startDate, 'Y-m-d');
+                shipTo.value = instance.formatDate(endDate, 'Y-m-d');
+                
+                // Update display
+                display.textContent = `${formatDate(startDate)} - ${formatDate(endDate)}`;
+                display.classList.remove('text-gray-400');
+                
+                // Show notification
+                showNotification(`Ship date range: ${formatDate(startDate)} - ${formatDate(endDate)}`, 'info');
+                
+                // Auto-apply if enabled
+                if (autoApply) {
+                    debounceSearch();
+                }
+            } else if (selectedDates.length === 1) {
+                // Only start date selected
+                const startDate = selectedDates[0];
+                const formatDate = (date) => {
+                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                };
+                display.textContent = `${formatDate(startDate)} - ...`;
+                display.classList.remove('text-gray-400');
+            }
+        },
+        onReady: function(selectedDates, dateStr, instance) {
+            // Load and show available ship dates with counts
+            loadShipDatesWithCounts(instance);
+        }
+    });
+}
+
+// Load ship dates with counts and display on calendar
+async function loadShipDatesWithCounts(flatpickrInstance) {
+    try {
+        const response = await fetch('api/ship-dates', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.dates && data.dates.length > 0) {
+            // Store dates with counts
+            window.shipDatesData = {};
+            data.dates.forEach(item => {
+                window.shipDatesData[item.date] = item.count;
+            });
+            
+            // Add custom styling to calendar days with counts
+            setTimeout(() => {
+                const calendarDays = document.querySelectorAll('.flatpickr-day');
+                calendarDays.forEach(day => {
+                    if (!day.classList.contains('flatpickr-disabled')) {
+                        const dateStr = day.dateObj ? flatpickrInstance.formatDate(day.dateObj, 'Y-m-d') : null;
+                        if (dateStr && window.shipDatesData[dateStr]) {
+                            day.classList.add('has-tn');
+                            day.setAttribute('data-count', formatCount(window.shipDatesData[dateStr]));
+                            day.title = `${window.shipDatesData[dateStr]} tracking numbers available`;
+                        }
+                    }
+                });
+            }, 100);
+            
+            console.log('Ship dates with counts loaded:', data.dates.length, 'dates');
+        }
+    } catch (error) {
+        console.warn('Failed to load ship dates with counts:', error);
+    }
+}
+
+// Format count for display (e.g., 1234 -> 1.2k)
+function formatCount(count) {
+    if (count >= 1000) {
+        return (count / 1000).toFixed(1) + 'k';
+    }
+    return count.toString();
+}
+
+// Clear ship date range
+window.clearShipDateRange = function() {
+    const shipFrom = document.getElementById('ship_from');
+    const shipTo = document.getElementById('ship_to');
+    const display = document.getElementById('selected-ship-date-display');
+    
+    if (shipFrom) shipFrom.value = '';
+    if (shipTo) shipTo.value = '';
+    if (display) {
+        display.textContent = 'Select date range...';
+        display.classList.add('text-gray-400');
+    }
+    
+    // Clear Flatpickr selection
+    if (shipDatePicker) {
+        shipDatePicker.clear();
+    }
+    
+    showNotification('Ship date range cleared', 'info');
+    
+    // Auto-apply if enabled
+    if (autoApply) {
+        debounceSearch();
+    }
+};

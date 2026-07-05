@@ -139,11 +139,33 @@ class QRISPayAPI {
     public function checkPaymentStatus($qrisId) {
         $response = $this->makeRequest("/api/payment/qris/{$qrisId}/status");
         
-        if ($response['status'] !== 'success') {
-            throw new Exception('Failed to check payment status');
+        // Log full response for debugging
+        error_log('QRIS Status Check Response: ' . json_encode($response));
+        
+        // Handle different response formats
+        // Format 1: {status: "success", data: {...}}
+        if (isset($response['status']) && $response['status'] === 'success' && isset($response['data'])) {
+            $statusData = $response['data'];
+        }
+        // Format 2: Direct data without wrapper
+        else if (isset($response['qris_id']) || isset($response['id']) || isset($response['status'])) {
+            $statusData = $response;
+        }
+        else {
+            error_log('QRIS Status Unknown Response Format: ' . json_encode($response));
+            throw new Exception('Unknown QRIS status response format');
         }
         
-        return $response['data'];
+        // Normalize status field
+        $normalized = [
+            'qris_id' => $statusData['qris_id'] ?? $statusData['id'] ?? $qrisId,
+            'status' => strtolower($statusData['status'] ?? $statusData['payment_status'] ?? 'pending'),
+            'amount' => $statusData['amount'] ?? 0,
+            'payment_reference' => $statusData['payment_reference'] ?? $statusData['reference'] ?? '',
+            'paid_at' => $statusData['paid_at'] ?? $statusData['payment_time'] ?? null
+        ];
+        
+        return $normalized;
     }
     
     /**

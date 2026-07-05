@@ -585,7 +585,7 @@ $packages = TICKET_PACKAGES;
             
             const expiresIn = Math.floor((qris.expires_in_seconds || 900) / 60);
             paymentInfo.innerHTML = `
-                <div class="text-left bg-slate-800 rounded-lg p-4">
+                <div class="text-left bg-slate-800 rounded-lg p-4 mb-3">
                     <div class="flex justify-between mb-2">
                         <span class="text-gray-400">Amount:</span>
                         <span class="font-bold">Rp ${(qris.amount || 0).toLocaleString()}</span>
@@ -599,25 +599,135 @@ $packages = TICKET_PACKAGES;
                         <span class="text-yellow-400" id="countdown">${expiresIn} minutes</span>
                     </div>
                 </div>
+                
+                <!-- Payment Status -->
+                <div id="payment-status-indicator" class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mb-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-clock text-blue-400"></i>
+                            <span class="text-sm text-blue-300">Waiting for payment...</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-circle-notch fa-spin text-blue-400 text-xs"></i>
+                            <span class="text-xs text-blue-400" id="check-counter">Checking...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Manual Check Button -->
+                <button onclick="manualCheckPayment('${qris.qris_id}')" id="manual-check-btn" 
+                        class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium py-3 rounded-lg transition mb-3 flex items-center justify-center">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    <span>Check Payment Status</span>
+                </button>
+                
                 <p class="text-sm text-gray-400 text-center">
                     <i class="fas fa-mobile-alt mr-2"></i>
                     Open your mobile banking app and scan the QR code above
+                </p>
+                
+                <p class="text-xs text-gray-500 text-center mt-2">
+                    Auto-checking every 3 seconds...
                 </p>
             `;
             
             document.getElementById('payment-modal').classList.remove('hidden');
             document.getElementById('payment-modal').classList.add('flex');
             
+            // Store current QRIS ID globally
+            window.currentQrisId = qris.qris_id;
+            
             // Start checking payment status
             startPaymentCheck(qris.qris_id);
         }
 
+        // Manual check payment function
+        window.manualCheckPayment = async function(qrisId) {
+            const btn = document.getElementById('manual-check-btn');
+            const statusIndicator = document.getElementById('payment-status-indicator');
+            
+            // Show loading state
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i><span>Checking...</span>';
+            
+            try {
+                const response = await fetch(`/api/payment/check?qris_id=${qrisId}`);
+                const data = await response.json();
+                
+                console.log('Manual check result:', data);
+                
+                if (data.status === 'paid') {
+                    // Payment successful!
+                    statusIndicator.className = 'bg-green-500/10 border border-green-500/30 rounded-lg p-3 mb-3';
+                    statusIndicator.innerHTML = `
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-check-circle text-green-400 text-xl"></i>
+                            <span class="text-sm text-green-300 font-semibold">Payment Confirmed!</span>
+                        </div>
+                    `;
+                    
+                    btn.className = 'w-full bg-green-500 text-white font-medium py-3 rounded-lg mb-3';
+                    btn.innerHTML = '<i class="fas fa-check mr-2"></i><span>Payment Successful!</span>';
+                    
+                    // Clear interval
+                    if (paymentCheckInterval) {
+                        clearInterval(paymentCheckInterval);
+                    }
+                    
+                    // Show success and reload
+                    setTimeout(() => {
+                        closePayment();
+                        alert(`✅ Payment Successful!\n\n${data.tickets_added || 0} credits have been added to your account.\n\nNew Balance: ${data.new_balance || 0} credits`);
+                        location.reload();
+                    }, 1500);
+                    
+                } else {
+                    // Payment still pending
+                    statusIndicator.className = 'bg-orange-500/10 border border-orange-500/30 rounded-lg p-3 mb-3';
+                    statusIndicator.innerHTML = `
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-hourglass-half text-orange-400"></i>
+                            <span class="text-sm text-orange-300">${data.message || 'Payment not completed yet'}</span>
+                        </div>
+                    `;
+                    
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-sync-alt mr-2"></i><span>Check Payment Status</span>';
+                    
+                    // Restart auto-check if it was stopped
+                    if (!paymentCheckInterval) {
+                        startPaymentCheck(qrisId);
+                    }
+                }
+            } catch (error) {
+                console.error('Manual check error:', error);
+                
+                statusIndicator.className = 'bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-3';
+                statusIndicator.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-exclamation-triangle text-red-400"></i>
+                        <span class="text-sm text-red-300">Error checking payment. Please try again.</span>
+                    </div>
+                `;
+                
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync-alt mr-2"></i><span>Check Payment Status</span>';
+            }
+        };
+
         function startPaymentCheck(qrisId) {
             let checkCount = 0;
-            const maxChecks = 40; // Max 2 minutes of checking (40 * 3 seconds)
+            const maxChecks = 60; // Max 3 minutes of checking (60 * 3 seconds)
             
             paymentCheckInterval = setInterval(async () => {
                 checkCount++;
+                
+                // Update counter display
+                const counterEl = document.getElementById('check-counter');
+                if (counterEl) {
+                    counterEl.textContent = `Check #${checkCount}`;
+                }
+                
                 try {
                     const response = await fetch(`/api/payment/check?qris_id=${qrisId}`);
                     const data = await response.json();
@@ -627,12 +737,40 @@ $packages = TICKET_PACKAGES;
                     if (data.status === 'paid') {
                         console.log('✅ Payment confirmed as paid!');
                         clearInterval(paymentCheckInterval);
-                        closePayment();
-                        showSuccessMessage(data.tickets);
+                        
+                        // Update UI
+                        const statusIndicator = document.getElementById('payment-status-indicator');
+                        if (statusIndicator) {
+                            statusIndicator.className = 'bg-green-500/10 border border-green-500/30 rounded-lg p-3 mb-3';
+                            statusIndicator.innerHTML = `
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-check-circle text-green-400 text-xl"></i>
+                                    <span class="text-sm text-green-300 font-semibold">Payment Confirmed!</span>
+                                </div>
+                            `;
+                        }
+                        
+                        // Show success and reload
+                        setTimeout(() => {
+                            closePayment();
+                            alert(`✅ Payment Successful!\n\n${data.tickets_added || 0} credits have been added to your account.\n\nNew Balance: ${data.new_balance || 0} credits`);
+                            location.reload();
+                        }, 1500);
+                        
                     } else if (checkCount >= maxChecks) {
-                        console.warn('⚠️ Payment check timeout after 2 minutes');
+                        console.warn('⚠️ Payment check timeout after 3 minutes');
                         clearInterval(paymentCheckInterval);
-                        showWarningMessage('Payment check timeout. Please refresh the page to check status.');
+                        
+                        const statusIndicator = document.getElementById('payment-status-indicator');
+                        if (statusIndicator) {
+                            statusIndicator.className = 'bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-3';
+                            statusIndicator.innerHTML = `
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-clock text-yellow-400"></i>
+                                    <span class="text-sm text-yellow-300">Auto-check stopped. Use manual check button.</span>
+                                </div>
+                            `;
+                        }
                     }
                 } catch (error) {
                     console.error('Payment check error:', error);
