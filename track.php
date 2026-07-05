@@ -99,6 +99,83 @@ $stats = [
             border-color: #8b5cf6;
             color: #c084fc;
         }
+        
+        /* Modern Segmented Buttons */
+        .segmented-btn {
+            padding: 12px 16px;
+            background: rgba(26, 26, 26, 0.6);
+            border: 1.5px solid rgba(74, 74, 74, 0.4);
+            border-radius: 10px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+        .segmented-btn:hover {
+            background: rgba(58, 58, 58, 0.6);
+            border-color: rgba(139, 92, 246, 0.4);
+            color: #e5e7eb;
+            transform: translateY(-1px);
+        }
+        .segmented-btn.active {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.2));
+            border-color: #8b5cf6;
+            color: #c084fc;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+        }
+        
+        /* Modern Dropdown */
+        .modern-dropdown {
+            width: 100%;
+            background: rgba(26, 26, 26, 0.6);
+            border: 1.5px solid rgba(74, 74, 74, 0.4);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 0.875rem;
+            color: #e5e7eb;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modern-dropdown:hover {
+            background: rgba(58, 58, 58, 0.6);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+        .modern-dropdown:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        
+        /* Modern Input */
+        .modern-input {
+            width: 100%;
+            background: rgba(26, 26, 26, 0.6);
+            border: 1.5px solid rgba(74, 74, 74, 0.4);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 0.875rem;
+            color: #e5e7eb;
+            transition: all 0.15s ease;
+        }
+        .modern-input:hover {
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+        .modern-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        .modern-input::placeholder {
+            color: #6b7280;
+        }
         .country-item {
             padding: 8px 12px;
             cursor: pointer;
@@ -291,41 +368,55 @@ $stats = [
     <div class="pt-24 px-6 pb-6">
         <div class="max-w-[1600px] mx-auto flex gap-6">
             
-            <!-- Filter Sidebar -->
+            <!-- Filter Sidebar - REDESIGNED -->
             <aside class="w-80">
                 <div class="glass-effect rounded-2xl p-6 sticky top-24">
-                    <h3 class="font-bold text-xl mb-6">Filters</h3>
+                    <h3 class="font-bold text-xl mb-6">FILTERS</h3>
                     
                     <div class="space-y-6">
-                        <!-- Kurir -->
+                        <!-- Carrier - Segmented Buttons -->
                         <div>
-                            <label class="text-sm font-semibold text-gray-300 mb-3 block">Carrier</label>
+                            <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider">CARRIER</label>
                             <div class="grid grid-cols-2 gap-2">
-                                <button type="button" class="filter-btn active" data-type="carrier" data-value="all">All</button>
-                                <button type="button" class="filter-btn" data-type="carrier" data-value="fedex">FedEx</button>
-                                <button type="button" class="filter-btn" data-type="carrier" data-value="dhl">DHL</button>
-                                <button type="button" class="filter-btn" data-type="carrier" data-value="ups">UPS</button>
+                                <button type="button" class="segmented-btn active" data-type="carrier" data-value="all">
+                                    <i class="fas fa-boxes text-sm mr-2"></i>All
+                                </button>
+                                <button type="button" class="segmented-btn" data-type="carrier" data-value="fedex">
+                                    <i class="fas fa-truck text-sm mr-2"></i>FedEx
+                                </button>
+                                <button type="button" class="segmented-btn" data-type="carrier" data-value="dhl">
+                                    <i class="fas fa-plane text-sm mr-2"></i>DHL
+                                </button>
+                                <button type="button" class="segmented-btn" data-type="carrier" data-value="ups">
+                                    <i class="fas fa-shipping-fast text-sm mr-2"></i>UPS
+                                </button>
                             </div>
                         </div>
 
-                        <!-- Status -->
+                        <!-- Status - Segmented Buttons -->
                         <div>
-                            <label class="text-sm font-semibold text-gray-300 mb-3 block">Status</label>
-                            <div class="flex flex-wrap gap-2">
-                                <button type="button" class="filter-btn" data-type="status" data-value="pre-transit">Pre Transit</button>
-                                <button type="button" class="filter-btn" data-type="status" data-value="transit">Transit</button>
-                                <button type="button" class="filter-btn" data-type="status" data-value="delivered">Delivered</button>
+                            <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider">STATUS</label>
+                            <div class="grid grid-cols-1 gap-2">
+                                <button type="button" class="segmented-btn" data-type="status" data-value="pre-transit">
+                                    <i class="fas fa-circle text-xs text-purple-400 mr-2"></i>Pre Transit
+                                </button>
+                                <button type="button" class="segmented-btn" data-type="status" data-value="transit">
+                                    <i class="fas fa-circle text-xs text-blue-400 mr-2"></i>Transit
+                                </button>
+                                <button type="button" class="segmented-btn" data-type="status" data-value="delivered">
+                                    <i class="fas fa-circle text-xs text-green-400 mr-2"></i>Delivered
+                                </button>
                             </div>
                         </div>
 
-                        <!-- Asal -->
+                        <!-- Origin -->
                         <div>
-                            <label class="text-sm font-semibold text-gray-300 mb-3 block">ORIGIN</label>
-                            <div class="space-y-2">
+                            <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider">ORIGIN</label>
+                            <div class="space-y-3">
                                 <div class="relative">
-                                    <div id="origin-country-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                    <div id="origin-country-dropdown-trigger" class="modern-dropdown">
                                         <span id="selected-origin-country-display" class="text-gray-400">Any country</span>
-                                        <i class="fas fa-chevron-down text-xs"></i>
+                                        <i class="fas fa-chevron-down text-xs text-gray-500"></i>
                                     </div>
                                     <input type="hidden" id="origin_country" value="">
                                     
@@ -341,9 +432,9 @@ $stats = [
                                 </div>
                                 
                                 <div class="relative">
-                                    <div id="origin-city-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                    <div id="origin-city-dropdown-trigger" class="modern-dropdown">
                                         <span id="selected-origin-city-display" class="text-gray-400">Any city</span>
-                                        <i class="fas fa-chevron-down text-xs"></i>
+                                        <i class="fas fa-chevron-down text-xs text-gray-500"></i>
                                     </div>
                                     <input type="hidden" id="origin_city" value="">
                                     
@@ -362,36 +453,35 @@ $stats = [
                             </div>
                         </div>
 
-                        <!-- Ship Date Window -->
+                        <!-- Ship Date Window - Enhanced Calendar -->
                         <div>
-                            <label class="text-sm font-semibold text-gray-300 mb-3 block flex items-center">
-                                <i class="fas fa-calendar-alt mr-2 text-purple-400"></i>
-                                SHIP DATE WINDOW
+                            <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider flex items-center justify-between">
+                                <span><i class="fas fa-calendar-alt mr-2 text-purple-400"></i>SHIP DATE WINDOW</span>
+                                <button type="button" onclick="clearShipDateRange()" class="text-xs text-purple-400 hover:text-purple-300 transition" title="Clear">
+                                    <i class="fas fa-times-circle"></i>
+                                </button>
                             </label>
                             <div class="relative">
-                                <button type="button" id="ship-date-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                <button type="button" id="ship-date-trigger" class="modern-dropdown" onclick="toggleShipDateCalendar()">
                                     <span id="selected-ship-date-display" class="text-gray-400">Select date range...</span>
                                     <i class="fas fa-calendar-alt text-xs text-purple-400"></i>
                                 </button>
                                 <input type="hidden" id="ship_from" value="">
                                 <input type="hidden" id="ship_to" value="">
                             </div>
-                            <div class="mt-2 text-xs text-gray-400 flex items-center justify-between">
-                                <span>Available tracking numbers by ship date</span>
-                                <button type="button" onclick="clearShipDateRange()" class="text-purple-400 hover:text-purple-300" title="Clear date range">
-                                    <i class="fas fa-times-circle"></i>
-                                </button>
+                            <div class="mt-2 text-xs text-gray-500">
+                                <i class="fas fa-info-circle mr-1"></i>Click to open calendar with availability
                             </div>
                         </div>
 
-                        <!-- Tujuan -->
+                        <!-- Destination -->
                         <div>
-                            <label class="text-sm font-semibold text-gray-300 mb-3 block">DESTINATION</label>
-                            <div class="space-y-2">
+                            <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider">DESTINATION</label>
+                            <div class="space-y-3">
                                 <div class="relative">
-                                    <div id="country-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                    <div id="country-dropdown-trigger" class="modern-dropdown">
                                         <span id="selected-country-display">United States (US)</span>
-                                        <i class="fas fa-chevron-down text-xs"></i>
+                                        <i class="fas fa-chevron-down text-xs text-gray-500"></i>
                                     </div>
                                     <input type="hidden" id="dest_country" value="US">
                                     
@@ -407,9 +497,9 @@ $stats = [
                                 </div>
                                 
                                 <div class="relative">
-                                    <div id="dest-state-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                    <div id="dest-state-dropdown-trigger" class="modern-dropdown">
                                         <span id="selected-dest-state-display" class="text-gray-400">Any state</span>
-                                        <i class="fas fa-chevron-down text-xs"></i>
+                                        <i class="fas fa-chevron-down text-xs text-gray-500"></i>
                                     </div>
                                     <input type="hidden" id="dest_state" value="">
                                     
@@ -426,11 +516,11 @@ $stats = [
                                     </div>
                                 </div>
                                 
-                                <div class="flex gap-2">
+                                <div class="flex gap-3">
                                     <div class="flex-1 relative">
-                                        <div id="dest-city-dropdown-trigger" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm cursor-pointer hover:bg-dark-400 transition flex items-center justify-between">
+                                        <div id="dest-city-dropdown-trigger" class="modern-dropdown">
                                             <span id="selected-dest-city-display" class="text-gray-400">Any city</span>
-                                            <i class="fas fa-chevron-down text-xs"></i>
+                                            <i class="fas fa-chevron-down text-xs text-gray-500"></i>
                                         </div>
                                         <input type="hidden" id="dest_city" value="">
                                         
@@ -447,33 +537,34 @@ $stats = [
                                         </div>
                                     </div>
                                     
-                                    <div class="w-24">
-                                        <input type="text" id="dest_zip" placeholder="ZIP" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-purple-500">
+                                    <div class="w-28">
+                                        <input type="text" id="dest_zip" placeholder="ZIP" class="modern-input" maxlength="10">
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Estimasi Tiba -->
+                        <!-- Est. Delivery Window -->
                         <div>
-                            <label class="text-sm font-semibold text-gray-300 mb-3 block flex items-center">
-                                <i class="fas fa-clock mr-2 text-purple-400"></i>
-                                EST. DELIVERY WINDOW
+                            <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider">
+                                <i class="fas fa-clock mr-2 text-purple-400"></i>EST. DELIVERY WINDOW
                             </label>
                             <div class="relative">
-                                <input type="date" id="delivery_from" placeholder="Jul 4, 2026 - Jul 6, 2026" class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-purple-500">
+                                <input type="date" id="delivery_from" class="modern-input">
                             </div>
-                            <p class="text-xs text-gray-500 mt-2">Pre-transit labels have no delivery estimate yet.</p>
+                            <p class="text-xs text-gray-500 mt-2">
+                                <i class="fas fa-info-circle mr-1"></i>Pre-transit labels have no estimate yet
+                            </p>
                         </div>
 
-                        <!-- Buttons -->
-                        <div class="pt-4 space-y-3">
-                            <button onclick="resetFilters()" class="w-full bg-dark-300 hover:bg-dark-400 text-white font-medium py-3 rounded-lg transition flex items-center justify-center">
-                                <i class="fas fa-redo mr-2"></i>Reset
+                        <!-- Action Buttons -->
+                        <div class="pt-4 space-y-3 border-t border-dark-400">
+                            <button onclick="applyFilters()" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3.5 rounded-xl transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-[1.02]">
+                                <i class="fas fa-search mr-2"></i>Search Tracking Numbers
                             </button>
-
-                            <button onclick="applyFilters()" class="w-full bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center shadow-lg">
-                                <i class="fas fa-search mr-2"></i>Search
+                            
+                            <button onclick="resetFilters()" class="w-full bg-dark-300/50 hover:bg-dark-300 text-gray-300 font-medium py-3 rounded-xl transition-all duration-200 flex items-center justify-center border border-dark-400">
+                                <i class="fas fa-redo mr-2"></i>Reset Filters
                             </button>
                         </div>
                     </div>
@@ -595,6 +686,74 @@ $stats = [
                         <i class="fas fa-spinner fa-spin text-3xl text-purple-500"></i>
                         <div class="mt-3 text-gray-500">Loading history...</div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ship Date Calendar Modal - ENHANCED -->
+    <div id="ship-date-calendar-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-dark-200 rounded-2xl shadow-2xl max-w-5xl w-full overflow-hidden border border-dark-400">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b border-dark-400">
+                <div>
+                    <h3 class="text-xl font-bold">Select Ship Date Range</h3>
+                    <p class="text-sm text-gray-400 mt-1">Choose start and end dates to filter tracking numbers</p>
+                </div>
+                <button onclick="closeShipDateCalendar()" class="w-10 h-10 rounded-lg bg-dark-300 hover:bg-dark-400 transition flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Body -->
+            <div class="flex">
+                <!-- Quick Presets -->
+                <div class="w-48 p-4 border-r border-dark-400 bg-dark-300/50">
+                    <h4 class="text-xs font-bold text-gray-400 mb-3 uppercase">Quick Select</h4>
+                    <div class="space-y-1">
+                        <button onclick="selectQuickDate('today')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-dark-400 transition text-sm">
+                            <i class="fas fa-calendar-day mr-2 text-blue-400 text-xs"></i>Today
+                        </button>
+                        <button onclick="selectQuickDate('yesterday')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-dark-400 transition text-sm">
+                            <i class="fas fa-calendar-minus mr-2 text-blue-400 text-xs"></i>Yesterday
+                        </button>
+                        <button onclick="selectQuickDate('last7days')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-dark-400 transition text-sm">
+                            <i class="fas fa-calendar-week mr-2 text-purple-400 text-xs"></i>Last 7 days
+                        </button>
+                        <button onclick="selectQuickDate('last30days')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-dark-400 transition text-sm">
+                            <i class="fas fa-calendar-alt mr-2 text-purple-400 text-xs"></i>Last 30 days
+                        </button>
+                        <button onclick="selectQuickDate('thismonth')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-dark-400 transition text-sm">
+                            <i class="fas fa-calendar mr-2 text-green-400 text-xs"></i>This month
+                        </button>
+                        <button onclick="selectQuickDate('lastmonth')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-dark-400 transition text-sm">
+                            <i class="fas fa-calendar mr-2 text-green-400 text-xs"></i>Last month
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Calendar Container -->
+                <div class="flex-1 p-6">
+                    <div id="ship-date-calendar-container"></div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="flex items-center justify-between p-6 border-t border-dark-400">
+                <div class="text-sm text-gray-400">
+                    <span id="calendar-selected-range">No date selected</span>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="closeShipDateCalendar()" class="px-4 py-2 bg-dark-400 hover:bg-dark-300 rounded-lg transition text-sm font-medium">
+                        Cancel
+                    </button>
+                    <button onclick="applyShipDateRange()" class="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg transition text-sm font-semibold">
+                        Apply Date Range
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
                 </div>
             </div>
         </div>

@@ -1,0 +1,52 @@
+<?php
+session_start();
+header('Content-Type: application/json');
+require_once '../../config.php';
+require_once '../../auth.php';
+
+// Require login & admin role
+if (!isLoggedIn()) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    exit;
+}
+
+if (getCurrentUser()['role'] !== 'admin') {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'error' => 'Access denied']);
+    exit;
+}
+
+$pdo = getDBConnection();
+$requestUri = $_SERVER['REQUEST_URI'];
+
+try {
+    // UPDATE payment method
+    if (strpos($requestUri, '/update') !== false) {
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $id = $input['id'] ?? null;
+        $enabled = $input['enabled'] ?? 0;
+        
+        if (!$id) {
+            throw new Exception('Payment method ID required');
+        }
+        
+        $stmt = $pdo->prepare("UPDATE payment_methods SET enabled = ? WHERE id = ?");
+        $stmt->execute([$enabled, $id]);
+        
+        echo json_encode(['success' => true]);
+        exit;
+    }
+    
+    // GET all payment methods (default)
+    $stmt = $pdo->query("SELECT * FROM payment_methods ORDER BY sort_order ASC");
+    $methods = $stmt->fetchAll();
+    
+    echo json_encode(['success' => true, 'methods' => $methods]);
+    
+} catch (Exception $e) {
+    error_log('Payment Methods API Error: ' . $e->getMessage());
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+}

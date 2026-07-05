@@ -175,7 +175,7 @@ function autoLoadInitialData() {
 
 // Setup filter buttons
 function setupFilterButtons() {
-    document.querySelectorAll('.filter-btn').forEach(btn => {
+    document.querySelectorAll('.filter-btn, .segmented-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const type = this.dataset.type;
             const value = this.dataset.value;
@@ -1750,59 +1750,25 @@ function showNotification(message, type = 'info') {
 }
 
 
-// Setup Ship Date Picker with Flatpickr
+// Setup Ship Date Picker with Enhanced Modal Calendar
 let shipDatePicker = null;
+let tempSelectedDates = null;
+
 function setupShipDatePicker() {
-    const trigger = document.getElementById('ship-date-trigger');
-    const shipFrom = document.getElementById('ship_from');
-    const shipTo = document.getElementById('ship_to');
-    const display = document.getElementById('selected-ship-date-display');
+    // Initialize Flatpickr for the calendar modal
+    const container = document.getElementById('ship-date-calendar-container');
+    if (!container) return;
     
-    if (!trigger || !shipFrom || !shipTo || !display) return;
-    
-    // Initialize Flatpickr
-    shipDatePicker = flatpickr(trigger, {
+    shipDatePicker = flatpickr(container, {
         mode: 'range',
+        inline: true,
         dateFormat: 'Y-m-d',
-        showMonths: 1,
-        inline: false,
+        showMonths: 2, // Show 2 months side by side
         minDate: '2020-01-01',
         maxDate: new Date(new Date().getFullYear() + 1, 11, 31),
         onChange: function(selectedDates, dateStr, instance) {
-            if (selectedDates.length === 2) {
-                // Both dates selected
-                const startDate = selectedDates[0];
-                const endDate = selectedDates[1];
-                
-                // Format dates
-                const formatDate = (date) => {
-                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                };
-                
-                // Update hidden inputs
-                shipFrom.value = instance.formatDate(startDate, 'Y-m-d');
-                shipTo.value = instance.formatDate(endDate, 'Y-m-d');
-                
-                // Update display
-                display.textContent = `${formatDate(startDate)} - ${formatDate(endDate)}`;
-                display.classList.remove('text-gray-400');
-                
-                // Show notification
-                showNotification(`Ship date range: ${formatDate(startDate)} - ${formatDate(endDate)}`, 'info');
-                
-                // Auto-apply if enabled
-                if (autoApply) {
-                    debounceSearch();
-                }
-            } else if (selectedDates.length === 1) {
-                // Only start date selected
-                const startDate = selectedDates[0];
-                const formatDate = (date) => {
-                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                };
-                display.textContent = `${formatDate(startDate)} - ...`;
-                display.classList.remove('text-gray-400');
-            }
+            tempSelectedDates = selectedDates;
+            updateCalendarSelectedRange(selectedDates);
         },
         onReady: function(selectedDates, dateStr, instance) {
             // Load and show available ship dates with counts
@@ -1810,6 +1776,142 @@ function setupShipDatePicker() {
         }
     });
 }
+
+// Toggle Ship Date Calendar Modal
+window.toggleShipDateCalendar = function() {
+    const modal = document.getElementById('ship-date-calendar-modal');
+    if (modal.classList.contains('hidden')) {
+        // Get current values
+        const shipFrom = document.getElementById('ship_from').value;
+        const shipTo = document.getElementById('ship_to').value;
+        
+        // Set current selection in calendar
+        if (shipFrom && shipTo) {
+            shipDatePicker.setDate([shipFrom, shipTo], false);
+            tempSelectedDates = [new Date(shipFrom), new Date(shipTo)];
+            updateCalendarSelectedRange(tempSelectedDates);
+        }
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    } else {
+        closeShipDateCalendar();
+    }
+};
+
+// Close Ship Date Calendar Modal
+window.closeShipDateCalendar = function() {
+    const modal = document.getElementById('ship-date-calendar-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+};
+
+// Update selected range display
+function updateCalendarSelectedRange(selectedDates) {
+    const display = document.getElementById('calendar-selected-range');
+    if (!display) return;
+    
+    if (selectedDates.length === 2) {
+        const formatDate = (date) => {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        };
+        display.textContent = `${formatDate(selectedDates[0])} - ${formatDate(selectedDates[1])}`;
+    } else if (selectedDates.length === 1) {
+        const formatDate = (date) => {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        };
+        display.textContent = `${formatDate(selectedDates[0])} - ...`;
+    } else {
+        display.textContent = 'No date selected';
+    }
+}
+
+// Apply Ship Date Range from modal
+window.applyShipDateRange = function() {
+    if (!tempSelectedDates || tempSelectedDates.length !== 2) {
+        alert('Please select both start and end dates');
+        return;
+    }
+    
+    const shipFrom = document.getElementById('ship_from');
+    const shipTo = document.getElementById('ship_to');
+    const display = document.getElementById('selected-ship-date-display');
+    
+    // Format dates
+    const formatDateForInput = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+    
+    const formatDateForDisplay = (date) => {
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+    
+    // Update hidden inputs
+    shipFrom.value = formatDateForInput(tempSelectedDates[0]);
+    shipTo.value = formatDateForInput(tempSelectedDates[1]);
+    
+    // Update display
+    display.textContent = `${formatDateForDisplay(tempSelectedDates[0])} - ${formatDateForDisplay(tempSelectedDates[1])}`;
+    display.classList.remove('text-gray-400');
+    display.classList.add('text-white');
+    
+    // Close modal
+    closeShipDateCalendar();
+    
+    // Show notification
+    showNotification(`Ship date range: ${formatDateForDisplay(tempSelectedDates[0])} - ${formatDateForDisplay(tempSelectedDates[1])}`, 'info');
+    
+    // Auto-apply if enabled
+    if (autoApply) {
+        debounceSearch();
+    }
+};
+
+// Quick date presets
+window.selectQuickDate = function(preset) {
+    const today = new Date();
+    let startDate, endDate;
+    
+    switch(preset) {
+        case 'today':
+            startDate = new Date(today);
+            endDate = new Date(today);
+            break;
+        case 'yesterday':
+            startDate = new Date(today);
+            startDate.setDate(startDate.getDate() - 1);
+            endDate = new Date(startDate);
+            break;
+        case 'last7days':
+            endDate = new Date(today);
+            startDate = new Date(today);
+            startDate.setDate(startDate.getDate() - 6);
+            break;
+        case 'last30days':
+            endDate = new Date(today);
+            startDate = new Date(today);
+            startDate.setDate(startDate.getDate() - 29);
+            break;
+        case 'thismonth':
+            startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            endDate = new Date(today);
+            break;
+        case 'lastmonth':
+            startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+            break;
+        default:
+            return;
+    }
+    
+    // Set dates in calendar
+    shipDatePicker.setDate([startDate, endDate], false);
+    tempSelectedDates = [startDate, endDate];
+    updateCalendarSelectedRange(tempSelectedDates);
+};
 
 // Load ship dates with counts and display on calendar
 async function loadShipDatesWithCounts(flatpickrInstance) {
