@@ -123,7 +123,7 @@ function verifyCaptcha($token, $secretKey) {
                     <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center">
                         <i class="fas fa-shipping-fast text-white text-xl"></i>
                     </div>
-                    <span class="text-3xl font-bold">TUKERUY</span>
+                    <span class="text-3xl font-bold">Tukarkuy</span>
                 </a>
 
                 <h1 class="text-4xl font-bold mb-6">Quick Sign-Up, Instant Access!</h1>

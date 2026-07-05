@@ -22,7 +22,7 @@ $stats = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tukeruy - Dashboard Pelacakan Pengiriman</title>
+    <title>Tukarkuy - Dashboard Pelacakan Pengiriman</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -182,7 +182,7 @@ $stats = [
                         <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
                             <i class="fas fa-shipping-fast text-white text-sm"></i>
                         </div>
-                        <span class="text-xl font-bold">Tukeruy</span>
+                        <span class="text-xl font-bold">Tukarkuy</span>
                     </div>
                     <div class="hidden md:flex items-center space-x-6 text-sm">
                         <a href="/track" class="text-white font-medium">Pelacakan</a>

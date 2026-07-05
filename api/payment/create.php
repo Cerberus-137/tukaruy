@@ -50,7 +50,7 @@ try {
         try {
             $saweriaResponse = $saweria->generatePaymentLink(
                 $amount,
-                "Top up {$total} credits - Tukeruy",
+                "Top up {$total} credits - Tukarkuy",
                 $user['first_name'] . ' ' . $user['last_name']
             );
         } catch (Exception $e) {

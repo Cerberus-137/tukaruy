@@ -44,7 +44,7 @@ if (isLoggedIn()) {
                     <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center">
                         <i class="fas fa-shipping-fast text-white"></i>
                     </div>
-                    <span class="text-2xl font-bold gradient-text">TUKERUY</span>
+                    <span class="text-2xl font-bold gradient-text">Tukarkuy</span>
                 </div>
                 <div class="flex items-center space-x-4">
                     <a href="/login" class="text-gray-600 hover:text-gray-900 font-medium transition">Log In</a>
@@ -126,7 +126,7 @@ if (isLoggedIn()) {
     <section id="features" class="py-20 bg-gray-50">
         <div class="max-w-7xl mx-auto px-6">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-4">Why Choose Tukeruy?</h2>
+                <h2 class="text-4xl font-bold mb-4">Why Choose Tukarkuy?</h2>
                 <p class="text-xl text-gray-600">Fast, easy, and reliable tracking service</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -295,7 +295,7 @@ if (isLoggedIn()) {
                         <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center">
                             <i class="fas fa-shipping-fast text-white"></i>
                         </div>
-                        <span class="text-xl font-bold text-white">TUKERUY</span>
+                        <span class="text-xl font-bold text-white">Tukarkuy</span>
                     </div>
                     <p class="text-sm">Track packages easily across multiple carriers worldwide.</p>
                 </div>
@@ -325,7 +325,7 @@ if (isLoggedIn()) {
                 </div>
             </div>
             <div class="border-t border-gray-800 pt-8 text-sm text-center">
-                <p>&copy; 2026 Tukeruy. All rights reserved.</p>
+                <p>&copy; 2026 Tukarkuy. All rights reserved.</p>
             </div>
         </div>
     </footer>

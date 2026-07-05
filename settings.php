@@ -137,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
                             <i class="fas fa-shipping-fast text-white text-sm"></i>
                         </div>
-                        <span class="text-xl font-bold">Tukeruy</span>
+                        <span class="text-xl font-bold">Tukarkuy</span>
                     </a>
                     <div class="hidden md:flex items-center space-x-6 text-sm">
                         <a href="/track" class="text-gray-400 hover:text-white transition">Tracking</a>

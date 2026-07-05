@@ -120,7 +120,7 @@ class SaweriaAPI {
     public function createDonation($amount, $message = '', $donatorName = 'Anonymous') {
         $data = [
             'amount' => (int)$amount,
-            'message' => $message ?: 'Top up credits - Tukeruy',
+            'message' => $message ?: 'Top up credits - Tukarkuy',
             'donator_name' => $donatorName
         ];
         

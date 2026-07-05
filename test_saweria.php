@@ -90,7 +90,7 @@ try {
 // Test 2: Generate Payment Link
 echo "Test 2: Generating payment link...\n";
 $testAmount = 500000; // Rp 500,000
-$testMessage = "Test top up - Tukeruy";
+$testMessage = "Test top up - Tukarkuy";
 
 try {
     $payment = $saweria->generatePaymentLink($testAmount, $testMessage, 'Test User');
