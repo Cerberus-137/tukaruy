@@ -1,29 +1,41 @@
 <?php
 session_start();
+
+// Log all requests for debugging
+error_log("📋 Admin Packages API Request - Method: " . $_SERVER['REQUEST_METHOD'] . ", URI: " . $_SERVER['REQUEST_URI']);
+error_log("📋 GET params: " . json_encode($_GET));
+error_log("📋 POST params: " . json_encode($_POST));
+
 header('Content-Type: application/json');
+header('Cache-Control: no-cache, must-revalidate');
 require_once '../../config.php';
 require_once '../../auth.php';
 
 // Require login & admin role
 if (!isLoggedIn()) {
+    error_log("❌ Admin Packages API: Not logged in");
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
     exit;
 }
 
 if (getCurrentUser()['role'] !== 'admin') {
+    error_log("❌ Admin Packages API: Not admin - Role: " . getCurrentUser()['role']);
     http_response_code(403);
     echo json_encode(['success' => false, 'error' => 'Access denied']);
     exit;
 }
 
 $pdo = getDBConnection();
-$requestUri = $_SERVER['REQUEST_URI'];
+$action = $_GET['action'] ?? $_POST['action'] ?? 'list';
+
+error_log("✅ Admin Packages API: Authenticated - Action: " . $action);
 
 try {
     // UPDATE package
-    if (strpos($requestUri, '/update') !== false) {
+    if ($action === 'update') {
         $input = json_decode(file_get_contents('php://input'), true);
+        error_log("📝 Update request input: " . json_encode($input));
         
         $id = $input['id'] ?? null;
         $field = $input['field'] ?? null;
@@ -43,6 +55,8 @@ try {
         $stmt = $pdo->prepare("UPDATE ticket_packages SET $field = ? WHERE id = ?");
         $stmt->execute([$value, $id]);
         
+        error_log("✅ Updated package ID $id: $field = $value");
+        
         // Recalculate total_credits if bonus changed
         if ($field === 'bonus') {
             $stmt = $pdo->prepare("
@@ -51,6 +65,7 @@ try {
                 WHERE id = ?
             ");
             $stmt->execute([$id]);
+            error_log("✅ Recalculated total_credits for package ID $id");
         }
         
         echo json_encode(['success' => true]);
@@ -58,8 +73,9 @@ try {
     }
     
     // CREATE package
-    if (strpos($requestUri, '/create') !== false) {
+    if ($action === 'create') {
         $input = json_decode(file_get_contents('php://input'), true);
+        error_log("📝 Create request input: " . json_encode($input));
         
         $credits = $input['credits'] ?? null;
         $price = $input['price'] ?? null;
@@ -84,13 +100,17 @@ try {
         ");
         $stmt->execute([$credits, $price, $bonus, $totalCredits, $discount, $orderIndex]);
         
-        echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
+        $newId = $pdo->lastInsertId();
+        error_log("✅ Created package ID $newId");
+        
+        echo json_encode(['success' => true, 'id' => $newId]);
         exit;
     }
     
     // DELETE package
-    if (strpos($requestUri, '/delete') !== false) {
+    if ($action === 'delete') {
         $input = json_decode(file_get_contents('php://input'), true);
+        error_log("📝 Delete request input: " . json_encode($input));
         
         $id = $input['id'] ?? null;
         
@@ -101,6 +121,8 @@ try {
         $stmt = $pdo->prepare("DELETE FROM ticket_packages WHERE id = ?");
         $stmt->execute([$id]);
         
+        error_log("✅ Deleted package ID $id");
+        
         echo json_encode(['success' => true]);
         exit;
     }
@@ -109,10 +131,13 @@ try {
     $stmt = $pdo->query("SELECT * FROM ticket_packages ORDER BY order_index ASC");
     $packages = $stmt->fetchAll();
     
+    error_log("✅ Returning " . count($packages) . " packages");
+    
     echo json_encode(['success' => true, 'packages' => $packages]);
     
 } catch (Exception $e) {
-    error_log('Packages API Error: ' + $e->getMessage());
+    error_log('❌ Packages API Error: ' . $e->getMessage());
+    error_log('❌ Stack trace: ' . $e->getTraceAsString());
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }

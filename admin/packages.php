@@ -229,8 +229,10 @@ $packages = $stmt->fetchAll();
             const value = element.value;
             const row = element.closest('tr');
 
+            console.log(`Saving package ${id}: ${field} = ${value}`);
+
             try {
-                const response = await fetch('/admin/api/packages/update', {
+                const response = await fetch('/admin/api/packages.php?action=update', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -242,19 +244,44 @@ $packages = $stmt->fetchAll();
                     })
                 });
 
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                const contentType = response.headers.get('content-type');
+                console.log('Content-Type:', contentType);
+
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response received:', text.substring(0, 500));
+                    
+                    // Show detailed error
+                    alert(`Error: Server returned HTML instead of JSON.\n\nThis usually means:\n1. The API endpoint is not being reached\n2. There's a PHP error in the API file\n3. .htaccess is redirecting incorrectly\n\nCheck browser console and server logs for details.\n\nResponse preview:\n${text.substring(0, 200)}`);
+                    throw new Error('Server returned HTML instead of JSON. Check console for details.');
+                }
+
                 const data = await response.json();
+                console.log('Response data:', data);
+
                 if (!data.success) {
                     alert('Gagal menyimpan: ' + data.error);
                     location.reload();
+                } else {
+                    console.log('Saved successfully');
+                    // Visual feedback
+                    element.style.borderColor = '#10b981';
+                    setTimeout(() => {
+                        element.style.borderColor = '';
+                    }, 1000);
                 }
             } catch (error) {
-                alert('Error: ' + error.message);
+                console.error('Error details:', error);
+                alert('Error: ' + error.message + '\n\nCheck browser console for more details.');
             }
         }
 
         async function togglePackage(id, active) {
             try {
-                const response = await fetch('/admin/api/packages/update', {
+                const response = await fetch('/admin/api/packages.php?action=update', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -266,6 +293,11 @@ $packages = $stmt->fetchAll();
                     })
                 });
 
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server returned HTML instead of JSON');
+                }
+
                 const data = await response.json();
                 if (!data.success) {
                     alert('Gagal: ' + data.error);
@@ -273,6 +305,7 @@ $packages = $stmt->fetchAll();
                 }
             } catch (error) {
                 alert('Error: ' + error.message);
+                location.reload();
             }
         }
 
@@ -280,13 +313,18 @@ $packages = $stmt->fetchAll();
             if (!confirm('Hapus paket ini?')) return;
 
             try {
-                const response = await fetch('/admin/api/packages/delete', {
+                const response = await fetch('/admin/api/packages.php?action=delete', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ id: id })
                 });
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server returned HTML instead of JSON');
+                }
 
                 const data = await response.json();
                 if (data.success) {
@@ -311,7 +349,7 @@ $packages = $stmt->fetchAll();
             }
 
             try {
-                const response = await fetch('/admin/api/packages/create', {
+                const response = await fetch('/admin/api/packages.php?action=create', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -323,6 +361,11 @@ $packages = $stmt->fetchAll();
                         discount_percentage: discount || 0
                     })
                 });
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server returned HTML instead of JSON');
+                }
 
                 const data = await response.json();
                 if (data.success) {

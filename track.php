@@ -143,6 +143,7 @@ $stats = [
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: relative;
         }
         .modern-dropdown:hover {
             background: rgba(58, 58, 58, 0.6);
@@ -152,6 +153,20 @@ $stats = [
             outline: none;
             border-color: #8b5cf6;
             box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        .modern-dropdown:active {
+            transform: scale(0.98);
+        }
+        
+        /* Ship Date Button - Ensure clickability */
+        #ship-date-trigger {
+            position: relative !important;
+            z-index: 10 !important;
+            pointer-events: auto !important;
+            cursor: pointer !important;
+        }
+        #ship-date-trigger * {
+            pointer-events: none !important; /* Prevent child elements from blocking clicks */
         }
         
         /* Modern Input */
@@ -461,8 +476,12 @@ $stats = [
                                     <i class="fas fa-times-circle"></i>
                                 </button>
                             </label>
-                            <div class="relative">
-                                <button type="button" id="ship-date-trigger" class="modern-dropdown" style="cursor: pointer;">
+                            <div class="relative" style="z-index: 1;">
+                                <button 
+                                    type="button" 
+                                    id="ship-date-trigger" 
+                                    class="w-full bg-[#1a1a1a99] border border-[#4a4a4a66] rounded-[10px] px-4 py-3 text-sm text-left transition-all duration-150 hover:bg-[#3a3a3a99] hover:border-[#8b5cf680] focus:outline-none focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.1)] flex items-center justify-between"
+                                    style="cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 10;">
                                     <span id="selected-ship-date-display" class="text-gray-400">Select date range...</span>
                                     <i class="fas fa-calendar-alt text-xs text-purple-400"></i>
                                 </button>

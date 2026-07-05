@@ -129,15 +129,24 @@ document.addEventListener('DOMContentLoaded', function() {
     setupFilterChangeListeners();
     setupShipDatePicker(); // Add Ship Date calendar
     
-    // Add click event for ship date trigger button
+    // Add click event for ship date trigger button - FIXED
     const shipDateTrigger = document.getElementById('ship-date-trigger');
     if (shipDateTrigger) {
+        console.log('Ship date trigger found, attaching event listener');
         shipDateTrigger.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Ship date trigger clicked');
+            console.log('Ship date trigger clicked!');
             toggleShipDateCalendar();
+            return false;
+        }, { capture: true }); // Use capture phase to catch event early
+        
+        // Also handle mousedown as backup
+        shipDateTrigger.addEventListener('mousedown', function(e) {
+            console.log('Ship date trigger mousedown');
         });
+    } else {
+        console.error('Ship date trigger button not found!');
     }
     
     console.log('Tukeruy initialized');
