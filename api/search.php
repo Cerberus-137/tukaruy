@@ -1,15 +1,37 @@
 <?php
+// ==================================================================
+// CRITICAL DEBUG - DO NOT REMOVE UNTIL ISSUE IS FIXED
+// ==================================================================
+error_log("=================================================");
+error_log("🚨 API SEARCH.PHP EXECUTED!");
+error_log("🚨 THIS FILE IS BEING CALLED!");
+error_log("🚨 Time: " . date('Y-m-d H:i:s'));
+error_log("🚨 Method: " . $_SERVER['REQUEST_METHOD']);
+error_log("🚨 URI: " . $_SERVER['REQUEST_URI']);
+error_log("🚨 Script: " . $_SERVER['SCRIPT_FILENAME']);
+error_log("=================================================");
+
 session_start();
 
 // Enhanced error logging
 error_log("🔍 Search API Request - Method: " . $_SERVER['REQUEST_METHOD'] . ", URI: " . $_SERVER['REQUEST_URI']);
 
+// FORCE JSON HEADER - No matter what
 header('Content-Type: application/json');
 header('Cache-Control: no-cache, must-revalidate');
+
+// Prevent any HTML output
+ob_start();
 
 require_once '../config.php';
 require_once '../auth.php';
 require_once 'TukeruyAPI.php';
+
+// Clear any buffer that might contain HTML
+ob_end_clean();
+
+// Start fresh output buffer
+ob_start();
 
 // Require login
 if (!isLoggedIn()) {
@@ -82,6 +104,10 @@ try {
     
     error_log("✅ Search API: Found " . count($result['results'] ?? []) . " results");
     
+    // Clear any output buffer
+    ob_end_clean();
+    
+    // Send JSON response
     echo json_encode([
         'success' => true,
         'results' => $result['results'] ?? [],
@@ -92,6 +118,10 @@ try {
 } catch (Exception $e) {
     error_log('❌ Search API Error: ' . $e->getMessage());
     error_log('❌ Stack trace: ' . $e->getTraceAsString());
+    
+    // Clear buffer
+    ob_end_clean();
+    
     http_response_code(500);
     echo json_encode([
         'success' => false,

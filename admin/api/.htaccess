@@ -1,0 +1,10 @@
+# Force no rewrite in Admin API directory
+# All PHP files must execute directly
+
+# Disable any parent rewrite rules
+RewriteEngine Off
+
+# Force JSON content type for .php files
+<FilesMatch "\.php$">
+    Header set Content-Type "application/json"
+</FilesMatch>
