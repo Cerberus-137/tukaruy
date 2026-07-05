@@ -42,11 +42,21 @@ if (!isLoggedIn()) {
 }
 
 try {
-    $input = json_decode(file_get_contents('php://input'), true);
+    $rawInput = file_get_contents('php://input');
+    error_log("📥 Raw input: " . $rawInput);
+    
+    $input = json_decode($rawInput, true);
+    
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        error_log("❌ JSON decode error: " . json_last_error_msg());
+        throw new Exception('Invalid JSON: ' . json_last_error_msg());
+    }
+    
     error_log("📋 Search API: Filters received - " . json_encode($input));
     
     // Initialize API
     $api = new TukeruyAPI();
+    error_log("✅ TukeruyAPI initialized");
     
     // Process filters
     $filters = [];
@@ -54,11 +64,13 @@ try {
     // Carrier filter
     if (isset($input['carrier']) && !empty($input['carrier'])) {
         $filters['carrier'] = $input['carrier'];
+        error_log("🎯 Carrier filter: " . json_encode($filters['carrier']));
     }
     
     // Status filter
     if (isset($input['status']) && !empty($input['status'])) {
         $filters['status'] = $input['status'];
+        error_log("🎯 Status filter: " . json_encode($filters['status']));
     }
     
     // Origin filter
@@ -98,25 +110,43 @@ try {
     $cursor = $input['cursor'] ?? null;
     
     error_log("🔎 Search API: Processing filters - " . json_encode($filters));
+    error_log("🔎 Cursor: " . ($cursor ? $cursor : 'null'));
     
     // Perform search
+    error_log("🌐 Calling TrackTaco API...");
     $result = $api->search($filters, ITEMS_PER_PAGE, $cursor);
+    error_log("✅ TrackTaco API responded");
+    
+    // Check if result has the expected structure
+    if (!isset($result['results'])) {
+        error_log("⚠️ Unexpected API response structure: " . json_encode($result));
+        // Try to adapt the response
+        if (is_array($result)) {
+            $result = ['results' => $result, 'next_cursor' => null, 'total' => count($result)];
+        }
+    }
     
     error_log("✅ Search API: Found " . count($result['results'] ?? []) . " results");
+    error_log("✅ Next cursor: " . ($result['next_cursor'] ?? 'null'));
+    error_log("✅ Total: " . ($result['total'] ?? 0));
     
     // Clear any output buffer
     ob_end_clean();
     
     // Send JSON response
-    echo json_encode([
+    $response = [
         'success' => true,
         'results' => $result['results'] ?? [],
         'next_cursor' => $result['next_cursor'] ?? null,
         'total' => $result['total'] ?? 0
-    ]);
+    ];
+    
+    error_log("📤 Sending response: " . strlen(json_encode($response)) . " bytes");
+    echo json_encode($response);
     
 } catch (Exception $e) {
     error_log('❌ Search API Error: ' . $e->getMessage());
+    error_log('❌ Error type: ' . get_class($e));
     error_log('❌ Stack trace: ' . $e->getTraceAsString());
     
     // Clear buffer
@@ -125,6 +155,7 @@ try {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage()
+        'error' => $e->getMessage(),
+        'error_type' => get_class($e)
     ]);
 }
