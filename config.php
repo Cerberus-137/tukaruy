@@ -36,19 +36,10 @@ define('PAYMENT_METHODS', [
 define('ITEMS_PER_PAGE', 25);
 define('MAX_ITEMS_PER_PAGE', 50);
 
-// Ticket packages (in IDR)
+// Ticket packages - Loaded from database
 // Format: [credits => [price, bonus, discount_percentage]]
 // QRIS has max payment of 499,000 IDR
-define('TICKET_PACKAGES', [
-    1 => ['price' => 50000, 'bonus' => 0, 'total' => 1, 'discount' => 0],
-    3 => ['price' => 150000, 'bonus' => 0, 'total' => 3, 'discount' => 0],
-    5 => ['price' => 250000, 'bonus' => 0, 'total' => 5, 'discount' => 0],
-    9 => ['price' => 450000, 'bonus' => 0, 'total' => 9, 'discount' => 0], // Max for QRIS (under 499k)
-    10 => ['price' => 500000, 'bonus' => 1, 'total' => 11, 'discount' => 10],
-    25 => ['price' => 1250000, 'bonus' => 5, 'total' => 30, 'discount' => 15],
-    50 => ['price' => 2500000, 'bonus' => 10, 'total' => 60, 'discount' => 20],
-    100 => ['price' => 5000000, 'bonus' => 25, 'total' => 125, 'discount' => 25]
-]);
+define('TICKET_PACKAGES', getTicketPackages());
 
 // Maximum amount for QRIS payment method (in IDR)
 define('QRIS_MAX_AMOUNT', 499000);
@@ -74,6 +65,45 @@ date_default_timezone_set('Asia/Jakarta');
 // Error reporting (disable in production)
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
+// Function to load ticket packages from database
+function getTicketPackages() {
+    static $packages = null;
+    
+    if ($packages !== null) {
+        return $packages;
+    }
+    
+    $packages = [];
+    try {
+        $pdo = getDBConnection();
+        $stmt = $pdo->query("SELECT * FROM ticket_packages WHERE active = 1 ORDER BY order_index ASC");
+        $rows = $stmt->fetchAll();
+        
+        foreach ($rows as $row) {
+            $packages[$row['credits']] = [
+                'price' => $row['price'],
+                'bonus' => $row['bonus'],
+                'total' => $row['total_credits'],
+                'discount' => $row['discount_percentage']
+            ];
+        }
+    } catch (Exception $e) {
+        // Fallback to default packages if database fails
+        $packages = [
+            1 => ['price' => 50000, 'bonus' => 0, 'total' => 1, 'discount' => 0],
+            3 => ['price' => 150000, 'bonus' => 0, 'total' => 3, 'discount' => 0],
+            5 => ['price' => 250000, 'bonus' => 0, 'total' => 5, 'discount' => 0],
+            9 => ['price' => 450000, 'bonus' => 0, 'total' => 9, 'discount' => 0],
+            10 => ['price' => 500000, 'bonus' => 1, 'total' => 11, 'discount' => 10],
+            25 => ['price' => 1250000, 'bonus' => 5, 'total' => 30, 'discount' => 15],
+            50 => ['price' => 2500000, 'bonus' => 10, 'total' => 60, 'discount' => 20],
+            100 => ['price' => 5000000, 'bonus' => 25, 'total' => 125, 'discount' => 25]
+        ];
+    }
+    
+    return $packages;
+}
 
 // Database connection
 function getDBConnection() {
