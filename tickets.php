@@ -246,8 +246,10 @@ $packages = TICKET_PACKAGES;
         let selectedPackage = null;
         let paymentCheckInterval = null;
 
-        function selectPackage(credits, price, total, bonus) {
-            console.log('selectPackage called with:', { credits, price, total, bonus });
+        // Ensure selectPackage is accessible globally
+        window.selectPackage = function(credits, price, total, bonus) {
+            console.log('✅ selectPackage CALLED with:', { credits, price, total, bonus });
+            console.log('BASE_PRICE_PER_CREDIT:', BASE_PRICE_PER_CREDIT);
             selectedPackage = { credits, price, total, bonus };
             
             // Check if price exceeds QRIS limit
@@ -349,13 +351,22 @@ $packages = TICKET_PACKAGES;
             `;
             
             document.getElementById('checkout-content').innerHTML = content;
-            document.getElementById('checkout-modal').classList.remove('hidden');
-            document.getElementById('checkout-modal').classList.add('flex');
-            console.log('Modal shown - classes:', document.getElementById('checkout-modal').className);
+            const modal = document.getElementById('checkout-modal');
+            console.log('📍 Modal element found:', !!modal);
+            console.log('📍 Modal current classes before:', modal.className);
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            console.log('📍 Modal current classes after:', modal.className);
+            console.log('📍 Modal display:', window.getComputedStyle(modal).display);
             
             // Setup payment method selection
             setupPaymentMethodSelection(isOverQrisLimit);
         }
+        
+        window.setupPaymentMethodSelection = setupPaymentMethodSelection;
+        window.closeCheckout = closeCheckout;
+        window.processPayment = processPayment;
+        window.closePayment = closePayment;
         
         function setupPaymentMethodSelection(isOverQrisLimit) {
             const paymentOptions = document.querySelectorAll('.payment-method-option');
@@ -403,8 +414,11 @@ $packages = TICKET_PACKAGES;
         }
 
         function closeCheckout() {
-            document.getElementById('checkout-modal').classList.add('hidden');
-            document.getElementById('checkout-modal').classList.remove('flex');
+            console.log('🔙 closeCheckout called');
+            const modal = document.getElementById('checkout-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            console.log('🔙 Modal classes after close:', modal.className);
         }
 
         async function processPayment() {
@@ -709,9 +723,6 @@ $packages = TICKET_PACKAGES;
                 } catch (error) {
                     console.error('Saweria payment check error:', error);
                 }
-                } catch (error) {
-                    console.error('Saweria payment check error:', error);
-                }
             }, 5000); // Check every 5 seconds for Saweria
         }
 
@@ -720,6 +731,10 @@ $packages = TICKET_PACKAGES;
         function showSuccessMessage(tickets) {
             alert(`Payment successful! ${tickets} credits have been added to your account.`);
             location.reload();
+        }
+        
+        function showWarningMessage(message) {
+            alert(`Payment Status: ${message}`);
         }
         
         // Add CSS for payment method selection
