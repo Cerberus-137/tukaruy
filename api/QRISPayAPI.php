@@ -98,13 +98,25 @@ class QRISPayAPI {
         }
         
         // Normalize response format - handle multiple possible field names
+        // Convert expired_at to MySQL TIMESTAMP format if it's in ISO 8601 format
+        $expiredAt = $qrisData['expired_at'] ?? $qrisData['expires_at'] ?? $qrisData['expiry_time'] ?? date('Y-m-d H:i:s', strtotime('+15 minutes'));
+        if (!empty($expiredAt)) {
+            try {
+                $dateTime = new DateTime($expiredAt, new DateTimeZone('UTC'));
+                $expiredAt = $dateTime->format('Y-m-d H:i:s');
+            } catch (Exception $e) {
+                error_log('Failed to parse expired_at: ' . $expiredAt);
+                $expiredAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+            }
+        }
+        
         $normalized = [
             'qris_id' => $qrisData['qris_id'] ?? $qrisData['id'] ?? $qrisData['transaction_id'] ?? null,
             'qris_image_url' => $qrisData['qris_image_url'] ?? $qrisData['image_url'] ?? $qrisData['qr_url'] ?? $qrisData['qr_image'] ?? $qrisData['qr_code_url'] ?? '',
             'qris_string' => $qrisData['qris_string'] ?? $qrisData['qr_string'] ?? $qrisData['qr_code'] ?? '',
             'amount' => $qrisData['amount'] ?? $amount,
             'payment_reference' => $qrisData['payment_reference'] ?? $qrisData['reference'] ?? $paymentReference,
-            'expired_at' => $qrisData['expired_at'] ?? $qrisData['expires_at'] ?? $qrisData['expiry_time'] ?? date('Y-m-d H:i:s', strtotime('+15 minutes')),
+            'expired_at' => $expiredAt,
             'expires_in_seconds' => $qrisData['expires_in_seconds'] ?? $qrisData['expires_in'] ?? 900,
             'status' => $qrisData['status'] ?? 'pending'
         ];

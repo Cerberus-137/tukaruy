@@ -107,6 +107,18 @@ try {
             // Continue but log warning - will be handled by frontend
         }
         
+        // Convert expired_at to MySQL TIMESTAMP format if it's in ISO 8601 format
+        $expiredAt = $qrisResponse['expired_at'] ?? date('Y-m-d H:i:s', strtotime('+1 hour'));
+        if (!empty($expiredAt)) {
+            try {
+                $dateTime = new DateTime($expiredAt, new DateTimeZone('UTC'));
+                $expiredAt = $dateTime->format('Y-m-d H:i:s');
+            } catch (Exception $e) {
+                error_log('Failed to parse expired_at: ' . $expiredAt);
+                $expiredAt = date('Y-m-d H:i:s', strtotime('+1 hour'));
+            }
+        }
+        
         // Save to database
         $pdo = getDBConnection();
         $stmt = $pdo->prepare("
@@ -120,7 +132,7 @@ try {
             $total,
             $paymentRef,
             $qrisResponse['qris_image_url'] ?? '',
-            $qrisResponse['expired_at'] ?? date('Y-m-d H:i:s', strtotime('+1 hour'))
+            $expiredAt
         ]);
         
         echo json_encode([

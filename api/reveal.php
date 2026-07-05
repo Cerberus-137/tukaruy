@@ -87,7 +87,7 @@ try {
                 'tracking_number' => $result['tracking_number'],
                 'carrier' => $result['carrier'],
                 'service' => $result['service'] ?? 'unknown',
-                'status' => $result['status'] ?? 'unknown',
+                'status' => $result['status'] ?? 'pre-transit',
                 'dest' => $result['dest'] ?? null,
                 'origin' => $result['origin'] ?? null,
                 'revealed_at' => $result['revealed_at'] ?? date('Y-m-d H:i:s')

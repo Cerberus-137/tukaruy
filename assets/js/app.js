@@ -1221,6 +1221,13 @@ function formatStatus(status) {
         'transit': 'Transit',
         'delivered': 'Delivered'
     };
+    
+    // Log warning if status is missing
+    if (!status) {
+        console.warn('Missing status in result, defaulting to pre-transit');
+        return 'Pre Transit';
+    }
+    
     return statusMap[status] || status;
 }
 
@@ -1231,7 +1238,9 @@ function getStatusBadgeClass(status) {
         'transit': 'badge-transit',
         'delivered': 'badge-delivered'
     };
-    return classes[status] || 'badge-pre-transit';
+    // Default to pre-transit if status is missing or unknown
+    const defaultStatus = 'badge-pre-transit';
+    return status && classes[status] ? classes[status] : defaultStatus;
 }
 
 // Get carrier badge class
