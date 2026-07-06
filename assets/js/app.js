@@ -1646,6 +1646,20 @@ async function revealTrackingNumber(tnId) {
                         </div>
                     </div>
                     
+                    <!-- Shipment Timeline -->
+                    <div class="bg-dark-300 rounded-lg p-4 mb-4">
+                        <div class="mb-3">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-gray-400 uppercase font-semibold">Shipment</span>
+                                <span class="text-xs text-gray-500">${shipDate} → ${deliveryDate}</span>
+                            </div>
+                            <div class="relative h-2 bg-dark-400 rounded-full overflow-hidden">
+                                <div class="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full" style="width: 40%; opacity: 0.8;"></div>
+                                <div class="absolute top-0 right-0 h-full w-1 bg-yellow-500 rounded-full opacity: 0.8;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Shipment Details -->
                     <div class="bg-dark-300 rounded-lg p-4 space-y-3">
                         <div class="flex justify-between items-center pb-2 border-b border-gray-700">
@@ -1967,44 +1981,108 @@ function showNotification(message, type = 'info') {
 // Setup Ship Date Picker with Enhanced Modal Calendar
 let shipDatePicker = null;
 let tempSelectedDates = null;
+let shipDatesData = {};
 
 function setupShipDatePicker() {
-    // Initialize Flatpickr for the calendar modal
-    const container = document.getElementById('ship-date-calendar-container');
-    if (!container) return;
-    
-    console.log('🚀 Initializing Flatpickr calendar...');
-    
-    shipDatePicker = flatpickr(container, {
-        mode: 'range',
-        inline: true,
-        dateFormat: 'Y-m-d',
-        showMonths: 2, // Show 2 months side by side
-        minDate: '2020-01-01',
-        maxDate: new Date(new Date().getFullYear() + 1, 11, 31),
-        locale: {
-            weekdays: {
-                shorthand: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-                longhand: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-            },
-            months: {
-                shorthand: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-                longhand: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    // First, fetch ship dates and populate disable array
+    fetchAndInitializeCalendar();
+}
+
+async function fetchAndInitializeCalendar() {
+    try {
+        console.log('📡 Fetching ship dates...');
+        const response = await fetch('api/ship-dates');
+        const data = await response.json();
+        
+        console.log('📍 API Response:', data);
+        
+        if (data.success && data.dates && data.dates.length > 0) {
+            // Store available dates
+            window.shipDatesData = {};
+            const availableDates = [];
+            
+            data.dates.forEach(item => {
+                window.shipDatesData[item.date] = item.count;
+                availableDates.push(item.date);
+            });
+            
+            console.log('💾 Available dates:', availableDates.length);
+            
+            // Create disable function - disable all dates EXCEPT available ones
+            const disableDates = (date) => {
+                const dateStr = flatpickrDateFormat(date);
+                const isAvailable = availableDates.includes(dateStr);
+                return !isAvailable; // Return true to disable, false to enable
+            };
+            
+            // Initialize Flatpickr with proper configuration
+            const container = document.getElementById('ship-date-calendar-container');
+            if (!container) {
+                console.error('❌ Calendar container not found');
+                return;
             }
-        },
-        onChange: function(selectedDates, dateStr, instance) {
-            console.log('📅 Date changed:', selectedDates);
-            tempSelectedDates = selectedDates;
-            updateCalendarSelectedRange(selectedDates);
-        },
-        onReady: function(selectedDates, dateStr, instance) {
-            console.log('📅 Calendar ready, loading ship dates...');
-            // Load and show available ship dates with counts
-            loadShipDatesWithCounts(instance);
+            
+            shipDatePicker = flatpickr(container, {
+                mode: 'range',
+                inline: true,
+                dateFormat: 'Y-m-d',
+                showMonths: 2,
+                minDate: 'today',
+                disable: [disableDates], // Disable unavailable dates
+                enable: availableDates, // Enable only available dates
+                onChange: function(selectedDates) {
+                    tempSelectedDates = selectedDates;
+                    updateCalendarSelectedRange(selectedDates);
+                    
+                    // Add visual indicators for selected dates
+                    setTimeout(() => {
+                        addDateCountBadges();
+                    }, 50);
+                }
+            });
+            
+            // Add count badges to available dates
+            setTimeout(() => {
+                addDateCountBadges();
+            }, 200);
+            
+            console.log('✅ Calendar initialized with', availableDates.length, 'available dates');
+        } else {
+            console.warn('⚠️ No dates returned from API');
+        }
+    } catch (error) {
+        console.error('❌ Failed to initialize calendar:', error);
+    }
+}
+
+// Helper function to format date for comparison
+function flatpickrDateFormat(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+// Add count badges to available dates
+function addDateCountBadges() {
+    const calendarDays = document.querySelectorAll('.flatpickr-day');
+    console.log('🎨 Adding badges to', calendarDays.length, 'calendar days');
+    
+    calendarDays.forEach(day => {
+        if (day.dateObj) {
+            const dateStr = flatpickrDateFormat(day.dateObj);
+            
+            if (window.shipDatesData && window.shipDatesData[dateStr]) {
+                const count = window.shipDatesData[dateStr];
+                day.classList.add('has-tn');
+                day.setAttribute('data-count', formatCount(count));
+                day.title = `${count} tracking numbers`;
+                day.style.position = 'relative';
+                
+                console.log('✨ Added badge for', dateStr, ':', count);
+            }
         }
     });
-    
-    console.log('✅ Flatpickr initialized:', shipDatePicker ? 'Success' : 'Failed');
 }
 
 // Toggle Ship Date Calendar Modal
@@ -2143,77 +2221,7 @@ window.selectQuickDate = function(preset) {
     updateCalendarSelectedRange(tempSelectedDates);
 };
 
-// Load ship dates with counts and display on calendar
-async function loadShipDatesWithCounts(flatpickrInstance) {
-    try {
-        console.log('📡 Fetching ship dates from API...');
-        const response = await fetch('api/ship-dates', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        const data = await response.json();
-        
-        console.log('📍 API Response:', data);
-        
-        if (data.success && data.dates && data.dates.length > 0) {
-            // Store dates with counts
-            window.shipDatesData = {};
-            data.dates.forEach(item => {
-                window.shipDatesData[item.date] = item.count;
-            });
-            
-            console.log('💾 Stored ship dates:', Object.keys(window.shipDatesData).length, 'dates');
-            console.log('📊 Sample dates:', Object.entries(window.shipDatesData).slice(0, 5));
-            
-            // Force calendar re-render to show dates
-            setTimeout(() => {
-                console.log('🎨 Adding styling to calendar dates...');
-                const calendarDays = document.querySelectorAll('.flatpickr-day');
-                console.log('📍 Found', calendarDays.length, 'calendar day elements');
-                
-                let styledCount = 0;
-                calendarDays.forEach(day => {
-                    if (!day.classList.contains('flatpickr-disabled')) {
-                        try {
-                            // Get the date from the day element
-                            const dayNum = day.textContent.trim();
-                            if (!dayNum || isNaN(dayNum)) return;
-                            
-                            // Get current month/year from calendar
-                            const monthElement = document.querySelector('.flatpickr-month');
-                            if (!monthElement) return;
-                            
-                            // Try to extract date from data attributes or rebuild it
-                            if (day.dateObj) {
-                                const dateStr = flatpickrInstance.formatDate(day.dateObj, 'Y-m-d');
-                                if (window.shipDatesData[dateStr]) {
-                                    day.classList.add('has-tn');
-                                    day.setAttribute('data-count', formatCount(window.shipDatesData[dateStr]));
-                                    day.title = `${window.shipDatesData[dateStr]} tracking numbers available`;
-                                    styledCount++;
-                                    console.log('✨ Styled date:', dateStr, 'count:', window.shipDatesData[dateStr]);
-                                }
-                            }
-                        } catch (e) {
-                            console.warn('⚠️ Error styling day:', e);
-                        }
-                    }
-                });
-                
-                console.log('✅ Styled', styledCount, 'calendar days');
-            }, 100);
-            
-            console.log('✅ Ship dates with counts loaded:', data.dates.length, 'dates');
-        } else {
-            console.warn('⚠️ No dates in response or API returned error');
-        }
-    } catch (error) {
-        console.warn('❌ Failed to load ship dates with counts:', error);
-    }
-}
+
 
 // Format count for display (e.g., 1234 -> 1.2k)
 function formatCount(count) {
