@@ -1093,7 +1093,7 @@ function setupAutoApplyToggle() {
 // Setup filter change listeners
 function setupFilterChangeListeners() {
     // Date inputs
-    ['ship_from', 'ship_to', 'delivery_from', 'delivery_to', 'dest_zip'].forEach(id => {
+    ['ship_date', 'delivery_date', 'dest_zip'].forEach(id => {
         const input = document.getElementById(id);
         if (input) {
             input.addEventListener('change', function() {
@@ -1181,17 +1181,25 @@ function gatherFilters() {
     if (destCity) filters.dest_city = destCity;
     if (destZip) filters.dest_zip = destZip;
     
-    // Ship dates
-    const shipFrom = document.getElementById('ship_from')?.value;
-    const shipTo = document.getElementById('ship_to')?.value;
-    if (shipFrom) filters.ship_from = shipFrom;
-    if (shipTo) filters.ship_to = shipTo;
+    // Single ship date & delivery date
+    const shipDate = document.getElementById('ship_date')?.value;
+    const deliveryDate = document.getElementById('delivery_date')?.value;
     
-    // Delivery dates
-    const deliveryFrom = document.getElementById('delivery_from')?.value;
-    const deliveryTo = document.getElementById('delivery_to')?.value;
-    if (deliveryFrom) filters.delivery_from = deliveryFrom;
-    if (deliveryTo) filters.delivery_to = deliveryTo;
+    // New logic: If both dates set, create range from ship_date to delivery_date
+    if (shipDate && deliveryDate) {
+        filters.ship_from = shipDate;
+        filters.ship_to = deliveryDate;
+        filters.delivery_from = null; // Don't use est_delivery filter when both set
+        filters.delivery_to = null;
+    } else if (shipDate) {
+        // Only ship date set - exact match
+        filters.ship_from = shipDate;
+        filters.ship_to = shipDate;
+    } else if (deliveryDate) {
+        // Only delivery date set - exact match
+        filters.delivery_from = deliveryDate;
+        filters.delivery_to = deliveryDate;
+    }
     
     return filters;
 }
@@ -1849,15 +1857,11 @@ function resetFilters() {
     }
     
     // Reset dates
-    const shipFrom = document.getElementById('ship_from');
-    const shipTo = document.getElementById('ship_to');
-    const deliveryFrom = document.getElementById('delivery_from');
-    const deliveryTo = document.getElementById('delivery_to');
+    const shipDate = document.getElementById('ship_date');
+    const deliveryDate = document.getElementById('delivery_date');
     
-    if (shipFrom) shipFrom.value = '';
-    if (shipTo) shipTo.value = '';
-    if (deliveryFrom) deliveryFrom.value = '';
-    if (deliveryTo) deliveryTo.value = '';
+    if (shipDate) shipDate.value = '';
+    if (deliveryDate) deliveryDate.value = '';
     
     // Load default data
     loadDestinationCities('US');
@@ -2226,15 +2230,12 @@ function formatCount(count) {
     return count.toString();
 }
 
-// Clear ship date range
-window.clearShipDateRange = function() {
-    const shipFrom = document.getElementById('ship_from');
-    const shipTo = document.getElementById('ship_to');
+// Clear ship date
+window.clearShipDate = function() {
+    const shipDate = document.getElementById('ship_date');
+    if (shipDate) shipDate.value = '';
     
-    if (shipFrom) shipFrom.value = '';
-    if (shipTo) shipTo.value = '';
-    
-    showNotification('Ship date range cleared', 'info');
+    showNotification('Ship date cleared', 'info');
     
     // Auto-apply if enabled
     if (autoApply) {
@@ -2242,15 +2243,12 @@ window.clearShipDateRange = function() {
     }
 };
 
-// Clear delivery date range
-window.clearDeliveryDateRange = function() {
-    const deliveryFrom = document.getElementById('delivery_from');
-    const deliveryTo = document.getElementById('delivery_to');
+// Clear delivery date
+window.clearDeliveryDate = function() {
+    const deliveryDate = document.getElementById('delivery_date');
+    if (deliveryDate) deliveryDate.value = '';
     
-    if (deliveryFrom) deliveryFrom.value = '';
-    if (deliveryTo) deliveryTo.value = '';
-    
-    showNotification('Delivery date range cleared', 'info');
+    showNotification('Delivery date cleared', 'info');
     
     // Auto-apply if enabled
     if (autoApply) {

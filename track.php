@@ -472,22 +472,15 @@ $stats = [
                         <div>
                             <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider flex items-center justify-between">
                                 <span><i class="fas fa-calendar-alt mr-2 text-purple-400"></i>SHIP DATE WINDOW</span>
-                                <button type="button" onclick="clearShipDateRange()" class="text-xs text-purple-400 hover:text-purple-300 transition" title="Clear">
+                                <button type="button" onclick="clearShipDate()" class="text-xs text-purple-400 hover:text-purple-300 transition" title="Clear">
                                     <i class="fas fa-times-circle"></i>
                                 </button>
                             </label>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="text-xs text-gray-500 mb-1 block">From</label>
-                                    <input type="date" id="ship_from" class="modern-input w-full text-sm">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-500 mb-1 block">To</label>
-                                    <input type="date" id="ship_to" class="modern-input w-full text-sm">
-                                </div>
+                            <div>
+                                <input type="date" id="ship_date" class="modern-input w-full text-sm" placeholder="Select ship date">
                             </div>
                             <div class="mt-2 text-xs text-gray-500">
-                                <i class="fas fa-info-circle mr-1"></i>Filter by shipment date
+                                <i class="fas fa-info-circle mr-1"></i>Select shipment start date
                             </div>
                         </div>
 
@@ -565,22 +558,15 @@ $stats = [
                         <div>
                             <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider flex items-center justify-between">
                                 <span><i class="fas fa-clock mr-2 text-blue-400"></i>EST. DELIVERY WINDOW</span>
-                                <button type="button" onclick="clearDeliveryDateRange()" class="text-xs text-blue-400 hover:text-blue-300 transition" title="Clear">
+                                <button type="button" onclick="clearDeliveryDate()" class="text-xs text-blue-400 hover:text-blue-300 transition" title="Clear">
                                     <i class="fas fa-times-circle"></i>
                                 </button>
                             </label>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="text-xs text-gray-500 mb-1 block">From</label>
-                                    <input type="date" id="delivery_from" class="modern-input w-full text-sm">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-500 mb-1 block">To</label>
-                                    <input type="date" id="delivery_to" class="modern-input w-full text-sm">
-                                </div>
+                            <div>
+                                <input type="date" id="delivery_date" class="modern-input w-full text-sm" placeholder="Select delivery date">
                             </div>
                             <div class="mt-2 text-xs text-gray-500">
-                                <i class="fas fa-info-circle mr-1"></i>Filter by estimated arrival date
+                                <i class="fas fa-info-circle mr-1"></i>Select estimated arrival date
                             </div>
                         </div>
 
