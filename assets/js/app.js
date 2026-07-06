@@ -1445,11 +1445,9 @@ function createResultRow(result) {
     // Get carrier name
     const carrierName = result.carrier ? result.carrier.toUpperCase() : 'N/A';
     
-    // Build match explanation (why this tracking is in results)
-    let matchExplanation = [];
-    if (shipDate !== 'N/A') matchExplanation.push(`Ship: ${shipDateShort}`);
-    if (deliveryDate !== 'N/A') matchExplanation.push(`Est: ${deliveryDateShort}`);
-    const matchText = matchExplanation.length > 0 ? matchExplanation.join(' | ') : 'Match';
+    // Candidates column - show how many similar tracking numbers (always 1 for now since API returns individual results)
+    // In the future, this could aggregate similar TNs
+    const candidatesText = '1 match';
     
     // Build shipment timeline display
     let shipmentHTML = '';
@@ -1536,7 +1534,7 @@ function createResultRow(result) {
             <div class="text-sm text-gray-400">${weight}</div>
         </td>
         <td class="py-4 px-4">
-            <div class="text-xs text-purple-300">${matchText}</div>
+            <div class="text-xs text-gray-400">${candidatesText}</div>
         </td>
         <td class="py-4 px-4 text-right">
             <button onclick="showRevealModal('${result.tn_id}', ${result.reveal_cost_credits || 1})" 
