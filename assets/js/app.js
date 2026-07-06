@@ -1371,10 +1371,7 @@ function displayResults(results, append = false) {
 // Create result table row
 function createResultRow(result) {
     const row = document.createElement('tr');
-    row.className = 'border-b border-dark-400/50 hover:bg-dark-300/30 transition cursor-pointer';
-    
-    // Make row clickable to reveal tracking number
-    row.onclick = () => showRevealModal(result.tn_id, result.reveal_cost_credits || 1);
+    row.className = 'border-b border-dark-400/50 hover:bg-dark-300/30 transition';
     
     const carrierBadgeClass = getCarrierBadgeClass(result.carrier);
     const statusBadgeClass = getStatusBadgeClass(result.status);
@@ -1487,6 +1484,12 @@ function createResultRow(result) {
         <td class="py-4 px-4">
             <div class="text-xs text-gray-400">${weight === 'N/A' ? '—' : weight}</div>
         </td>
+        <td class="py-4 px-4 text-right">
+            <button onclick="showRevealModal('${result.tn_id}', ${result.reveal_cost_credits || 1})" 
+                    class="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white text-xs font-medium rounded-lg transition shadow-sm">
+                Get TN
+            </button>
+        </td>
     `;
     
     return row;
@@ -1581,11 +1584,26 @@ function showRevealModal(tnId, cost) {
     const modalContent = document.getElementById('modal-content');
     if (!modalContent) return;
     
-    // Show loading state while fetching shipment details
+    // Show confirmation first - DON'T auto-reveal
     modalContent.innerHTML = `
-        <div class="text-center py-8">
-            <i class="fas fa-spinner fa-spin text-3xl text-purple-500"></i>
-            <div class="mt-3 text-gray-400">Loading shipment details...</div>
+        <div class="text-center py-8 px-6">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-500/20 flex items-center justify-center">
+                <i class="fas fa-exclamation-circle text-3xl text-purple-500"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3">Konfirmasi Pembelian</h3>
+            <p class="text-gray-400 mb-2">Apakah Anda yakin ingin membeli tracking number ini?</p>
+            <p class="text-sm text-gray-500 mb-6">Credit yang akan digunakan: <span class="font-semibold text-purple-400">${cost} credit</span></p>
+            
+            <div class="flex gap-3 justify-center">
+                <button onclick="closeModal()" 
+                        class="px-6 py-2.5 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg transition">
+                    Batal
+                </button>
+                <button onclick="confirmReveal('${tnId}')" 
+                        class="px-6 py-2.5 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-semibold rounded-lg transition shadow-lg">
+                    Ya, Beli Sekarang
+                </button>
+            </div>
         </div>
     `;
     
@@ -1594,8 +1612,22 @@ function showRevealModal(tnId, cost) {
         modal.classList.remove('hidden');
         modal.classList.add('flex');
     }
+}
+
+// Confirm and reveal - ONLY called after user clicks confirmation
+function confirmReveal(tnId) {
+    const modalContent = document.getElementById('modal-content');
+    if (!modalContent) return;
     
-    // Fetch tracking number details FIRST before showing modal
+    // Show loading state
+    modalContent.innerHTML = `
+        <div class="text-center py-8">
+            <i class="fas fa-spinner fa-spin text-3xl text-purple-500"></i>
+            <div class="mt-3 text-gray-400">Loading shipment details...</div>
+        </div>
+    `;
+    
+    // NOW reveal the tracking number
     revealTrackingNumber(tnId);
 }
 
