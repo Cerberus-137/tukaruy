@@ -2,10 +2,11 @@
 // Configuration file for Tukeruy
 
 // Database configuration
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'tukarkuy');
-define('DB_USER', 'root');
-define('DB_PASS', 'Milham159753');
+// SECURITY: Load from environment variables or external config
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_NAME', getenv('DB_NAME') ?: 'tukarkuy');
+define('DB_USER', getenv('DB_USER') ?: 'root');
+define('DB_PASS', getenv('DB_PASS') ?: 'CHANGE_THIS_PASSWORD_NOW');
 
 // Site configuration
 define('SITE_NAME', 'Tukarkuy');
@@ -47,24 +48,29 @@ define('QRIS_MAX_AMOUNT', 499000);
 // Base price per credit
 define('BASE_PRICE_PER_CREDIT', 50000); // Rp 50,000 per credit
 
-// Session configuration
+// Session configuration - PRODUCTION READY
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_secure', 1); // ✅ Force HTTPS only
+ini_set('session.cookie_samesite', 'Strict'); // ✅ CSRF protection
 session_set_cookie_params([
     'lifetime' => 86400, // 24 hours
     'path' => '/',
-    'domain' => '',
-    'secure' => false, // set to true in production with HTTPS
-    'httponly' => true,
-    'samesite' => 'Lax'
+    'domain' => '', // Will use current domain
+    'secure' => true, // ✅ HTTPS ONLY - CRITICAL
+    'httponly' => true, // ✅ Prevent XSS
+    'samesite' => 'Strict' // ✅ CSRF protection
 ]);
 
 // Timezone
 date_default_timezone_set('Asia/Jakarta');
 
 // Error reporting (disable in production)
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// SECURITY: These should be disabled in production!
+error_reporting(0); // Changed to 0 for production security
+ini_set('display_errors', 0); // Changed to 0 for production security
+ini_set('log_errors', 1); // Enable error logging to file
+ini_set('error_log', __DIR__ . '/logs/php-errors.log'); // Log to file instead
 
 // Function to load ticket packages from database
 function getTicketPackages() {
@@ -138,17 +144,17 @@ function getAdminSetting($key, $default = null) {
     return $result ? $result['setting_value'] : $default;
 }
 
-// Get API keys from database (fallback to constants)
+// Get API keys from database (fallback to environment variables)
 function getTrackTacoAPIKey() {
-    return getAdminSetting('tracktaco_api_key', 'tt_live_T5w7dupesqnPFQprpV6ozAdE40LKird_BZkrF4TL7dk');
+    return getAdminSetting('tracktaco_api_key', getenv('TRACKTACO_API_KEY') ?: '');
 }
 
 function getQRISPayAPIToken() {
-    return getAdminSetting('qrispay_api_token', 'cki_PsO8fSC6e1ASeJq9AbTDpcjXjAk1VvvXxjbAl7MqxMr9fEi7');
+    return getAdminSetting('qrispay_api_token', getenv('QRISPAY_API_TOKEN') ?: '');
 }
 
 function getSaweriaAPIToken() {
-    return getAdminSetting('saweria_api_token', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjdXJyZW5jeSI6IklEUiIsImlkIjoiNWNjODc1NTItMjUwMC00ZmE5LWFhZmYtYWY1MmM4MTZiZTBhIiwiZW1haWwiOiJtdWhhbW1hZGlsaGFtMTM3MTNAZ21haWwuY29tIiwidXNlcm5hbWUiOiJtaWxoYW02OSIsInRpZXJfa2V5IjoiQkFTSUMiLCJpc3MiOiJzYXdlcmlhLWxvZ2luIiwiaWF0IjoxNzgzMTYxMTc5LCJleHAiOjE3ODM0MjAzNzksImp0aSI6IjIzNTEyMzE5LTk4NjUtNDg2Mi1hMjQ1LWVhOGRjZTM0NTdhZSJ9.aiB1H9S5yo98OzJnx2IPKUch2FiMyq9TU5zVMJAcgdo');
+    return getAdminSetting('saweria_api_token', getenv('SAWERIA_API_TOKEN') ?: '');
 }
 
 // Check if payment method is enabled

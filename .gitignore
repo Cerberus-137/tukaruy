@@ -1,0 +1,50 @@
+# Security - NEVER commit these files
+.env
+config.php
+*.key
+*.pem
+*.crt
+
+# Sensitive Data
+/logs/
+/backups/
+*.sql
+*.sql.gz
+
+# API Keys & Credentials
+*_api_key*
+*_secret*
+*_token*
+credentials.json
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# Composer
+/vendor/
+composer.lock
+
+# Node modules (if any)
+node_modules/
+
+# Cache
+*.cache
+/cache/
+
+# Uploads (if sensitive)
+/uploads/private/
+
+# Database dumps
+*.dump
+

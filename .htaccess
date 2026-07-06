@@ -40,8 +40,20 @@ ErrorDocument 404 /404.php
 # Disable directory browsing
 Options -Indexes
 
-# Protect config file
-<Files "config.php">
+# Protect sensitive files - ENHANCED SECURITY
+<FilesMatch "^(config\.php|auth\.php|\.env|\.git.*|composer\.(json|lock))$">
     Order allow,deny
     Deny from all
-</Files>
+</FilesMatch>
+
+# Protect API class files
+<FilesMatch ".*API\.php$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Protect backup files
+<FilesMatch "\.(bak|backup|old|~|swp|tmp)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
