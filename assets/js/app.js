@@ -304,6 +304,9 @@ function setupFilterButtons() {
 }
 // Handle carrier button click
 function handleCarrierClick(btn, value) {
+    console.log('🎯 Carrier clicked:', value);
+    console.log('🎯 Current selectedCarriers before:', selectedCarriers);
+    
     if (value === 'all') {
         document.querySelectorAll('[data-type="carrier"]').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -324,6 +327,8 @@ function handleCarrierClick(btn, value) {
             selectedCarriers = ['all'];
         }
     }
+    
+    console.log('🎯 Current selectedCarriers after:', selectedCarriers);
     
     // Auto-apply if enabled
     if (autoApply) {
