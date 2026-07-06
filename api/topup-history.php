@@ -61,7 +61,7 @@ try {
             'id' => $item['id'],
             'payment_id' => $item['payment_id'],
             'payment_method' => strtoupper($item['payment_method']),
-            'payment_method_display' => $item['payment_method'] === 'qrispay' ? 'QRIS Pay' : 'Saweria',
+            'payment_method_display' => $item['payment_method'] === 'qrispay' ? 'QRIS' : 'Saweria',
             'credits_purchased' => $item['credits_purchased'],
             'bonus_credits' => $item['bonus_credits'],
             'total_credits' => $item['total_credits'],

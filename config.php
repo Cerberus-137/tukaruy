@@ -22,7 +22,7 @@ define('QRISPAY_API_URL', 'https://api.qrispy.id');
 define('PAYMENT_METHODS', [
     'qrispay' => [
         'enabled' => true,
-        'name' => 'QRIS Pay',
+        'name' => 'QRIS',
         'description' => 'Bayar dengan QRIS melalui e-wallet'
     ],
     'saweria' => [
