@@ -342,7 +342,6 @@ $stats = [
                     </div>
                     <div class="hidden md:flex items-center space-x-6 text-sm">
                         <a href="/track" class="text-white font-medium">Pelacakan</a>
-                        <a href="#" class="text-gray-400 hover:text-white transition" onclick="showHistoryModal()">Riwayat</a>
                         <a href="/tickets" class="text-gray-400 hover:text-white transition">Top Up</a>
                         <a href="/settings" class="text-gray-400 hover:text-white transition">Pengaturan</a>
                     </div>
@@ -358,6 +357,9 @@ $stats = [
                                 <p class="text-sm font-medium"><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></p>
                                 <p class="text-xs text-gray-400"><?php echo htmlspecialchars($user['email']); ?></p>
                             </div>
+                            <a href="/history" class="block px-3 py-2 text-sm hover:bg-dark-300 transition user-menu-link">
+                                <i class="fas fa-history mr-2"></i>Riwayat Reveal
+                            </a>
                             <a href="/settings" class="block px-3 py-2 text-sm hover:bg-dark-300 transition user-menu-link">
                                 <i class="fas fa-cog mr-2"></i>Pengaturan
                             </a>
