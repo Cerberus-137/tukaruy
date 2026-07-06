@@ -1978,206 +1978,46 @@ function showNotification(message, type = 'info') {
 }
 
 
-// Setup Ship Date Picker - Using HTML5 input instead of Flatpickr
-let tempSelectedDates = null;
-let shipDatesData = {};
-
+// Setup Ship Date Picker - Simple Date Range Input
 function setupShipDatePicker() {
-    console.log('🚀 Setting up ship date picker...');
-    fetchAndSetupDatepicker();
-}
-
-async function fetchAndSetupDatepicker() {
-    try {
-        console.log('📡 Fetching available ship dates...');
-        const response = await fetch('api/ship-dates');
-        const data = await response.json();
-        
-        console.log('📍 API Response:', data);
-        
-        if (data.success && data.dates && data.dates.length > 0) {
-            // Store available dates
-            window.shipDatesData = {};
-            data.dates.forEach(item => {
-                window.shipDatesData[item.date] = item.count;
-            });
-            
-            console.log('💾 Available dates stored:', Object.keys(window.shipDatesData).length);
-            
-            // Create simple HTML calendar
-            createSimpleCalendar();
-            
-        } else {
-            console.warn('⚠️ No dates available');
-        }
-    } catch (error) {
-        console.error('❌ Error fetching dates:', error);
+    console.log('🚀 Setting up ship date range picker...');
+    
+    // Get input elements
+    const fromInput = document.getElementById('ship-date-from');
+    const toInput = document.getElementById('ship-date-to');
+    
+    if (!fromInput || !toInput) {
+        console.error('❌ Date range inputs not found');
+        return;
     }
-}
-
-// Create a simple HTML-based calendar
-function createSimpleCalendar() {
-    const container = document.getElementById('ship-date-calendar-container');
-    if (!container) return;
     
-    console.log('🎨 Creating simple calendar...');
-    
+    // Get today's date
     const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
+    const todayStr = formatDateForInput(today);
     
-    let calendarHTML = '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">';
+    // Set min dates
+    fromInput.min = todayStr;
+    toInput.min = todayStr;
     
-    // Generate 2 months
-    for (let m = 0; m < 2; m++) {
-        const month = new Date(currentYear, currentMonth + m);
-        const monthName = month.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-        
-        calendarHTML += generateMonthCalendar(month);
-    }
-    
-    calendarHTML += '</div>';
-    
-    container.innerHTML = calendarHTML;
-    
-    // Attach event listeners to date cells
-    attachDateClickListeners();
-    
-    console.log('✅ Simple calendar created');
-}
-
-// Generate calendar for a single month
-function generateMonthCalendar(date) {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const monthName = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-    
-    let html = `
-        <div style="background: rgba(42, 42, 42, 0.8); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 20px;">
-            <h3 style="text-align: center; color: #e5e7eb; margin: 0 0 15px 0; font-size: 16px; font-weight: 600;">${monthName}</h3>
-            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;">
-    `;
-    
-    // Day headers
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    dayNames.forEach(day => {
-        html += `<div style="text-align: center; color: #9ca3af; font-size: 12px; font-weight: 600; padding: 5px;">${day}</div>`;
+    // Event listeners
+    fromInput.addEventListener('change', function() {
+        console.log('📅 From date changed:', this.value);
+        toInput.min = this.value || todayStr;
     });
     
-    // Empty cells before first day
-    for (let i = 0; i < startingDayOfWeek; i++) {
-        html += `<div style="padding: 8px;"></div>`;
-    }
+    toInput.addEventListener('change', function() {
+        console.log('📅 To date changed:', this.value);
+    });
     
-    // Days of month
-    for (let day = 1; day <= daysInMonth; day++) {
-        const dateObj = new Date(year, month, day);
-        const dateStr = formatDateForStorage(dateObj);
-        const isAvailable = window.shipDatesData && window.shipDatesData[dateStr];
-        const count = isAvailable ? window.shipDatesData[dateStr] : 0;
-        
-        const backgroundColor = isAvailable ? 'rgba(139, 92, 246, 0.2)' : 'rgba(100, 100, 100, 0.2)';
-        const textColor = isAvailable ? '#e5e7eb' : '#4a4a4a';
-        const cursor = isAvailable ? 'pointer' : 'not-allowed';
-        const opacity = isAvailable ? '1' : '0.5';
-        
-        html += `
-            <div class="calendar-day-cell" 
-                 data-date="${dateStr}" 
-                 data-available="${isAvailable}" 
-                 style="
-                    padding: 10px;
-                    background: ${backgroundColor};
-                    border: 1px solid rgba(139, 92, 246, 0.3);
-                    border-radius: 8px;
-                    text-align: center;
-                    cursor: ${cursor};
-                    opacity: ${opacity};
-                    color: ${textColor};
-                    font-weight: 500;
-                    user-select: none;
-                    transition: all 0.2s ease;
-                    position: relative;
-                 "
-                 data-count="${count}">
-                <div style="font-size: 14px;">${day}</div>
-                ${count > 0 ? `<div style="font-size: 10px; color: #c084fc; margin-top: 2px;">${count}</div>` : ''}
-            </div>
-        `;
-    }
-    
-    html += '</div></div>';
-    return html;
+    console.log('✅ Ship date range picker ready');
 }
 
-// Format date for storage/comparison
-function formatDateForStorage(date) {
+// Format date for HTML input
+function formatDateForInput(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-}
-
-// Attach click listeners to calendar days
-function attachDateClickListeners() {
-    document.querySelectorAll('.calendar-day-cell').forEach(cell => {
-        cell.addEventListener('click', function() {
-            const isAvailable = this.getAttribute('data-available') === 'true';
-            if (!isAvailable) return;
-            
-            const dateStr = this.getAttribute('data-date');
-            
-            // Toggle selection
-            if (this.classList.contains('selected')) {
-                this.classList.remove('selected');
-                this.style.background = 'rgba(139, 92, 246, 0.2)';
-                
-                // Remove from selected dates
-                if (tempSelectedDates) {
-                    tempSelectedDates = tempSelectedDates.filter(d => formatDateForStorage(d) !== dateStr);
-                }
-            } else {
-                // Add selection
-                if (!tempSelectedDates) tempSelectedDates = [];
-                
-                if (tempSelectedDates.length < 2) {
-                    this.classList.add('selected');
-                    this.style.background = 'rgba(139, 92, 246, 0.8)';
-                    this.style.borderColor = '#8b5cf6';
-                    
-                    tempSelectedDates.push(new Date(dateStr));
-                    tempSelectedDates.sort((a, b) => a - b); // Sort dates
-                    
-                    // Update display
-                    updateCalendarSelectedRange(tempSelectedDates);
-                }
-            }
-        });
-        
-        // Hover effect
-        cell.addEventListener('mouseover', function() {
-            const isAvailable = this.getAttribute('data-available') === 'true';
-            if (isAvailable && !this.classList.contains('selected')) {
-                this.style.background = 'rgba(139, 92, 246, 0.4)';
-                this.style.borderColor = 'rgba(139, 92, 246, 0.8)';
-            }
-        });
-        
-        cell.addEventListener('mouseout', function() {
-            const isAvailable = this.getAttribute('data-available') === 'true';
-            if (isAvailable && !this.classList.contains('selected')) {
-                this.style.background = 'rgba(139, 92, 246, 0.2)';
-                this.style.borderColor = 'rgba(139, 92, 246, 0.3)';
-            }
-        });
-    });
-    
-    console.log('✅ Click listeners attached to', document.querySelectorAll('.calendar-day-cell').length, 'cells');
 }
 
 // Toggle Ship Date Calendar Modal
@@ -2188,11 +2028,16 @@ window.toggleShipDateCalendar = function() {
         const shipFrom = document.getElementById('ship_from').value;
         const shipTo = document.getElementById('ship_to').value;
         
-        // Set current selection in calendar
+        // Set current values in inputs
+        const fromInput = document.getElementById('ship-date-from');
+        const toInput = document.getElementById('ship-date-to');
+        
+        if (shipFrom) fromInput.value = shipFrom;
+        if (shipTo) toInput.value = shipTo;
+        
+        // Update display
         if (shipFrom && shipTo) {
-            shipDatePicker.setDate([shipFrom, shipTo], false);
-            tempSelectedDates = [new Date(shipFrom), new Date(shipTo)];
-            updateCalendarSelectedRange(tempSelectedDates);
+            updateCalendarSelectedRange([new Date(shipFrom), new Date(shipTo)]);
         }
         
         modal.classList.remove('hidden');
@@ -2214,16 +2059,16 @@ function updateCalendarSelectedRange(selectedDates) {
     const display = document.getElementById('calendar-selected-range');
     if (!display) return;
     
-    if (selectedDates.length === 2) {
+    if (selectedDates && selectedDates.length === 2) {
         const formatDate = (date) => {
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         };
-        display.textContent = `${formatDate(selectedDates[0])} - ${formatDate(selectedDates[1])}`;
-    } else if (selectedDates.length === 1) {
+        display.textContent = `Selected: ${formatDate(selectedDates[0])} → ${formatDate(selectedDates[1])}`;
+    } else if (selectedDates && selectedDates.length === 1) {
         const formatDate = (date) => {
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         };
-        display.textContent = `${formatDate(selectedDates[0])} - ...`;
+        display.textContent = `Selected: ${formatDate(selectedDates[0])}`;
     } else {
         display.textContent = 'No date selected';
     }
@@ -2231,7 +2076,10 @@ function updateCalendarSelectedRange(selectedDates) {
 
 // Apply Ship Date Range from modal
 window.applyShipDateRange = function() {
-    if (!tempSelectedDates || tempSelectedDates.length !== 2) {
+    const fromInput = document.getElementById('ship-date-from');
+    const toInput = document.getElementById('ship-date-to');
+    
+    if (!fromInput.value || !toInput.value) {
         alert('Please select both start and end dates');
         return;
     }
@@ -2240,24 +2088,29 @@ window.applyShipDateRange = function() {
     const shipTo = document.getElementById('ship_to');
     const display = document.getElementById('selected-ship-date-display');
     
-    // Format dates
-    const formatDateForInput = (date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    };
+    // Parse dates
+    const fromDate = new Date(fromInput.value);
+    const toDate = new Date(toInput.value);
     
-    const formatDateForDisplay = (date) => {
+    if (fromDate > toDate) {
+        alert('Start date must be before end date');
+        return;
+    }
+    
+    // Update hidden inputs
+    shipFrom.value = fromInput.value;
+    shipTo.value = toInput.value;
+    
+    // Format for display
+    const formatDate = (dateStr) => {
+        const date = new Date(dateStr);
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
     
-    // Update hidden inputs
-    shipFrom.value = formatDateForInput(tempSelectedDates[0]);
-    shipTo.value = formatDateForInput(tempSelectedDates[1]);
-    
     // Update display
-    display.textContent = `${formatDateForDisplay(tempSelectedDates[0])} - ${formatDateForDisplay(tempSelectedDates[1])}`;
+    const fromFormatted = formatDate(fromInput.value);
+    const toFormatted = formatDate(toInput.value);
+    display.textContent = `${fromFormatted} - ${toFormatted}`;
     display.classList.remove('text-gray-400');
     display.classList.add('text-white');
     
@@ -2265,7 +2118,9 @@ window.applyShipDateRange = function() {
     closeShipDateCalendar();
     
     // Show notification
-    showNotification(`Ship date range: ${formatDateForDisplay(tempSelectedDates[0])} - ${formatDateForDisplay(tempSelectedDates[1])}`, 'info');
+    showNotification(`Ship date range: ${fromFormatted} - ${toFormatted}`, 'info');
+    
+    console.log('✅ Ship date range applied:', fromInput.value, '-', toInput.value);
     
     // Auto-apply if enabled
     if (autoApply) {

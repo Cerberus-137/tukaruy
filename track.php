@@ -480,6 +480,7 @@ $stats = [
                                 <button 
                                     type="button" 
                                     id="ship-date-trigger" 
+                                    onclick="toggleShipDateCalendar()"
                                     class="w-full bg-[#1a1a1a99] border border-[#4a4a4a66] rounded-[10px] px-4 py-3 text-sm text-left transition-all duration-150 hover:bg-[#3a3a3a99] hover:border-[#8b5cf680] focus:outline-none focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.1)] flex items-center justify-between"
                                     style="cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 10;">
                                     <span id="selected-ship-date-display" class="text-gray-400">Select date range...</span>
@@ -710,66 +711,64 @@ $stats = [
         </div>
     </div>
 
-    <!-- Ship Date Calendar Modal - ENHANCED -->
+    <!-- Ship Date Calendar Modal - SIMPLIFIED -->
     <div id="ship-date-calendar-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-dark-200 rounded-2xl shadow-2xl max-w-5xl w-full overflow-hidden border border-dark-400">
+        <div class="bg-dark-200 rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-dark-400">
             <!-- Header -->
             <div class="flex items-center justify-between p-6 border-b border-dark-400">
                 <div>
                     <h3 class="text-xl font-bold">Select Ship Date Range</h3>
-                    <p class="text-sm text-gray-400 mt-1">Choose start and end dates to filter tracking numbers</p>
+                    <p class="text-sm text-gray-400 mt-1">Choose start and end dates</p>
                 </div>
                 <button onclick="closeShipDateCalendar()" class="w-10 h-10 rounded-lg bg-dark-300 hover:bg-dark-400 transition flex items-center justify-center">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <!-- Body -->
-            <div class="flex">
-                <!-- Quick Presets -->
-                <div class="w-48 p-4 border-r border-dark-400 bg-dark-300/50">
-                    <h4 class="text-xs font-bold text-gray-400 mb-3 uppercase">Quick Select</h4>
-                    <div class="space-y-1">
-                        <button onclick="selectQuickDate('today')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-dark-400 transition text-sm">
-                            <i class="fas fa-calendar-day mr-2 text-blue-400 text-xs"></i>Today
-                        </button>
-                        <button onclick="selectQuickDate('yesterday')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-dark-400 transition text-sm">
-                            <i class="fas fa-calendar-minus mr-2 text-blue-400 text-xs"></i>Yesterday
-                        </button>
-                        <button onclick="selectQuickDate('last7days')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-dark-400 transition text-sm">
-                            <i class="fas fa-calendar-week mr-2 text-purple-400 text-xs"></i>Last 7 days
-                        </button>
-                        <button onclick="selectQuickDate('last30days')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-dark-400 transition text-sm">
-                            <i class="fas fa-calendar-alt mr-2 text-purple-400 text-xs"></i>Last 30 days
-                        </button>
-                        <button onclick="selectQuickDate('thismonth')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-dark-400 transition text-sm">
-                            <i class="fas fa-calendar mr-2 text-green-400 text-xs"></i>This month
-                        </button>
-                        <button onclick="selectQuickDate('lastmonth')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-dark-400 transition text-sm">
-                            <i class="fas fa-calendar mr-2 text-green-400 text-xs"></i>Last month
-                        </button>
+            <!-- Body - Simple Date Inputs -->
+            <div class="p-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- From Date -->
+                    <div>
+                        <label class="text-sm font-semibold text-gray-400 block mb-2">
+                            <i class="fas fa-calendar mr-2"></i>From Date
+                        </label>
+                        <input 
+                            type="date" 
+                            id="ship-date-from" 
+                            class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500"
+                        />
+                    </div>
+                    
+                    <!-- To Date -->
+                    <div>
+                        <label class="text-sm font-semibold text-gray-400 block mb-2">
+                            <i class="fas fa-calendar mr-2"></i>To Date
+                        </label>
+                        <input 
+                            type="date" 
+                            id="ship-date-to" 
+                            class="w-full bg-dark-300 border border-dark-400 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500"
+                        />
                     </div>
                 </div>
                 
-                <!-- Calendar Container -->
-                <div class="flex-1 p-6">
-                    <div id="ship-date-calendar-container"></div>
+                <!-- Display Selected Range -->
+                <div class="mt-4 p-4 bg-dark-300 rounded-lg border border-purple-500/30">
+                    <div class="text-sm text-gray-400">
+                        <span id="calendar-selected-range">No date selected</span>
+                    </div>
                 </div>
             </div>
             
             <!-- Footer -->
             <div class="flex items-center justify-between p-6 border-t border-dark-400">
-                <div class="text-sm text-gray-400">
-                    <span id="calendar-selected-range">No date selected</span>
-                </div>
-                <div class="flex gap-3">
-                    <button onclick="closeShipDateCalendar()" class="px-4 py-2 bg-dark-400 hover:bg-dark-300 rounded-lg transition text-sm font-medium">
-                        Cancel
-                    </button>
-                    <button onclick="applyShipDateRange()" class="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg transition text-sm font-semibold">
-                        Apply Date Range
-                    </button>
-                </div>
+                <button onclick="closeShipDateCalendar()" class="px-4 py-2 bg-dark-400 hover:bg-dark-300 rounded-lg transition text-sm font-medium">
+                    Cancel
+                </button>
+                <button onclick="applyShipDateRange()" class="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg transition text-sm font-semibold">
+                    Apply Date Range
+                </button>
             </div>
         </div>
     </div>
