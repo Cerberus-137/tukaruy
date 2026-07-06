@@ -61,13 +61,13 @@ $packages = TICKET_PACKAGES;
                 </div>
                 <div class="flex items-center space-x-4">
                     <span class="text-sm text-gray-400">Tickets: <span class="text-white font-semibold"><?php echo number_format($user['tickets']); ?></span></span>
-                    <div class="relative group">
-                        <button class="w-8 h-8 rounded-lg bg-dark-300 hover:bg-dark-400 transition flex items-center justify-center">
+                    <div class="relative">
+                        <button id="user-menu-btn" class="w-8 h-8 rounded-lg bg-dark-300 hover:bg-dark-400 transition flex items-center justify-center">
                             <i class="fas fa-user text-sm"></i>
                         </button>
-                        <div class="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-lg hidden group-hover:block">
-                            <a href="/settings" class="block px-4 py-2 text-sm hover:bg-slate-700 transition">Settings</a>
-                            <a href="/logout" class="block px-4 py-2 text-sm text-red-400 hover:bg-slate-700 transition">Logout</a>
+                        <div id="user-menu" class="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-lg hidden z-50">
+                            <a href="/settings" class="block px-4 py-2 text-sm hover:bg-slate-700 transition user-menu-link">Settings</a>
+                            <a href="/logout" class="block px-4 py-2 text-sm text-red-400 hover:bg-slate-700 transition user-menu-link">Logout</a>
                         </div>
                     </div>
                 </div>
@@ -886,5 +886,37 @@ $packages = TICKET_PACKAGES;
         document.head.appendChild(style);
     </script>
 
+    <script>
+        // Setup user menu - close on click and outside click
+        document.addEventListener('DOMContentLoaded', function() {
+            const userMenuBtn = document.getElementById('user-menu-btn');
+            const userMenu = document.getElementById('user-menu');
+            const userMenuLinks = document.querySelectorAll('.user-menu-link');
+            
+            if (!userMenuBtn || !userMenu) return;
+            
+            // Toggle menu on button click
+            userMenuBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                userMenu.classList.toggle('hidden');
+            });
+            
+            // Close menu when clicking on a link
+            userMenuLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    setTimeout(() => {
+                        userMenu.classList.add('hidden');
+                    }, 50);
+                });
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!userMenuBtn.contains(e.target) && !userMenu.contains(e.target)) {
+                    userMenu.classList.add('hidden');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

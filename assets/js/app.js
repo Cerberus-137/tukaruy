@@ -170,6 +170,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     try {
+        setupUserMenu();
+        console.log('✓ User menu setup');
+    } catch (e) {
+        console.error('✗ User menu error:', e);
+    }
+    
+    try {
         setupAutoApplyToggle();
         console.log('✓ Auto-apply toggle setup');
     } catch (e) {
@@ -971,6 +978,41 @@ function loadDestinationStates(countryCode) {
         stateList.innerHTML = '<div class="p-4 text-center text-sm text-gray-500">Only available for US</div>';
     }
 }
+
+// Setup user menu - close on click and outside click
+function setupUserMenu() {
+    const userMenuBtn = document.getElementById('user-menu-btn');
+    const userMenu = document.getElementById('user-menu');
+    const userMenuLinks = document.querySelectorAll('.user-menu-link');
+    
+    if (!userMenuBtn || !userMenu) return;
+    
+    // Toggle menu on button click
+    userMenuBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        userMenu.classList.toggle('hidden');
+        console.log('👤 User menu toggled:', userMenu.classList.contains('hidden') ? 'closed' : 'open');
+    });
+    
+    // Close menu when clicking on a link
+    userMenuLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Let the link navigate, but close the menu
+            setTimeout(() => {
+                userMenu.classList.add('hidden');
+                console.log('👤 User menu closed (link clicked)');
+            }, 50);
+        });
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!userMenuBtn.contains(e.target) && !userMenu.contains(e.target)) {
+            userMenu.classList.add('hidden');
+        }
+    });
+}
+
 // Setup auto-apply toggle
 function setupAutoApplyToggle() {
     const toggle = document.getElementById('auto-apply');
@@ -1882,6 +1924,8 @@ function setupShipDatePicker() {
     const container = document.getElementById('ship-date-calendar-container');
     if (!container) return;
     
+    console.log('🚀 Initializing Flatpickr calendar...');
+    
     shipDatePicker = flatpickr(container, {
         mode: 'range',
         inline: true,
@@ -1889,15 +1933,29 @@ function setupShipDatePicker() {
         showMonths: 2, // Show 2 months side by side
         minDate: '2020-01-01',
         maxDate: new Date(new Date().getFullYear() + 1, 11, 31),
+        locale: {
+            weekdays: {
+                shorthand: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+                longhand: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+            },
+            months: {
+                shorthand: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+                longhand: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+            }
+        },
         onChange: function(selectedDates, dateStr, instance) {
+            console.log('📅 Date changed:', selectedDates);
             tempSelectedDates = selectedDates;
             updateCalendarSelectedRange(selectedDates);
         },
         onReady: function(selectedDates, dateStr, instance) {
+            console.log('📅 Calendar ready, loading ship dates...');
             // Load and show available ship dates with counts
             loadShipDatesWithCounts(instance);
         }
     });
+    
+    console.log('✅ Flatpickr initialized:', shipDatePicker ? 'Success' : 'Failed');
 }
 
 // Toggle Ship Date Calendar Modal
@@ -2039,6 +2097,7 @@ window.selectQuickDate = function(preset) {
 // Load ship dates with counts and display on calendar
 async function loadShipDatesWithCounts(flatpickrInstance) {
     try {
+        console.log('📡 Fetching ship dates from API...');
         const response = await fetch('api/ship-dates', {
             method: 'GET',
             headers: {
@@ -2048,6 +2107,8 @@ async function loadShipDatesWithCounts(flatpickrInstance) {
         
         const data = await response.json();
         
+        console.log('📍 API Response:', data);
+        
         if (data.success && data.dates && data.dates.length > 0) {
             // Store dates with counts
             window.shipDatesData = {};
@@ -2055,25 +2116,53 @@ async function loadShipDatesWithCounts(flatpickrInstance) {
                 window.shipDatesData[item.date] = item.count;
             });
             
-            // Add custom styling to calendar days with counts
+            console.log('💾 Stored ship dates:', Object.keys(window.shipDatesData).length, 'dates');
+            console.log('📊 Sample dates:', Object.entries(window.shipDatesData).slice(0, 5));
+            
+            // Force calendar re-render to show dates
             setTimeout(() => {
+                console.log('🎨 Adding styling to calendar dates...');
                 const calendarDays = document.querySelectorAll('.flatpickr-day');
+                console.log('📍 Found', calendarDays.length, 'calendar day elements');
+                
+                let styledCount = 0;
                 calendarDays.forEach(day => {
                     if (!day.classList.contains('flatpickr-disabled')) {
-                        const dateStr = day.dateObj ? flatpickrInstance.formatDate(day.dateObj, 'Y-m-d') : null;
-                        if (dateStr && window.shipDatesData[dateStr]) {
-                            day.classList.add('has-tn');
-                            day.setAttribute('data-count', formatCount(window.shipDatesData[dateStr]));
-                            day.title = `${window.shipDatesData[dateStr]} tracking numbers available`;
+                        try {
+                            // Get the date from the day element
+                            const dayNum = day.textContent.trim();
+                            if (!dayNum || isNaN(dayNum)) return;
+                            
+                            // Get current month/year from calendar
+                            const monthElement = document.querySelector('.flatpickr-month');
+                            if (!monthElement) return;
+                            
+                            // Try to extract date from data attributes or rebuild it
+                            if (day.dateObj) {
+                                const dateStr = flatpickrInstance.formatDate(day.dateObj, 'Y-m-d');
+                                if (window.shipDatesData[dateStr]) {
+                                    day.classList.add('has-tn');
+                                    day.setAttribute('data-count', formatCount(window.shipDatesData[dateStr]));
+                                    day.title = `${window.shipDatesData[dateStr]} tracking numbers available`;
+                                    styledCount++;
+                                    console.log('✨ Styled date:', dateStr, 'count:', window.shipDatesData[dateStr]);
+                                }
+                            }
+                        } catch (e) {
+                            console.warn('⚠️ Error styling day:', e);
                         }
                     }
                 });
+                
+                console.log('✅ Styled', styledCount, 'calendar days');
             }, 100);
             
-            console.log('Ship dates with counts loaded:', data.dates.length, 'dates');
+            console.log('✅ Ship dates with counts loaded:', data.dates.length, 'dates');
+        } else {
+            console.warn('⚠️ No dates in response or API returned error');
         }
     } catch (error) {
-        console.warn('Failed to load ship dates with counts:', error);
+        console.warn('❌ Failed to load ship dates with counts:', error);
     }
 }
 

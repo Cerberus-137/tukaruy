@@ -349,27 +349,27 @@ $stats = [
                 </div>
                 <div class="flex items-center space-x-4">
                     <span class="text-sm text-gray-400">Tickets: <span class="text-white font-semibold" id="credits-display"><?php echo number_format($user['tickets']); ?></span></span>
-                    <div class="relative group">
-                        <button class="w-8 h-8 rounded-lg bg-dark-300 hover:bg-dark-400 transition flex items-center justify-center">
+                    <div class="relative">
+                        <button id="user-menu-btn" class="w-8 h-8 rounded-lg bg-dark-300 hover:bg-dark-400 transition flex items-center justify-center">
                             <i class="fas fa-user text-sm"></i>
                         </button>
-                        <div class="absolute right-0 mt-2 w-48 bg-dark-200 border border-dark-400 rounded-lg shadow-lg hidden group-hover:block z-50">
+                        <div id="user-menu" class="absolute right-0 mt-2 w-48 bg-dark-200 border border-dark-400 rounded-lg shadow-lg hidden z-50">
                             <div class="p-3 border-b border-dark-400">
                                 <p class="text-sm font-medium"><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></p>
                                 <p class="text-xs text-gray-400"><?php echo htmlspecialchars($user['email']); ?></p>
                             </div>
-                            <a href="/settings" class="block px-3 py-2 text-sm hover:bg-dark-300 transition">
+                            <a href="/settings" class="block px-3 py-2 text-sm hover:bg-dark-300 transition user-menu-link">
                                 <i class="fas fa-cog mr-2"></i>Pengaturan
                             </a>
-                            <a href="/tickets" class="block px-3 py-2 text-sm hover:bg-dark-300 transition">
+                            <a href="/tickets" class="block px-3 py-2 text-sm hover:bg-dark-300 transition user-menu-link">
                                 <i class="fas fa-ticket mr-2"></i>Top Up
                             </a>
                             <?php if ($user['role'] === 'admin'): ?>
-                            <a href="/admin" class="block px-3 py-2 text-sm hover:bg-dark-300 transition text-purple-400">
+                            <a href="/admin" class="block px-3 py-2 text-sm hover:bg-dark-300 transition text-purple-400 user-menu-link">
                                 <i class="fas fa-shield-alt mr-2"></i>Admin Panel
                             </a>
                             <?php endif; ?>
-                            <a href="/logout" class="block px-3 py-2 text-sm hover:bg-dark-300 transition text-red-400">
+                            <a href="/logout" class="block px-3 py-2 text-sm hover:bg-dark-300 transition text-red-400 user-menu-link">
                                 <i class="fas fa-sign-out-alt mr-2"></i>Logout
                             </a>
                         </div>
