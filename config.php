@@ -6,7 +6,7 @@
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
 define('DB_NAME', getenv('DB_NAME') ?: 'tukarkuy');
 define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('DB_PASS') ?: 'CHANGE_THIS_PASSWORD_NOW');
+define('DB_PASS', getenv('DB_PASS') ?: 'Milham159753');
 
 // Site configuration
 define('SITE_NAME', 'Tukarkuy');
