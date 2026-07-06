@@ -786,6 +786,6 @@ $stats = [
         </div>
     </div>
 
-    <script src="assets/js/app.js"></script>
+    <script src="assets/js/app.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>

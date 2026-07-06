@@ -1451,49 +1451,17 @@ function createResultRow(result) {
     // Build shipment timeline display
     let shipmentHTML = '';
     if (shipDate !== 'N/A' && deliveryDate !== 'N/A') {
-        // Both dates available - full timeline with visual connector
-        shipmentHTML = `
-            <div class="flex items-center gap-2">
-                <div class="text-xs font-medium text-blue-400">${shipDateShort}</div>
-                <div class="flex items-center gap-1">
-                    <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                    <div class="h-px w-8 bg-gradient-to-r from-blue-500 to-purple-500"></div>
-                    <div class="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                </div>
-                <div class="text-xs font-medium text-purple-400">${deliveryDateShort} ${deliveryYear}</div>
-            </div>
-        `;
+        // Both dates available - compact format: "Jun 23 → Jun 27 2026"
+        shipmentHTML = `<div class="text-xs text-gray-300">${shipDateShort} <span class="text-gray-500">→</span> ${deliveryDateShort} ${deliveryYear}</div>`;
     } else if (shipDate !== 'N/A') {
-        // Only ship date available - no delivery date
-        shipmentHTML = `
-            <div class="flex items-center gap-2">
-                <div class="text-xs font-medium text-blue-400">${shipDateShort}</div>
-                <div class="flex items-center gap-1">
-                    <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                    <div class="h-px w-8 bg-gray-600"></div>
-                    <div class="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
-                </div>
-                <div class="text-xs text-gray-600">—</div>
-            </div>
-        `;
+        // Only ship date available
+        shipmentHTML = `<div class="text-xs text-gray-300">${shipDateShort} <span class="text-gray-500">→</span> <span class="text-gray-600">—</span></div>`;
     } else if (deliveryDate !== 'N/A') {
         // Only delivery date available (rare case)
-        shipmentHTML = `
-            <div class="flex items-center gap-2">
-                <div class="text-xs text-gray-600">—</div>
-                <div class="flex items-center gap-1">
-                    <div class="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
-                    <div class="h-px w-8 bg-gradient-to-r from-gray-600 to-purple-500"></div>
-                    <div class="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                </div>
-                <div class="text-xs font-medium text-purple-400">${deliveryDateShort} ${deliveryYear}</div>
-            </div>
-        `;
+        shipmentHTML = `<div class="text-xs text-gray-300"><span class="text-gray-600">—</span> <span class="text-gray-500">→</span> ${deliveryDateShort} ${deliveryYear}</div>`;
     } else {
         // No dates available
-        shipmentHTML = `
-            <div class="text-xs text-gray-600">—</div>
-        `;
+        shipmentHTML = `<div class="text-xs text-gray-600">—</div>`;
     }
     
     row.innerHTML = `
