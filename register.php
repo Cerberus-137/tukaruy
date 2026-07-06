@@ -32,27 +32,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid email address';
     } else {
-        // Verify CAPTCHA token if present
-        $captchaValid = true;
-        if (!empty($captchaToken)) {
+        // Verify CAPTCHA token - ALWAYS REQUIRED
+        if (empty($captchaToken)) {
+            $error = 'Please complete the CAPTCHA verification';
+        } else {
             $captchaValid = verifyCaptcha($captchaToken, TURNSTILE_SECRET_KEY);
-        } else {
-            // Log warning but allow bypass if CAPTCHA fails to load
-            error_log('Warning: CAPTCHA token not received - possible widget load failure');
-            // Set to false if you want to enforce CAPTCHA
-            // $captchaValid = false;
-        }
-        
-        if (!$captchaValid && !empty($captchaToken)) {
-            $error = 'CAPTCHA verification failed. Please try again.';
-        } else {
-            $result = registerUser($email, $password, $firstName, $lastName, $company);
             
-            if ($result['success']) {
-                header('Location: /login?registered=1');
-                exit;
+            if (!$captchaValid) {
+                $error = 'CAPTCHA verification failed. Please try again.';
+                error_log('CAPTCHA verification failed for email: ' . $email);
             } else {
-                $error = $result['message'];
+                $result = registerUser($email, $password, $firstName, $lastName, $company);
+                
+                if ($result['success']) {
+                    header('Location: /login?registered=1');
+                    exit;
+                } else {
+                    $error = $result['message'];
+                }
             }
         }
     }
@@ -66,30 +63,46 @@ function verifyCaptcha($token, $secretKey) {
     
     $data = [
         'secret' => $secretKey,
-        'response' => $token
+        'response' => $token,
+        'remoteip' => $_SERVER['REMOTE_ADDR'] ?? null
     ];
     
-    $options = [
-        'http' => [
-            'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-            'method'  => 'POST',
-            'content' => http_build_query($data),
-            'timeout' => 10
-        ]
-    ];
+    // Use cURL for better error handling
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
     
-    $context = stream_context_create($options);
-    $result = @file_get_contents($url, false, $context);
+    $result = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
     
     if ($result === false) {
-        error_log('CAPTCHA verification failed: Unable to reach Cloudflare API');
+        error_log('CAPTCHA verification failed: cURL error - ' . $curlError);
+        return false;
+    }
+    
+    if ($httpCode !== 200) {
+        error_log('CAPTCHA verification failed: HTTP ' . $httpCode);
         return false;
     }
     
     $decoded = json_decode($result, true);
     
+    if (!$decoded) {
+        error_log('CAPTCHA verification failed: Invalid JSON response');
+        return false;
+    }
+    
+    // Log for debugging
+    error_log('CAPTCHA verification response: ' . json_encode($decoded));
+    
     if (!isset($decoded['success']) || !$decoded['success']) {
-        error_log('CAPTCHA verification failed: ' . json_encode($decoded));
+        $errorCodes = isset($decoded['error-codes']) ? implode(', ', $decoded['error-codes']) : 'unknown';
+        error_log('CAPTCHA verification failed: ' . $errorCodes);
         return false;
     }
     
@@ -198,7 +211,7 @@ function verifyCaptcha($token, $secretKey) {
                 </div>
                 <?php endif; ?>
 
-                <form method="POST" action="">
+                <form method="POST" action="" id="register-form">
                     <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
@@ -259,11 +272,15 @@ function verifyCaptcha($token, $secretKey) {
                         </div>
 
                         <!-- Cloudflare Turnstile CAPTCHA -->
-                        <div class="cf-turnstile" data-sitekey="<?php echo TURNSTILE_SITE_KEY; ?>" data-theme="dark"></div>
+                        <div>
+                            <div class="cf-turnstile" data-sitekey="<?php echo TURNSTILE_SITE_KEY; ?>" data-theme="dark" data-callback="onCaptchaSuccess"></div>
+                            <p id="captcha-error" class="mt-1 text-xs text-red-400 hidden">Please complete the CAPTCHA</p>
+                        </div>
 
                         <button 
                             type="submit"
-                            class="w-full bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-semibold py-3 rounded-lg transition"
+                            id="submit-btn"
+                            class="w-full bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Create account
                         </button>
@@ -280,6 +297,31 @@ function verifyCaptcha($token, $secretKey) {
 
         </div>
     </div>
+
+    <script>
+        let captchaCompleted = false;
+
+        // Callback when CAPTCHA is completed
+        function onCaptchaSuccess(token) {
+            console.log('✅ CAPTCHA completed successfully');
+            captchaCompleted = true;
+            document.getElementById('captcha-error').classList.add('hidden');
+        }
+
+        // Form validation
+        document.getElementById('register-form').addEventListener('submit', function(e) {
+            const captchaResponse = document.querySelector('[name="cf-turnstile-response"]');
+            
+            if (!captchaResponse || !captchaResponse.value) {
+                e.preventDefault();
+                document.getElementById('captcha-error').classList.remove('hidden');
+                alert('Please complete the CAPTCHA verification before submitting.');
+                return false;
+            }
+            
+            console.log('📝 Form submitted with CAPTCHA token');
+        });
+    </script>
 
 </body>
 </html>

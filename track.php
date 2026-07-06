@@ -361,9 +361,6 @@ $stats = [
                             <a href="/settings" class="block px-3 py-2 text-sm hover:bg-dark-300 transition user-menu-link">
                                 <i class="fas fa-cog mr-2"></i>Pengaturan
                             </a>
-                            <a href="/history" class="block px-3 py-2 text-sm hover:bg-dark-300 transition user-menu-link">
-                                <i class="fas fa-history mr-2"></i>Riwayat Reveal
-                            </a>
                             <a href="/tickets" class="block px-3 py-2 text-sm hover:bg-dark-300 transition user-menu-link">
                                 <i class="fas fa-ticket mr-2"></i>Top Up
                             </a>
