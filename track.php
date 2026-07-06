@@ -468,7 +468,7 @@ $stats = [
                             </div>
                         </div>
 
-                        <!-- Ship Date Window - Enhanced Calendar -->
+                        <!-- Ship Date Window -->
                         <div>
                             <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider flex items-center justify-between">
                                 <span><i class="fas fa-calendar-alt mr-2 text-purple-400"></i>SHIP DATE WINDOW</span>
@@ -476,21 +476,18 @@ $stats = [
                                     <i class="fas fa-times-circle"></i>
                                 </button>
                             </label>
-                            <div class="relative" style="z-index: 1;">
-                                <button 
-                                    type="button" 
-                                    id="ship-date-trigger" 
-                                    onclick="toggleShipDateCalendar()"
-                                    class="w-full bg-[#1a1a1a99] border border-[#4a4a4a66] rounded-[10px] px-4 py-3 text-sm text-left transition-all duration-150 hover:bg-[#3a3a3a99] hover:border-[#8b5cf680] focus:outline-none focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.1)] flex items-center justify-between"
-                                    style="cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 10;">
-                                    <span id="selected-ship-date-display" class="text-gray-400">Select date range...</span>
-                                    <i class="fas fa-calendar-alt text-xs text-purple-400"></i>
-                                </button>
-                                <input type="hidden" id="ship_from" value="">
-                                <input type="hidden" id="ship_to" value="">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs text-gray-500 mb-1 block">From</label>
+                                    <input type="date" id="ship_from" class="modern-input w-full text-sm">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500 mb-1 block">To</label>
+                                    <input type="date" id="ship_to" class="modern-input w-full text-sm">
+                                </div>
                             </div>
                             <div class="mt-2 text-xs text-gray-500">
-                                <i class="fas fa-info-circle mr-1"></i>Click to open calendar with availability
+                                <i class="fas fa-info-circle mr-1"></i>Filter by shipment date
                             </div>
                         </div>
 
@@ -572,18 +569,15 @@ $stats = [
                                     <i class="fas fa-times-circle"></i>
                                 </button>
                             </label>
-                            <div class="relative">
-                                <button 
-                                    type="button" 
-                                    id="delivery-date-trigger" 
-                                    onclick="toggleDeliveryDateCalendar()"
-                                    class="w-full bg-[#1a1a1a99] border border-[#4a4a4a66] rounded-[10px] px-4 py-3 text-sm text-left transition-all duration-150 hover:bg-[#3a3a3a99] hover:border-[#3b82f680] focus:outline-none focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] flex items-center justify-between"
-                                    style="cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 10;">
-                                    <span id="selected-delivery-date-display" class="text-gray-400">Select date range...</span>
-                                    <i class="fas fa-calendar-check text-xs text-blue-400"></i>
-                                </button>
-                                <input type="hidden" id="delivery_from" value="">
-                                <input type="hidden" id="delivery_to" value="">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs text-gray-500 mb-1 block">From</label>
+                                    <input type="date" id="delivery_from" class="modern-input w-full text-sm">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500 mb-1 block">To</label>
+                                    <input type="date" id="delivery_to" class="modern-input w-full text-sm">
+                                </div>
                             </div>
                             <div class="mt-2 text-xs text-gray-500">
                                 <i class="fas fa-info-circle mr-1"></i>Filter by estimated arrival date

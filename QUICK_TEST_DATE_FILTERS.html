@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Date Filters - Tukeruy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            padding: 40px;
+        }
+        .test-card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .test-input {
+            background: #0a0a0a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #fff;
+            font-size: 14px;
+            width: 100%;
+        }
+        .btn {
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+        }
+        .result {
+            background: #0a0a0a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        .badge-purple {
+            background: rgba(139, 92, 246, 0.2);
+            color: #c084fc;
+        }
+        .badge-blue {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+        .badge-success {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+        .badge-error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+    </style>
+</head>
+<body>
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-2">Date Filters Test Page</h1>
+        <p class="text-gray-400 mb-8">Test independent Ship Date and Delivery Date filters</p>
+
+        <!-- Test 1: Ship Date Only -->
+        <div class="test-card">
+            <h2 class="text-xl font-bold mb-4">
+                <span class="badge badge-purple">Test 1</span>
+                Ship Date Filter Only
+            </h2>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Ship From</label>
+                    <input type="date" id="test1_ship_from" class="test-input" value="2026-06-25">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Ship To</label>
+                    <input type="date" id="test1_ship_to" class="test-input" value="2026-06-30">
+                </div>
+            </div>
+            <button onclick="runTest1()" class="btn">Run Test 1</button>
+            <div id="result1" class="result hidden"></div>
+        </div>
+
+        <!-- Test 2: Delivery Date Only -->
+        <div class="test-card">
+            <h2 class="text-xl font-bold mb-4">
+                <span class="badge badge-blue">Test 2</span>
+                Delivery Date Filter Only
+            </h2>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Delivery From</label>
+                    <input type="date" id="test2_delivery_from" class="test-input" value="2026-06-27">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Delivery To</label>
+                    <input type="date" id="test2_delivery_to" class="test-input" value="2026-06-30">
+                </div>
+            </div>
+            <button onclick="runTest2()" class="btn">Run Test 2</button>
+            <div id="result2" class="result hidden"></div>
+        </div>
+
+        <!-- Test 3: Both Filters -->
+        <div class="test-card">
+            <h2 class="text-xl font-bold mb-4">
+                <span class="badge badge-success">Test 3</span>
+                Both Filters (AND Logic)
+            </h2>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Ship From</label>
+                    <input type="date" id="test3_ship_from" class="test-input" value="2026-06-25">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Ship To</label>
+                    <input type="date" id="test3_ship_to" class="test-input" value="2026-06-30">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Delivery From</label>
+                    <input type="date" id="test3_delivery_from" class="test-input" value="2026-06-27">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Delivery To</label>
+                    <input type="date" id="test3_delivery_to" class="test-input" value="2026-06-30">
+                </div>
+            </div>
+            <button onclick="runTest3()" class="btn">Run Test 3</button>
+            <div id="result3" class="result hidden"></div>
+        </div>
+
+        <!-- Expected Results -->
+        <div class="test-card">
+            <h2 class="text-xl font-bold mb-4">Expected API Requests</h2>
+            <div class="space-y-4">
+                <div>
+                    <p class="text-sm text-gray-400 mb-2"><span class="badge badge-purple">Test 1</span> Ship Date Only</p>
+                    <pre class="result text-xs">
+{
+  "filter": {
+    "shipped_between": {
+      "from": "2026-06-25",
+      "to": "2026-06-30"
+    }
+  }
+}</pre>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-400 mb-2"><span class="badge badge-blue">Test 2</span> Delivery Date Only</p>
+                    <pre class="result text-xs">
+{
+  "filter": {
+    "est_delivery_between": {
+      "from": "2026-06-27",
+      "to": "2026-06-30"
+    }
+  }
+}</pre>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-400 mb-2"><span class="badge badge-success">Test 3</span> Both Filters</p>
+                    <pre class="result text-xs">
+{
+  "filter": {
+    "shipped_between": {
+      "from": "2026-06-25",
+      "to": "2026-06-30"
+    },
+    "est_delivery_between": {
+      "from": "2026-06-27",
+      "to": "2026-06-30"
+    }
+  }
+}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function runTest1() {
+            const shipFrom = document.getElementById('test1_ship_from').value;
+            const shipTo = document.getElementById('test1_ship_to').value;
+            
+            const filters = {
+                ship_from: shipFrom,
+                ship_to: shipTo
+            };
+            
+            displayResult('result1', filters, 'Ship Date Only');
+        }
+
+        function runTest2() {
+            const deliveryFrom = document.getElementById('test2_delivery_from').value;
+            const deliveryTo = document.getElementById('test2_delivery_to').value;
+            
+            const filters = {
+                delivery_from: deliveryFrom,
+                delivery_to: deliveryTo
+            };
+            
+            displayResult('result2', filters, 'Delivery Date Only');
+        }
+
+        function runTest3() {
+            const shipFrom = document.getElementById('test3_ship_from').value;
+            const shipTo = document.getElementById('test3_ship_to').value;
+            const deliveryFrom = document.getElementById('test3_delivery_from').value;
+            const deliveryTo = document.getElementById('test3_delivery_to').value;
+            
+            const filters = {
+                ship_from: shipFrom,
+                ship_to: shipTo,
+                delivery_from: deliveryFrom,
+                delivery_to: deliveryTo
+            };
+            
+            displayResult('result3', filters, 'Both Filters');
+        }
+
+        function displayResult(elementId, filters, testName) {
+            const resultDiv = document.getElementById(elementId);
+            resultDiv.classList.remove('hidden');
+            
+            // Build API filter object
+            const apiFilter = {};
+            
+            if (filters.ship_from || filters.ship_to) {
+                apiFilter.shipped_between = {};
+                if (filters.ship_from) apiFilter.shipped_between.from = filters.ship_from;
+                if (filters.ship_to) apiFilter.shipped_between.to = filters.ship_to;
+            }
+            
+            if (filters.delivery_from || filters.delivery_to) {
+                apiFilter.est_delivery_between = {};
+                if (filters.delivery_from) apiFilter.est_delivery_between.from = filters.delivery_from;
+                if (filters.delivery_to) apiFilter.est_delivery_between.to = filters.delivery_to;
+            }
+            
+            const apiRequest = {
+                filter: apiFilter
+            };
+            
+            resultDiv.innerHTML = `
+                <div class="mb-3">
+                    <p class="text-green-400 font-semibold mb-2">✓ ${testName} - API Request:</p>
+                    <pre class="text-green-300">${JSON.stringify(apiRequest, null, 2)}</pre>
+                </div>
+                <div class="border-t border-gray-700 pt-3 mt-3">
+                    <p class="text-blue-400 font-semibold mb-2">Expected Behavior:</p>
+                    <ul class="text-gray-300 text-sm space-y-1">
+                        ${filters.ship_from && filters.ship_to ? 
+                            `<li>• Filter paket yang <strong>dikirim</strong> antara ${filters.ship_from} - ${filters.ship_to}</li>` : ''}
+                        ${filters.delivery_from && filters.delivery_to ? 
+                            `<li>• Filter paket yang <strong>estimasi tiba</strong> antara ${filters.delivery_from} - ${filters.delivery_to}</li>` : ''}
+                        ${filters.ship_from && filters.delivery_from ? 
+                            `<li>• Operator: <strong>AND</strong> (kedua kondisi harus terpenuhi)</li>` : ''}
+                    </ul>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

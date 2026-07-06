@@ -2230,21 +2230,27 @@ function formatCount(count) {
 window.clearShipDateRange = function() {
     const shipFrom = document.getElementById('ship_from');
     const shipTo = document.getElementById('ship_to');
-    const display = document.getElementById('selected-ship-date-display');
     
     if (shipFrom) shipFrom.value = '';
     if (shipTo) shipTo.value = '';
-    if (display) {
-        display.textContent = 'Select date range...';
-        display.classList.add('text-gray-400');
-    }
-    
-    // Clear Flatpickr selection
-    if (shipDatePicker) {
-        shipDatePicker.clear();
-    }
     
     showNotification('Ship date range cleared', 'info');
+    
+    // Auto-apply if enabled
+    if (autoApply) {
+        debounceSearch();
+    }
+};
+
+// Clear delivery date range
+window.clearDeliveryDateRange = function() {
+    const deliveryFrom = document.getElementById('delivery_from');
+    const deliveryTo = document.getElementById('delivery_to');
+    
+    if (deliveryFrom) deliveryFrom.value = '';
+    if (deliveryTo) deliveryTo.value = '';
+    
+    showNotification('Delivery date range cleared', 'info');
     
     // Auto-apply if enabled
     if (autoApply) {
