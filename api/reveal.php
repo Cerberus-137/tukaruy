@@ -1,6 +1,6 @@
 <?php
 session_start();
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 require_once '../config.php';
 require_once '../auth.php';
 require_once 'TukeruyAPI.php';
@@ -8,7 +8,7 @@ require_once 'TukeruyAPI.php';
 // Require login
 if (!isLoggedIn()) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized'], JSON_UNESCAPED_SLASHES);
     exit;
 }
 
@@ -93,7 +93,7 @@ try {
                 'revealed_at' => $result['revealed_at'] ?? date('Y-m-d H:i:s')
             ],
             'credits_remaining' => $newTicketCount
-        ]);
+        ], JSON_UNESCAPED_SLASHES);
         
     } catch (Exception $e) {
         $pdo->rollBack();
@@ -106,5 +106,5 @@ try {
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage()
-    ]);
+    ], JSON_UNESCAPED_SLASHES);
 }

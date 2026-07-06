@@ -1,13 +1,13 @@
 <?php
 session_start();
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 require_once '../../config.php';
 require_once '../../auth.php';
 
 // Require login & admin role
 if (!isLoggedIn() || getCurrentUser()['role'] !== 'admin') {
     http_response_code(403);
-    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized'], JSON_UNESCAPED_SLASHES);
     exit;
 }
 
@@ -36,9 +36,9 @@ try {
         'total_revenue' => $totalRevenue,
         'pending_payments' => $pendingPayments,
         'total_credits' => $totalCredits
-    ]);
+    ], JSON_UNESCAPED_SLASHES);
     
 } catch (Exception $e) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_SLASHES);
 }

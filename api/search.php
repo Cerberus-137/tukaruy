@@ -17,7 +17,7 @@ session_start();
 error_log("🔍 Search API Request - Method: " . $_SERVER['REQUEST_METHOD'] . ", URI: " . $_SERVER['REQUEST_URI']);
 
 // FORCE JSON HEADER - No matter what
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-cache, must-revalidate');
 
 // Prevent any HTML output
@@ -142,7 +142,7 @@ try {
     ];
     
     error_log("📤 Sending response: " . strlen(json_encode($response)) . " bytes");
-    echo json_encode($response);
+    echo json_encode($response, JSON_UNESCAPED_SLASHES);
     
 } catch (Exception $e) {
     error_log('❌ Search API Error: ' . $e->getMessage());
@@ -157,5 +157,5 @@ try {
         'success' => false,
         'error' => $e->getMessage(),
         'error_type' => get_class($e)
-    ]);
+    ], JSON_UNESCAPED_SLASHES);
 }

@@ -4,12 +4,20 @@ RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-# Remove .php extension for non-API files ONLY
-# BUT skip if path starts with api/ or admin/api/
+# ============================================================
+# IMPORTANT: API endpoints must execute directly
+# Do NOT rewrite requests to api/ or admin/api/ directories
+# ============================================================
+
+# Skip ALL rewriting for API endpoints (they need .php extension)
+RewriteRule ^(api|admin/api)($|/) - [L]
+
+# ============================================================
+# Remove .php extension for non-API files
+# This rule only applies to non-API paths now
+# ============================================================
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME}\.php -f
-RewriteCond %{REQUEST_URI} !^/api/
-RewriteCond %{REQUEST_URI} !^/admin/api/
 RewriteRule ^(.*)$ $1.php [L]
 
 # Enable CORS for API endpoints

@@ -1,6 +1,6 @@
 <?php
 session_start();
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 require_once '../config.php';
 require_once '../auth.php';
 require_once 'TukeruyAPI.php';
@@ -8,7 +8,7 @@ require_once 'TukeruyAPI.php';
 // Require login
 if (!isLoggedIn()) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized'], JSON_UNESCAPED_SLASHES);
     exit;
 }
 
@@ -25,7 +25,7 @@ try {
             'success' => true,
             'history' => $accountData['history'] ?? [],
             'credits_balance' => $accountData['credits']['balance'] ?? 0
-        ]);
+        ], JSON_UNESCAPED_SLASHES);
     } else {
         // Get basic account info
         $api = new TukeruyAPI();
@@ -42,7 +42,7 @@ try {
                 'created_at' => $user['created_at']
             ],
             'credits_balance' => $accountData['credits']['balance'] ?? 0
-        ]);
+        ], JSON_UNESCAPED_SLASHES);
     }
     
 } catch (Exception $e) {
@@ -51,5 +51,5 @@ try {
     echo json_encode([
         'success' => false,
         'error' => 'Failed to get account information'
-    ]);
+    ], JSON_UNESCAPED_SLASHES);
 }

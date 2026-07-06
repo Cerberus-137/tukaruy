@@ -1,6 +1,6 @@
 <?php
 // Simple test endpoint to verify API is accessible
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-cache, must-revalidate');
 
 echo json_encode([
@@ -11,4 +11,4 @@ echo json_encode([
     'request_uri' => $_SERVER['REQUEST_URI'],
     'php_sapi' => php_sapi_name(),
     'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown'
-]);
+], JSON_UNESCAPED_SLASHES);

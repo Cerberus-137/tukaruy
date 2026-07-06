@@ -1,6 +1,6 @@
 <?php
 session_start();
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 require_once '../../config.php';
 require_once '../../auth.php';
 require_once '../QRISPayAPI.php';
@@ -9,7 +9,7 @@ require_once '../SaweriaAPI.php';
 // Require login
 if (!isLoggedIn()) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized'], JSON_UNESCAPED_SLASHES);
     exit;
 }
 
@@ -39,7 +39,7 @@ try {
                 'success' => true,
                 'status' => 'paid',
                 'tickets' => $payment['tickets']
-            ]);
+            ], JSON_UNESCAPED_SLASHES);
             exit;
         }
         
@@ -88,7 +88,7 @@ try {
                         'tickets_added' => $payment['tickets'],
                         'new_balance' => $newBalance,
                         'message' => 'Payment successful! ' . $payment['tickets'] . ' credits have been added to your account.'
-                    ]);
+                    ], JSON_UNESCAPED_SLASHES);
                 } catch (Exception $dbError) {
                     $pdo->rollBack();
                     error_log('❌ Database error updating payment: ' . $dbError->getMessage());
@@ -101,7 +101,7 @@ try {
                     'status' => 'pending',
                     'api_status' => $paymentStatus,
                     'message' => 'Payment is still pending. Please complete the payment.'
-                ]);
+                ], JSON_UNESCAPED_SLASHES);
             }
         } catch (Exception $e) {
             // If API check fails, return current status
@@ -110,7 +110,7 @@ try {
                 'success' => true,
                 'status' => $payment['status'],
                 'error' => 'Unable to verify payment status: ' . $e->getMessage()
-            ]);
+            ], JSON_UNESCAPED_SLASHES);
         }
         
     } else {
@@ -128,7 +128,7 @@ try {
                 'success' => true,
                 'status' => 'paid',
                 'tickets' => $payment['tickets']
-            ]);
+            ], JSON_UNESCAPED_SLASHES);
             exit;
         }
         
@@ -160,7 +160,7 @@ try {
                         'success' => true,
                         'status' => 'paid',
                         'tickets' => $payment['tickets']
-                    ]);
+                    ], JSON_UNESCAPED_SLASHES);
                 } catch (Exception $dbError) {
                     $pdo->rollBack();
                     error_log('Database error updating payment: ' . $dbError->getMessage());
@@ -171,7 +171,7 @@ try {
                 echo json_encode([
                     'success' => true,
                     'status' => $payment['status']
-                ]);
+                ], JSON_UNESCAPED_SLASHES);
             }
         } catch (Exception $e) {
             // If API check fails, return current status
@@ -180,7 +180,7 @@ try {
                 'success' => true,
                 'status' => $payment['status'],
                 'error' => $e->getMessage()
-            ]);
+            ], JSON_UNESCAPED_SLASHES);
         }
     }
     
@@ -190,5 +190,5 @@ try {
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage()
-    ]);
+    ], JSON_UNESCAPED_SLASHES);
 }

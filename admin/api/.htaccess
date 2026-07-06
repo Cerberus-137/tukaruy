@@ -1,10 +1,20 @@
-# Force no rewrite in Admin API directory
-# All PHP files must execute directly
-
-# Disable any parent rewrite rules
+# Admin API Directory - Disable rewriting
+# All requests should go directly to PHP files
 RewriteEngine Off
 
 # Force JSON content type for .php files
 <FilesMatch "\.php$">
     Header set Content-Type "application/json"
 </FilesMatch>
+
+# Handle clean URLs (redirect /admin/api/file to /admin/api/file.php)
+# This is needed when URLs don't have .php extension
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # If the requested file doesn't exist and doesn't end with .php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}\.php -f
+    # Rewrite to add .php extension
+    RewriteRule ^([^.]+)$ $1.php [L]
+</IfModule>

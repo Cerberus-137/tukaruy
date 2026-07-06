@@ -1,5 +1,5 @@
 <?php
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 require_once '../config.php';
 
 // Simple stats endpoint - returns cached or quick stats
@@ -17,7 +17,7 @@ try {
             'success' => true,
             'stats' => $cachedData,
             'cached' => true
-        ]);
+        ], JSON_UNESCAPED_SLASHES);
         exit;
     }
     
@@ -37,11 +37,11 @@ try {
         'success' => true,
         'stats' => $stats,
         'cached' => false
-    ]);
+    ], JSON_UNESCAPED_SLASHES);
     
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage()
-    ]);
+    ], JSON_UNESCAPED_SLASHES);
 }

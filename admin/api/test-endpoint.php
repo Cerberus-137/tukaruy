@@ -1,6 +1,6 @@
 <?php
 // Simple test endpoint to verify PHP execution
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-cache, must-revalidate');
 
 echo json_encode([
@@ -12,4 +12,4 @@ echo json_encode([
     'request_method' => $_SERVER['REQUEST_METHOD'],
     'request_uri' => $_SERVER['REQUEST_URI'],
     'query_string' => $_SERVER['QUERY_STRING'] ?? ''
-]);
+], JSON_UNESCAPED_SLASHES);

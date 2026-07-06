@@ -6,7 +6,7 @@ error_log("📋 Admin Packages API Request - Method: " . $_SERVER['REQUEST_METHO
 error_log("📋 GET params: " . json_encode($_GET));
 error_log("📋 POST params: " . json_encode($_POST));
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-cache, must-revalidate');
 require_once '../../config.php';
 require_once '../../auth.php';
@@ -15,14 +15,14 @@ require_once '../../auth.php';
 if (!isLoggedIn()) {
     error_log("❌ Admin Packages API: Not logged in");
     http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized'], JSON_UNESCAPED_SLASHES);
     exit;
 }
 
 if (getCurrentUser()['role'] !== 'admin') {
     error_log("❌ Admin Packages API: Not admin - Role: " . getCurrentUser()['role']);
     http_response_code(403);
-    echo json_encode(['success' => false, 'error' => 'Access denied']);
+    echo json_encode(['success' => false, 'error' => 'Access denied'], JSON_UNESCAPED_SLASHES);
     exit;
 }
 
@@ -68,7 +68,7 @@ try {
             error_log("✅ Recalculated total_credits for package ID $id");
         }
         
-        echo json_encode(['success' => true]);
+        echo json_encode(['success' => true], JSON_UNESCAPED_SLASHES);
         exit;
     }
     
@@ -103,7 +103,7 @@ try {
         $newId = $pdo->lastInsertId();
         error_log("✅ Created package ID $newId");
         
-        echo json_encode(['success' => true, 'id' => $newId]);
+        echo json_encode(['success' => true, 'id' => $newId], JSON_UNESCAPED_SLASHES);
         exit;
     }
     
@@ -123,7 +123,7 @@ try {
         
         error_log("✅ Deleted package ID $id");
         
-        echo json_encode(['success' => true]);
+        echo json_encode(['success' => true], JSON_UNESCAPED_SLASHES);
         exit;
     }
     
@@ -133,11 +133,11 @@ try {
     
     error_log("✅ Returning " . count($packages) . " packages");
     
-    echo json_encode(['success' => true, 'packages' => $packages]);
+    echo json_encode(['success' => true, 'packages' => $packages], JSON_UNESCAPED_SLASHES);
     
 } catch (Exception $e) {
     error_log('❌ Packages API Error: ' . $e->getMessage());
     error_log('❌ Stack trace: ' . $e->getTraceAsString());
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_SLASHES);
 }

@@ -1,19 +1,19 @@
 <?php
 session_start();
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 require_once '../../config.php';
 require_once '../../auth.php';
 
 // Require login & admin role
 if (!isLoggedIn()) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized'], JSON_UNESCAPED_SLASHES);
     exit;
 }
 
 if (getCurrentUser()['role'] !== 'admin') {
     http_response_code(403);
-    echo json_encode(['success' => false, 'error' => 'Access denied']);
+    echo json_encode(['success' => false, 'error' => 'Access denied'], JSON_UNESCAPED_SLASHES);
     exit;
 }
 
@@ -47,7 +47,7 @@ try {
             $stmt->execute([$key, $value]);
         }
         
-        echo json_encode(['success' => true]);
+        echo json_encode(['success' => true], JSON_UNESCAPED_SLASHES);
         exit;
     }
     
@@ -55,10 +55,10 @@ try {
     $stmt = $pdo->query("SELECT * FROM admin_settings");
     $settings = $stmt->fetchAll();
     
-    echo json_encode(['success' => true, 'settings' => $settings]);
+    echo json_encode(['success' => true, 'settings' => $settings], JSON_UNESCAPED_SLASHES);
     
 } catch (Exception $e) {
     error_log('Settings API Error: ' . $e->getMessage());
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_SLASHES);
 }

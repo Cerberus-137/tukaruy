@@ -1,0 +1,13 @@
+# Payment API Subdirectory - Handle clean URLs
+RewriteEngine On
+
+# Force JSON content type for .php files
+<FilesMatch "\.php$">
+    Header set Content-Type "application/json"
+</FilesMatch>
+
+# Handle clean URLs (redirect /api/payment/file to /api/payment/file.php)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^([^.]+)$ $1.php [L]
