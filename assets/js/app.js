@@ -1454,59 +1454,26 @@ function createResultRow(result) {
     if (shipDate !== 'N/A' && deliveryDate !== 'N/A') {
         // Both dates available - full timeline
         shipmentHTML = `
-            <div class="flex items-center gap-2">
-                <div class="text-sm font-medium text-blue-400">${shipDateShort}</div>
-                <div class="flex items-center gap-1">
-                    <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-                    <div class="h-0.5 w-12 bg-gradient-to-r from-blue-500 to-purple-500"></div>
-                    <div class="w-2 h-2 rounded-full bg-purple-500"></div>
-                </div>
-                <div class="text-sm font-medium text-purple-400">${deliveryDateShort} ${deliveryYear}</div>
-            </div>
-            <div class="text-xs text-gray-500 mt-1">
-                <span class="mr-3">🚢 Ship</span>
-                <span>📦 Est. Delivery</span>
-            </div>
+            <div class="text-sm font-medium text-blue-400">${shipDateShort}</div>
+            <div class="text-xs text-gray-500 mt-1">Ship</div>
         `;
     } else if (shipDate !== 'N/A') {
         // Only ship date available
         shipmentHTML = `
-            <div class="flex items-center gap-2">
-                <div class="text-sm font-medium text-blue-400">${shipDateShort}</div>
-                <div class="flex items-center gap-1">
-                    <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-                    <div class="h-0.5 w-12 bg-gray-600"></div>
-                    <div class="w-2 h-2 rounded-full bg-gray-600"></div>
-                </div>
-                <div class="text-sm text-gray-600">N/A</div>
-            </div>
-            <div class="text-xs text-gray-500 mt-1">
-                <span class="mr-3">🚢 Ship</span>
-                <span class="text-gray-600">📦 Est. Delivery</span>
-            </div>
+            <div class="text-sm font-medium text-blue-400">${shipDateShort}</div>
+            <div class="text-xs text-gray-500 mt-1">Ship</div>
         `;
     } else if (deliveryDate !== 'N/A') {
         // Only delivery date available (rare case)
         shipmentHTML = `
-            <div class="flex items-center gap-2">
-                <div class="text-sm text-gray-600">N/A</div>
-                <div class="flex items-center gap-1">
-                    <div class="w-2 h-2 rounded-full bg-gray-600"></div>
-                    <div class="h-0.5 w-12 bg-gradient-to-r from-gray-600 to-purple-500"></div>
-                    <div class="w-2 h-2 rounded-full bg-purple-500"></div>
-                </div>
-                <div class="text-sm font-medium text-purple-400">${deliveryDateShort} ${deliveryYear}</div>
-            </div>
-            <div class="text-xs text-gray-500 mt-1">
-                <span class="mr-3 text-gray-600">🚢 Ship</span>
-                <span>📦 Est. Delivery</span>
-            </div>
+            <div class="text-sm font-medium text-purple-400">${deliveryDateShort} ${deliveryYear}</div>
+            <div class="text-xs text-gray-500 mt-1">Est. Delivery</div>
         `;
     } else {
         // No dates available
         shipmentHTML = `
             <div class="text-sm text-gray-500">N/A</div>
-            <div class="text-xs text-gray-600 mt-1">Est. Delivery</div>
+            <div class="text-xs text-gray-600 mt-1">Ship</div>
         `;
     }
     
