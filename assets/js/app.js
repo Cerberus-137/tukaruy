@@ -307,25 +307,17 @@ function handleCarrierClick(btn, value) {
     console.log('🎯 Carrier clicked:', value);
     console.log('🎯 Current selectedCarriers before:', selectedCarriers);
     
+    // Remove active from ALL buttons first
+    document.querySelectorAll('[data-type="carrier"]').forEach(b => b.classList.remove('active'));
+    
+    // Add active to clicked button
+    btn.classList.add('active');
+    
+    // Set carrier (single select only)
     if (value === 'all') {
-        document.querySelectorAll('[data-type="carrier"]').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
         selectedCarriers = ['all'];
     } else {
-        document.querySelector('[data-type="carrier"][data-value="all"]').classList.remove('active');
-        
-        if (btn.classList.contains('active')) {
-            btn.classList.remove('active');
-            selectedCarriers = selectedCarriers.filter(c => c !== value);
-        } else {
-            btn.classList.add('active');
-            selectedCarriers.push(value);
-        }
-        
-        if (selectedCarriers.length === 0) {
-            document.querySelector('[data-type="carrier"][data-value="all"]').classList.add('active');
-            selectedCarriers = ['all'];
-        }
+        selectedCarriers = [value]; // ONLY one carrier at a time
     }
     
     console.log('🎯 Current selectedCarriers after:', selectedCarriers);
@@ -1253,6 +1245,7 @@ async function performSearch(filters, append = false) {
         
         // Make API request
         console.log('📡 Sending request to api/search');
+        console.log('📦 Request payload:', JSON.stringify(filters, null, 2));
         const response = await fetch('api/search', {
             method: 'POST',
             headers: {
@@ -1366,6 +1359,15 @@ function displayResults(results, append = false) {
         }
         return;
     }
+    
+    // Log carrier distribution for debugging
+    const carrierCount = {};
+    results.forEach(r => {
+        const carrier = r.carrier || 'unknown';
+        carrierCount[carrier] = (carrierCount[carrier] || 0) + 1;
+    });
+    console.log('📊 Results by carrier:', carrierCount);
+    console.log('📊 Total results:', results.length);
     
     results.forEach(result => {
         const row = createResultRow(result);
