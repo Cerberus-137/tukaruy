@@ -981,36 +981,59 @@ function loadDestinationStates(countryCode) {
 
 // Setup user menu - close on click and outside click
 function setupUserMenu() {
-    const userMenuBtn = document.getElementById('user-menu-btn');
-    const userMenu = document.getElementById('user-menu');
-    const userMenuLinks = document.querySelectorAll('.user-menu-link');
-    
-    if (!userMenuBtn || !userMenu) return;
-    
-    // Toggle menu on button click
-    userMenuBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        userMenu.classList.toggle('hidden');
-        console.log('👤 User menu toggled:', userMenu.classList.contains('hidden') ? 'closed' : 'open');
-    });
-    
-    // Close menu when clicking on a link
-    userMenuLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            // Let the link navigate, but close the menu
-            setTimeout(() => {
-                userMenu.classList.add('hidden');
-                console.log('👤 User menu closed (link clicked)');
-            }, 50);
+    // Add small delay to ensure DOM is ready and inline scripts don't conflict
+    setTimeout(() => {
+        const userMenuBtn = document.getElementById('user-menu-btn');
+        const userMenu = document.getElementById('user-menu');
+        const userMenuLinks = document.querySelectorAll('.user-menu-link');
+        
+        console.log('🔧 setupUserMenu:', {
+            btn: !!userMenuBtn,
+            menu: !!userMenu,
+            links: userMenuLinks.length
         });
-    });
-    
-    // Close menu when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!userMenuBtn.contains(e.target) && !userMenu.contains(e.target)) {
-            userMenu.classList.add('hidden');
+        
+        if (!userMenuBtn || !userMenu) {
+            console.warn('⚠️ User menu elements not found');
+            return;
         }
-    });
+        
+        // Remove any existing listeners first (in case of duplicates)
+        const newBtn = userMenuBtn.cloneNode(true);
+        userMenuBtn.parentNode.replaceChild(newBtn, userMenuBtn);
+        
+        // Get fresh reference
+        const freshBtn = document.getElementById('user-menu-btn');
+        const freshMenu = document.getElementById('user-menu');
+        const freshLinks = document.querySelectorAll('.user-menu-link');
+        
+        // Toggle menu on button click
+        freshBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            freshMenu.classList.toggle('hidden');
+            console.log('👤 User menu toggled:', freshMenu.classList.contains('hidden') ? 'closed' : 'open');
+        });
+        
+        // Close menu when clicking on a link
+        freshLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                // Let the link navigate, but close the menu
+                setTimeout(() => {
+                    freshMenu.classList.add('hidden');
+                    console.log('👤 User menu closed (link clicked)');
+                }, 50);
+            });
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!freshBtn.contains(e.target) && !freshMenu.contains(e.target)) {
+                freshMenu.classList.add('hidden');
+            }
+        });
+        
+        console.log('✅ User menu setup complete');
+    }, 100);
 }
 
 // Setup auto-apply toggle
@@ -1457,6 +1480,28 @@ function getCarrierBadgeClass(carrier) {
     return classes[carrier] || 'bg-gray-500/20 text-gray-400';
 }
 
+// Generate carrier-specific tracking link
+function generateCarrierLink(carrier, trackingNumber) {
+    if (!carrier || !trackingNumber) return '';
+    
+    const carrierLower = carrier.toLowerCase();
+    let trackingUrl = '';
+    
+    if (carrierLower === 'fedex') {
+        trackingUrl = `https://www.fedex.com/wtrk/track/?trknbr=${trackingNumber}`;
+    } else if (carrierLower === 'dhl') {
+        trackingUrl = `https://www.dhl.com/en/en/home/tracking.html?tracking-id=${trackingNumber}`;
+    } else if (carrierLower === 'ups') {
+        trackingUrl = `https://www.ups.com/track?tracknum=${trackingNumber}`;
+    }
+    
+    if (!trackingUrl) return '';
+    
+    return `<a href="${trackingUrl}" target="_blank" class="inline-flex items-center px-4 py-1.5 text-sm font-semibold rounded-md bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition">
+        <i class="fas fa-external-link-alt mr-2"></i>Track
+    </a>`;
+}
+
 // Load more results
 function loadMore() {
     if (currentCursor) {
@@ -1591,9 +1636,13 @@ async function revealTrackingNumber(tnId) {
                         <div class="text-center">
                             <div class="text-xs text-gray-400 mb-1">TRACKING NUMBER</div>
                             <div class="text-2xl font-mono font-bold text-white select-all mb-2">${result.tracking_number}</div>
-                            <span class="inline-flex items-center px-3 py-1 text-sm font-semibold rounded-md ${carrierBadgeClass}">
-                                ${result.carrier ? result.carrier.toUpperCase() : 'N/A'}
-                            </span>
+                            <div class="flex items-center justify-center gap-3 flex-wrap">
+                                <span class="inline-flex items-center px-3 py-1 text-sm font-semibold rounded-md ${carrierBadgeClass}">
+                                    ${result.carrier ? result.carrier.toUpperCase() : 'N/A'}
+                                </span>
+                                <!-- Carrier Tracking Links -->
+                                ${generateCarrierLink(result.carrier, result.tracking_number)}
+                            </div>
                         </div>
                     </div>
                     

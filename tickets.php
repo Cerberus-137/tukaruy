@@ -888,7 +888,8 @@ $packages = TICKET_PACKAGES;
 
     <script>
         // Setup user menu - close on click and outside click
-        document.addEventListener('DOMContentLoaded', function() {
+        // Add delay to let main script finish if both are present
+        setTimeout(() => {
             const userMenuBtn = document.getElementById('user-menu-btn');
             const userMenu = document.getElementById('user-menu');
             const userMenuLinks = document.querySelectorAll('.user-menu-link');
@@ -916,7 +917,7 @@ $packages = TICKET_PACKAGES;
                     userMenu.classList.add('hidden');
                 }
             });
-        });
+        }, 200);
     </script>
 </body>
 </html>

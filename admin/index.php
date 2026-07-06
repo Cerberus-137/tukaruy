@@ -219,7 +219,7 @@ $user = getCurrentUser();
 
     <script>
         // Setup user menu - close on click and outside click
-        document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
             const userMenuBtn = document.getElementById('user-menu-btn');
             const userMenu = document.getElementById('user-menu');
             const userMenuLinks = document.querySelectorAll('.user-menu-link');
@@ -247,7 +247,7 @@ $user = getCurrentUser();
                     userMenu.classList.add('hidden');
                 }
             });
-        });
+        }, 200);
     </script>
 </body>
 </html>
