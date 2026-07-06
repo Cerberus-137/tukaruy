@@ -222,6 +222,26 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('✗ Ship date trigger setup error:', e);
     }
     
+    // Add click event for delivery date trigger button
+    try {
+        const deliveryDateTrigger = document.getElementById('delivery-date-trigger');
+        if (deliveryDateTrigger) {
+            console.log('Delivery date trigger found, attaching event listener');
+            deliveryDateTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Delivery date trigger clicked!');
+                toggleDeliveryDateCalendar();
+                return false;
+            }, { capture: true });
+            console.log('✓ Delivery date trigger event listeners attached');
+        } else {
+            console.error('✗ Delivery date trigger button not found!');
+        }
+    } catch (e) {
+        console.error('✗ Delivery date trigger setup error:', e);
+    }
+    
     console.log('=== Tukeruy Track Page Initialized ===');
     
     // Load stats in background (non-blocking)
@@ -2225,6 +2245,145 @@ window.clearShipDateRange = function() {
     }
     
     showNotification('Ship date range cleared', 'info');
+    
+    // Auto-apply if enabled
+    if (autoApply) {
+        debounceSearch();
+    }
+};
+
+// Toggle Delivery Date Calendar Modal
+window.toggleDeliveryDateCalendar = function() {
+    console.log('📅 Toggle Delivery Date Calendar');
+    const modal = document.getElementById('delivery-date-calendar-modal');
+    if (!modal) {
+        // If modal doesn't exist, use simple input
+        const deliveryFrom = document.getElementById('delivery_from').value;
+        const deliveryTo = document.getElementById('delivery_to').value;
+        
+        // Create inline date inputs
+        const display = document.getElementById('selected-delivery-date-display');
+        if (display) {
+            const from = prompt('Enter start date (YYYY-MM-DD):', deliveryFrom);
+            const to = prompt('Enter end date (YYYY-MM-DD):', deliveryTo);
+            
+            if (from && to) {
+                document.getElementById('delivery_from').value = from;
+                document.getElementById('delivery_to').value = to;
+                
+                const fromFormatted = new Date(from).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const toFormatted = new Date(to).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                display.textContent = `${fromFormatted} - ${toFormatted}`;
+                display.classList.remove('text-gray-400');
+                display.classList.add('text-white');
+                
+                showNotification(`Delivery date range: ${fromFormatted} - ${toFormatted}`, 'info');
+                
+                if (autoApply) {
+                    debounceSearch();
+                }
+            }
+        }
+        return;
+    }
+    
+    if (modal.classList.contains('hidden')) {
+        // Get current values
+        const deliveryFrom = document.getElementById('delivery_from').value;
+        const deliveryTo = document.getElementById('delivery_to').value;
+        
+        // Set current values in inputs
+        const fromInput = document.getElementById('delivery-date-from');
+        const toInput = document.getElementById('delivery-date-to');
+        
+        if (deliveryFrom) fromInput.value = deliveryFrom;
+        if (deliveryTo) toInput.value = deliveryTo;
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    } else {
+        closeDeliveryDateCalendar();
+    }
+};
+
+// Close Delivery Date Calendar Modal
+window.closeDeliveryDateCalendar = function() {
+    const modal = document.getElementById('delivery-date-calendar-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+};
+
+// Apply Delivery Date Range from modal
+window.applyDeliveryDateRange = function() {
+    const fromInput = document.getElementById('delivery-date-from');
+    const toInput = document.getElementById('delivery-date-to');
+    
+    if (!fromInput.value || !toInput.value) {
+        alert('Please select both start and end dates');
+        return;
+    }
+    
+    const deliveryFrom = document.getElementById('delivery_from');
+    const deliveryTo = document.getElementById('delivery_to');
+    const display = document.getElementById('selected-delivery-date-display');
+    
+    // Parse dates
+    const fromDate = new Date(fromInput.value);
+    const toDate = new Date(toInput.value);
+    
+    if (fromDate > toDate) {
+        alert('Start date must be before end date');
+        return;
+    }
+    
+    // Update hidden inputs
+    deliveryFrom.value = fromInput.value;
+    deliveryTo.value = toInput.value;
+    
+    // Format for display
+    const formatDate = (dateStr) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+    
+    // Update display
+    const fromFormatted = formatDate(fromInput.value);
+    const toFormatted = formatDate(toInput.value);
+    display.textContent = `${fromFormatted} - ${toFormatted}`;
+    display.classList.remove('text-gray-400');
+    display.classList.add('text-white');
+    
+    // Close modal
+    closeDeliveryDateCalendar();
+    
+    // Show notification
+    showNotification(`Delivery date range: ${fromFormatted} - ${toFormatted}`, 'info');
+    
+    console.log('✅ Delivery date range applied:', fromInput.value, '-', toInput.value);
+    
+    // Auto-apply if enabled
+    if (autoApply) {
+        debounceSearch();
+    }
+};
+
+// Clear delivery date range
+window.clearDeliveryDateRange = function() {
+    const deliveryFrom = document.getElementById('delivery_from');
+    const deliveryTo = document.getElementById('delivery_to');
+    const display = document.getElementById('selected-delivery-date-display');
+    
+    if (deliveryFrom) deliveryFrom.value = '';
+    if (deliveryTo) deliveryTo.value = '';
+    if (display) {
+        display.textContent = 'Select date range...';
+        display.classList.add('text-gray-400');
+        display.classList.remove('text-white');
+    }
+    
+    showNotification('Delivery date range cleared', 'info');
     
     // Auto-apply if enabled
     if (autoApply) {

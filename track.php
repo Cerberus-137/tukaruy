@@ -566,22 +566,28 @@ $stats = [
 
                         <!-- Est. Delivery Window -->
                         <div>
-                            <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider">
-                                <i class="fas fa-clock mr-2 text-purple-400"></i>EST. DELIVERY WINDOW
+                            <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider flex items-center justify-between">
+                                <span><i class="fas fa-clock mr-2 text-blue-400"></i>EST. DELIVERY WINDOW</span>
+                                <button type="button" onclick="clearDeliveryDateRange()" class="text-xs text-blue-400 hover:text-blue-300 transition" title="Clear">
+                                    <i class="fas fa-times-circle"></i>
+                                </button>
                             </label>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="text-xs text-gray-500 mb-1 block">From</label>
-                                    <input type="date" id="delivery_from" class="modern-input w-full">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-500 mb-1 block">To</label>
-                                    <input type="date" id="delivery_to" class="modern-input w-full">
-                                </div>
+                            <div class="relative">
+                                <button 
+                                    type="button" 
+                                    id="delivery-date-trigger" 
+                                    onclick="toggleDeliveryDateCalendar()"
+                                    class="w-full bg-[#1a1a1a99] border border-[#4a4a4a66] rounded-[10px] px-4 py-3 text-sm text-left transition-all duration-150 hover:bg-[#3a3a3a99] hover:border-[#3b82f680] focus:outline-none focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] flex items-center justify-between"
+                                    style="cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 10;">
+                                    <span id="selected-delivery-date-display" class="text-gray-400">Select date range...</span>
+                                    <i class="fas fa-calendar-check text-xs text-blue-400"></i>
+                                </button>
+                                <input type="hidden" id="delivery_from" value="">
+                                <input type="hidden" id="delivery_to" value="">
                             </div>
-                            <p class="text-xs text-gray-500 mt-2">
-                                <i class="fas fa-info-circle mr-1"></i>Pre-transit labels have no estimate yet
-                            </p>
+                            <div class="mt-2 text-xs text-gray-500">
+                                <i class="fas fa-info-circle mr-1"></i>Filter by estimated arrival date
+                            </div>
                         </div>
 
                         <!-- Action Buttons -->
