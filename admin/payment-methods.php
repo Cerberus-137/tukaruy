@@ -191,7 +191,7 @@ $methods = $stmt->fetchAll();
     <script>
         async function togglePaymentMethod(id, enabled) {
             try {
-                const response = await fetch('/admin/api/payment-methods/update', {
+                const response = await fetch('/admin/api/payment-methods.php?action=update', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -202,6 +202,13 @@ $methods = $stmt->fetchAll();
                     })
                 });
 
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text.substring(0, 500));
+                    throw new Error('Server returned HTML instead of JSON');
+                }
+
                 const data = await response.json();
                 if (!data.success) {
                     alert('Gagal: ' + data.error);
@@ -211,6 +218,7 @@ $methods = $stmt->fetchAll();
                     setTimeout(() => location.reload(), 500);
                 }
             } catch (error) {
+                console.error('Error:', error);
                 alert('Error: ' + error.message);
             }
         }
@@ -224,7 +232,7 @@ $methods = $stmt->fetchAll();
             }
 
             try {
-                const response = await fetch('/admin/api/settings/update', {
+                const response = await fetch('/admin/api/settings.php?action=update', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -235,6 +243,13 @@ $methods = $stmt->fetchAll();
                     })
                 });
 
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text.substring(0, 500));
+                    throw new Error('Server returned HTML instead of JSON');
+                }
+
                 const data = await response.json();
                 if (data.success) {
                     alert('Tersimpan!');
@@ -242,6 +257,7 @@ $methods = $stmt->fetchAll();
                     alert('Gagal: ' + data.error);
                 }
             } catch (error) {
+                console.error('Error:', error);
                 alert('Error: ' + error.message);
             }
         }

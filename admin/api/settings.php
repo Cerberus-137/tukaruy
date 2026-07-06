@@ -18,11 +18,11 @@ if (getCurrentUser()['role'] !== 'admin') {
 }
 
 $pdo = getDBConnection();
-$requestUri = $_SERVER['REQUEST_URI'];
+$action = $_GET['action'] ?? 'list';
 
 try {
     // UPDATE setting
-    if (strpos($requestUri, '/update') !== false) {
+    if ($action === 'update') {
         $input = json_decode(file_get_contents('php://input'), true);
         
         $key = $input['key'] ?? null;
