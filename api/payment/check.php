@@ -72,6 +72,41 @@ try {
                     $stmt->execute([$payment['tickets'], $user['id']]);
                     error_log('✅ Tickets added to user: ' . $payment['tickets'] . ' tickets for user ID: ' . $user['id']);
                     
+                    // Record top-up history
+                    $stmt = $pdo->prepare("
+                        INSERT INTO topup_history (user_id, payment_id, payment_method, credits_purchased, bonus_credits, total_credits, amount_paid, payment_reference)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ");
+                    
+                    // Calculate base credits and bonus
+                    $packages = TICKET_PACKAGES;
+                    $baseCredits = 0;
+                    $bonusCredits = 0;
+                    foreach ($packages as $credits => $pkg) {
+                        if ($pkg['total'] == $payment['tickets']) {
+                            $baseCredits = $credits;
+                            $bonusCredits = $pkg['bonus'];
+                            break;
+                        }
+                    }
+                    // Fallback if not found in packages
+                    if ($baseCredits == 0) {
+                        $baseCredits = $payment['tickets'];
+                        $bonusCredits = 0;
+                    }
+                    
+                    $stmt->execute([
+                        $user['id'],
+                        $payment['id'],
+                        'qrispay',
+                        $baseCredits,
+                        $bonusCredits,
+                        $payment['tickets'],
+                        $payment['amount'],
+                        $payment['payment_reference']
+                    ]);
+                    error_log('✅ Top-up history recorded');
+                    
                     // Get updated user tickets
                     $stmt = $pdo->prepare("SELECT tickets FROM users WHERE id = ?");
                     $stmt->execute([$user['id']]);
@@ -153,6 +188,41 @@ try {
                     $stmt = $pdo->prepare("UPDATE users SET tickets = tickets + ? WHERE id = ?");
                     $stmt->execute([$payment['tickets'], $user['id']]);
                     error_log('Tickets added to user: ' . $payment['tickets']);
+                    
+                    // Record top-up history for Saweria
+                    $stmt = $pdo->prepare("
+                        INSERT INTO topup_history (user_id, payment_id, payment_method, credits_purchased, bonus_credits, total_credits, amount_paid, payment_reference)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ");
+                    
+                    // Calculate base credits and bonus
+                    $packages = TICKET_PACKAGES;
+                    $baseCredits = 0;
+                    $bonusCredits = 0;
+                    foreach ($packages as $credits => $pkg) {
+                        if ($pkg['total'] == $payment['tickets']) {
+                            $baseCredits = $credits;
+                            $bonusCredits = $pkg['bonus'];
+                            break;
+                        }
+                    }
+                    // Fallback if not found in packages
+                    if ($baseCredits == 0) {
+                        $baseCredits = $payment['tickets'];
+                        $bonusCredits = 0;
+                    }
+                    
+                    $stmt->execute([
+                        $user['id'],
+                        $payment['id'],
+                        'saweria',
+                        $baseCredits,
+                        $bonusCredits,
+                        $payment['tickets'],
+                        $payment['amount'],
+                        $payment['payment_reference']
+                    ]);
+                    error_log('✅ Saweria top-up history recorded');
                     
                     $pdo->commit();
                     

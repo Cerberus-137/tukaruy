@@ -85,14 +85,72 @@ $packages = TICKET_PACKAGES;
                 <p class="text-xl text-gray-400">Pick a credit pack and start tracking</p>
             </div>
 
-            <!-- Current Balance -->
-            <div class="max-w-md mx-auto mb-12">
-                <div class="glass-effect rounded-2xl p-8 text-center">
-                    <p class="text-sm text-gray-400 mb-2">Current balance</p>
-                    <div class="text-5xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-4">
-                        <?php echo number_format($user['tickets']); ?>
+            <!-- Current Balance & Stats -->
+            <div class="max-w-4xl mx-auto mb-12">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="glass-effect rounded-2xl p-6 text-center">
+                        <p class="text-xs text-gray-400 mb-2 uppercase tracking-wider">Current Balance</p>
+                        <div class="text-4xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-1">
+                            <?php echo number_format($user['tickets']); ?>
+                        </div>
+                        <p class="text-xs text-gray-400">credits</p>
                     </div>
-                    <p class="text-sm text-gray-400">credits</p>
+                    <div class="glass-effect rounded-2xl p-6 text-center">
+                        <p class="text-xs text-gray-400 mb-2 uppercase tracking-wider">Total Top-Ups</p>
+                        <div class="text-4xl font-bold text-white mb-1" id="total-topups">0</div>
+                        <p class="text-xs text-gray-400">purchases</p>
+                    </div>
+                    <div class="glass-effect rounded-2xl p-6 text-center">
+                        <p class="text-xs text-gray-400 mb-2 uppercase tracking-wider">Total Spent</p>
+                        <div class="text-2xl font-bold text-white mb-1" id="total-spent">Rp 0</div>
+                        <p class="text-xs text-gray-400">all time</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top-Up History Section -->
+            <div class="max-w-5xl mx-auto mb-12">
+                <div class="glass-effect rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold flex items-center">
+                            <i class="fas fa-history text-purple-400 mr-2"></i>
+                            Top-Up History
+                        </h2>
+                        <button onclick="toggleHistory()" id="toggle-history-btn" class="text-sm text-purple-400 hover:text-purple-300 transition">
+                            <i class="fas fa-chevron-down mr-1"></i>Show History
+                        </button>
+                    </div>
+                    
+                    <div id="topup-history-container" class="hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-gray-700">
+                                        <th class="text-left py-3 px-2 text-xs font-semibold text-gray-400 uppercase">Date</th>
+                                        <th class="text-left py-3 px-2 text-xs font-semibold text-gray-400 uppercase">Method</th>
+                                        <th class="text-right py-3 px-2 text-xs font-semibold text-gray-400 uppercase">Credits</th>
+                                        <th class="text-right py-3 px-2 text-xs font-semibold text-gray-400 uppercase">Bonus</th>
+                                        <th class="text-right py-3 px-2 text-xs font-semibold text-gray-400 uppercase">Total</th>
+                                        <th class="text-right py-3 px-2 text-xs font-semibold text-gray-400 uppercase">Amount</th>
+                                        <th class="text-left py-3 px-2 text-xs font-semibold text-gray-400 uppercase">Reference</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-table-body">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-8">
+                                            <i class="fas fa-spinner fa-spin text-2xl text-purple-500"></i>
+                                            <div class="mt-2 text-gray-500 text-sm">Loading history...</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-4 flex justify-center">
+                            <button id="load-more-history" class="hidden px-6 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm transition">
+                                Load More
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -865,6 +923,139 @@ $packages = TICKET_PACKAGES;
         }
 
         const BASE_PRICE_PER_CREDIT = <?php echo BASE_PRICE_PER_CREDIT; ?>;
+        
+        // Top-Up History Management
+        let historyOffset = 0;
+        const historyLimit = 20;
+        let historyExpanded = false;
+
+        async function loadTopupHistory(append = false) {
+            try {
+                const response = await fetch(`/api/topup-history?limit=${historyLimit}&offset=${historyOffset}`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load history');
+                }
+
+                // Update stats
+                document.getElementById('total-topups').textContent = data.total || 0;
+                document.getElementById('total-spent').textContent = 'Rp ' + (data.total_spent || 0).toLocaleString();
+
+                // Display history
+                displayTopupHistory(data.history, append);
+
+                // Update load more button
+                const loadMoreBtn = document.getElementById('load-more-history');
+                if (data.history.length >= historyLimit && data.total > historyOffset + historyLimit) {
+                    loadMoreBtn.classList.remove('hidden');
+                } else {
+                    loadMoreBtn.classList.add('hidden');
+                }
+
+            } catch (error) {
+                console.error('Error loading top-up history:', error);
+                const tbody = document.getElementById('history-table-body');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-8">
+                            <i class="fas fa-exclamation-triangle text-2xl text-red-500"></i>
+                            <div class="mt-2 text-red-400 text-sm">Error: ${error.message}</div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function displayTopupHistory(history, append = false) {
+            const tbody = document.getElementById('history-table-body');
+            
+            if (!append) {
+                tbody.innerHTML = '';
+            }
+
+            if (history.length === 0 && !append) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-8">
+                            <i class="fas fa-inbox text-2xl text-gray-500"></i>
+                            <div class="mt-2 text-gray-500 text-sm">No top-up history yet</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            history.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-700 hover:bg-gray-800/30 transition';
+                
+                const purchasedDate = new Date(item.purchased_at);
+                const formattedDate = purchasedDate.toLocaleString('id-ID', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const methodColors = {
+                    'QRIS PAY': 'bg-blue-500/20 text-blue-400',
+                    'SAWERIA': 'bg-pink-500/20 text-pink-400'
+                };
+
+                row.innerHTML = `
+                    <td class="py-3 px-2 text-gray-400 text-xs">${formattedDate}</td>
+                    <td class="py-3 px-2">
+                        <span class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-md ${methodColors[item.payment_method] || 'bg-gray-500/20 text-gray-400'}">
+                            ${item.payment_method_display}
+                        </span>
+                    </td>
+                    <td class="py-3 px-2 text-right text-white font-medium">${item.credits_purchased}</td>
+                    <td class="py-3 px-2 text-right ${item.bonus_credits > 0 ? 'text-green-400 font-semibold' : 'text-gray-500'}">
+                        ${item.bonus_credits > 0 ? '+' + item.bonus_credits : '—'}
+                    </td>
+                    <td class="py-3 px-2 text-right text-purple-400 font-bold">${item.total_credits}</td>
+                    <td class="py-3 px-2 text-right text-white font-medium">Rp ${item.amount_paid.toLocaleString()}</td>
+                    <td class="py-3 px-2 text-gray-500 font-mono text-xs">${item.payment_reference || '—'}</td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        function toggleHistory() {
+            const container = document.getElementById('topup-history-container');
+            const btn = document.getElementById('toggle-history-btn');
+            
+            historyExpanded = !historyExpanded;
+            
+            if (historyExpanded) {
+                container.classList.remove('hidden');
+                btn.innerHTML = '<i class="fas fa-chevron-up mr-1"></i>Hide History';
+                
+                // Load history if not loaded yet
+                if (historyOffset === 0) {
+                    loadTopupHistory();
+                }
+            } else {
+                container.classList.add('hidden');
+                btn.innerHTML = '<i class="fas fa-chevron-down mr-1"></i>Show History';
+            }
+        }
+
+        // Load more history
+        document.getElementById('load-more-history').addEventListener('click', function() {
+            historyOffset += historyLimit;
+            loadTopupHistory(true);
+        });
+
+        // Load stats on page load (without expanding history)
+        loadTopupHistory().catch(() => {
+            // Stats failed to load, set defaults
+            document.getElementById('total-topups').textContent = '0';
+            document.getElementById('total-spent').textContent = 'Rp 0';
+        });
         
         function showSuccessMessage(tickets) {
             alert(`Payment successful! ${tickets} credits have been added to your account.`);

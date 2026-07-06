@@ -34,6 +34,9 @@ RewriteRule ^(.*)$ $1.php [L]
     Header set X-XSS-Protection "1; mode=block"
 </IfModule>
 
+# Custom 404 Error Page
+ErrorDocument 404 /404.php
+
 # Disable directory browsing
 Options -Indexes
 
