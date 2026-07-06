@@ -382,7 +382,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                 <div class="flex items-center justify-between mb-3">
                                     <div class="flex items-center space-x-3">
                                         <i class="fas fa-qrcode text-blue-400"></i>
-                                        <span class="font-medium">QRIS Pay</span>
+                                        <span class="font-medium">QRIS</span>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" name="qrispay_enabled" class="sr-only peer" <?php echo getAdminSetting('payment_methods_qrispay', '1') ? 'checked' : ''; ?>>

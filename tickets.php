@@ -357,7 +357,7 @@ $packages = TICKET_PACKAGES;
                                 <div class="flex items-center space-x-3">
                                     <i class="fas fa-qrcode text-blue-400"></i>
                                     <div>
-                                        <div class="font-medium">QRIS Pay</div>
+                                        <div class="font-medium">QRIS</div>
                                         <div class="text-xs text-gray-400">Scan QR with e-wallet</div>
                                         ${isOverQrisLimit ? '<div class="text-xs text-orange-400 mt-1">Max Rp 499,000</div>' : ''}
                                     </div>
@@ -1000,7 +1000,7 @@ $packages = TICKET_PACKAGES;
                 });
 
                 const methodColors = {
-                    'QRIS PAY': 'bg-blue-500/20 text-blue-400',
+                    'QRIS': 'bg-blue-500/20 text-blue-400',
                     'SAWERIA': 'bg-pink-500/20 text-pink-400'
                 };
 
