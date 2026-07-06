@@ -1371,7 +1371,10 @@ function displayResults(results, append = false) {
 // Create result table row
 function createResultRow(result) {
     const row = document.createElement('tr');
-    row.className = 'border-b border-dark-400/50 hover:bg-dark-300/30 transition';
+    row.className = 'border-b border-dark-400/50 hover:bg-dark-300/30 transition cursor-pointer';
+    
+    // Make row clickable to reveal tracking number
+    row.onclick = () => showRevealModal(result.tn_id, result.reveal_cost_credits || 1);
     
     const carrierBadgeClass = getCarrierBadgeClass(result.carrier);
     const statusBadgeClass = getStatusBadgeClass(result.status);
@@ -1445,10 +1448,6 @@ function createResultRow(result) {
     // Get carrier name
     const carrierName = result.carrier ? result.carrier.toUpperCase() : 'N/A';
     
-    // Candidates column - show how many similar tracking numbers (always 1 for now since API returns individual results)
-    // In the future, this could aggregate similar TNs
-    const candidatesText = '1 match';
-    
     // Build shipment timeline display
     let shipmentHTML = '';
     if (shipDate !== 'N/A' && deliveryDate !== 'N/A') {
@@ -1519,15 +1518,6 @@ function createResultRow(result) {
         </td>
         <td class="py-4 px-4">
             <div class="text-xs text-gray-400">${weight === 'N/A' ? '—' : weight}</div>
-        </td>
-        <td class="py-4 px-4">
-            <div class="text-xs text-gray-400">${candidatesText}</div>
-        </td>
-        <td class="py-4 px-4 text-right">
-            <button onclick="showRevealModal('${result.tn_id}', ${result.reveal_cost_credits || 1})" 
-                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white text-sm font-medium rounded-lg transition shadow-sm">
-                Get TN
-            </button>
         </td>
     `;
     
