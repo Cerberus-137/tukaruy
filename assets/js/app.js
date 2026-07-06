@@ -1402,23 +1402,35 @@ function createResultRow(result) {
     
     // Format ship date
     let shipDate = 'N/A';
+    let shipDateShort = 'N/A';
     if (result.ship_date) {
         try {
             const date = new Date(result.ship_date);
             shipDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            shipDateShort = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         } catch (e) {
             shipDate = result.ship_date;
+            shipDateShort = result.ship_date;
         }
     }
     
-    // Format delivery date
+    // Format delivery date with fallback
     let deliveryDate = 'N/A';
-    if (result.est_delivery) {
+    let deliveryDateShort = 'N/A';
+    let deliveryYear = '';
+    
+    // Try est_delivery first, then fallback to est_delivery_date or delivered_at
+    const estDeliveryValue = result.est_delivery || result.est_delivery_date || result.delivered_at;
+    
+    if (estDeliveryValue) {
         try {
-            const date = new Date(result.est_delivery);
+            const date = new Date(estDeliveryValue);
             deliveryDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            deliveryDateShort = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            deliveryYear = date.getFullYear();
         } catch (e) {
-            deliveryDate = result.est_delivery;
+            deliveryDate = estDeliveryValue;
+            deliveryDateShort = estDeliveryValue;
         }
     }
     
@@ -1435,9 +1447,35 @@ function createResultRow(result) {
     
     // Build match explanation (why this tracking is in results)
     let matchExplanation = [];
-    if (shipDate !== 'N/A') matchExplanation.push(`Ship: ${shipDate}`);
-    if (deliveryDate !== 'N/A') matchExplanation.push(`Est. Delivery: ${deliveryDate}`);
-    const matchText = matchExplanation.length > 0 ? matchExplanation.join(' | ') : 'Matches filter criteria';
+    if (shipDate !== 'N/A') matchExplanation.push(`Ship: ${shipDateShort}`);
+    if (deliveryDate !== 'N/A') matchExplanation.push(`Est: ${deliveryDateShort}`);
+    const matchText = matchExplanation.length > 0 ? matchExplanation.join(' | ') : 'Match';
+    
+    // Build shipment timeline display
+    let shipmentHTML = '';
+    if (shipDate !== 'N/A' || deliveryDate !== 'N/A') {
+        // Visual timeline
+        shipmentHTML = `
+            <div class="flex items-center gap-2">
+                <div class="text-sm font-medium text-blue-400">${shipDateShort}</div>
+                <div class="flex items-center gap-1">
+                    <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                    <div class="h-0.5 w-12 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+                    <div class="w-2 h-2 rounded-full bg-purple-500"></div>
+                </div>
+                <div class="text-sm font-medium text-purple-400">${deliveryDateShort} ${deliveryYear}</div>
+            </div>
+            <div class="text-xs text-gray-500 mt-1">
+                ${shipDate !== 'N/A' ? '<span class="mr-3">🚢 Ship</span>' : ''}
+                ${deliveryDate !== 'N/A' ? '<span>📦 Est. Delivery</span>' : ''}
+            </div>
+        `;
+    } else {
+        shipmentHTML = `
+            <div class="text-sm text-gray-500">N/A</div>
+            <div class="text-xs text-gray-600">Est. Delivery</div>
+        `;
+    }
     
     row.innerHTML = `
         <td class="py-4 px-4">
@@ -1457,18 +1495,13 @@ function createResultRow(result) {
             <div class="text-sm text-gray-300">${destination}</div>
         </td>
         <td class="py-4 px-4">
-            <div class="text-sm text-gray-400">${shipDate}</div>
-            <div class="text-xs text-gray-500 mt-1">Ship</div>
-        </td>
-        <td class="py-4 px-4">
-            <div class="text-sm text-gray-400">${deliveryDate}</div>
-            <div class="text-xs text-gray-500 mt-1">Est. Delivery</div>
+            ${shipmentHTML}
         </td>
         <td class="py-4 px-4">
             <div class="text-sm text-gray-400">${weight}</div>
         </td>
         <td class="py-4 px-4">
-            <div class="text-xs text-purple-300 mb-2">${matchText}</div>
+            <div class="text-xs text-purple-300">${matchText}</div>
         </td>
         <td class="py-4 px-4 text-right">
             <button onclick="showRevealModal('${result.tn_id}', ${result.reveal_cost_credits || 1})" 

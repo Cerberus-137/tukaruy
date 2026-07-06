@@ -657,8 +657,7 @@ $stats = [
                                     <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
                                     <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Origin</th>
                                     <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Destination</th>
-                                    <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Ship Date</th>
-                                    <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Est. Delivery</th>
+                                    <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Shipment</th>
                                     <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Weight</th>
                                     <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Candidates</th>
                                     <th class="text-right py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Action</th>
@@ -666,7 +665,7 @@ $stats = [
                             </thead>
                             <tbody id="results-table">
                                 <tr>
-                                    <td colspan="9" class="text-center py-12">
+                                    <td colspan="8" class="text-center py-12">
                                         <i class="fas fa-spinner fa-spin text-3xl text-purple-500"></i>
                                         <div class="mt-3 text-gray-500">Loading data...</div>
                                     </td>
