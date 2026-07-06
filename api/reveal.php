@@ -64,16 +64,36 @@ try {
             throw new Exception('Insufficient credits or concurrent usage detected');
         }
         
-        // Log usage
+        // Log usage to reveal_history with complete details
         $stmt = $pdo->prepare("
-            INSERT INTO ticket_usage (user_id, tn_id, tracking_number, carrier, tickets_used) 
-            VALUES (?, ?, ?, ?, 1)
+            INSERT INTO reveal_history (
+                user_id, tn_id, tracking_number, carrier, service, status,
+                origin_country, origin_state, origin_city,
+                dest_country, dest_state, dest_city,
+                ship_date, est_delivery_date,
+                weight_grams, signature_required, photo_confirmed,
+                credits_used
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
         ");
+        
         $stmt->execute([
             $user['id'],
             $tnId,
             $result['tracking_number'],
-            $result['carrier']
+            $result['carrier'],
+            $result['service'] ?? null,
+            $result['status'] ?? null,
+            $result['origin']['country'] ?? null,
+            $result['origin']['state'] ?? null,
+            $result['origin']['city'] ?? null,
+            $result['dest']['country'] ?? null,
+            $result['dest']['state'] ?? null,
+            $result['dest']['city'] ?? null,
+            $result['ship_date'] ?? null,
+            $result['est_delivery_date'] ?? null,
+            $result['weight_grams'] ?? null,
+            isset($result['signature_required']) ? (int)$result['signature_required'] : null,
+            isset($result['photo_confirmed']) ? (int)$result['photo_confirmed'] : null
         ]);
         
         $pdo->commit();
@@ -90,6 +110,12 @@ try {
                 'status' => $result['status'] ?? 'pre-transit',
                 'dest' => $result['dest'] ?? null,
                 'origin' => $result['origin'] ?? null,
+                'ship_date' => $result['ship_date'] ?? null,
+                'est_delivery_date' => $result['est_delivery_date'] ?? null,
+                'delivery_date' => $result['est_delivery_date'] ?? null, // Alias for compatibility
+                'weight_grams' => $result['weight_grams'] ?? null,
+                'signature_required' => $result['signature_required'] ?? false,
+                'photo_confirmed' => $result['photo_confirmed'] ?? false,
                 'revealed_at' => $result['revealed_at'] ?? date('Y-m-d H:i:s')
             ],
             'credits_remaining' => $newTicketCount

@@ -361,6 +361,9 @@ $stats = [
                             <a href="/settings" class="block px-3 py-2 text-sm hover:bg-dark-300 transition user-menu-link">
                                 <i class="fas fa-cog mr-2"></i>Pengaturan
                             </a>
+                            <a href="/history" class="block px-3 py-2 text-sm hover:bg-dark-300 transition user-menu-link">
+                                <i class="fas fa-history mr-2"></i>Riwayat Reveal
+                            </a>
                             <a href="/tickets" class="block px-3 py-2 text-sm hover:bg-dark-300 transition user-menu-link">
                                 <i class="fas fa-ticket mr-2"></i>Top Up
                             </a>
@@ -426,7 +429,7 @@ $stats = [
 
                         <!-- Origin -->
                         <div>
-                            <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider">ORIGIN</label>
+                            <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider">ORIGIN/Dikirim Melalui:</label>
                             <div class="space-y-3">
                                 <div class="relative">
                                     <div id="origin-country-dropdown-trigger" class="modern-dropdown">
@@ -471,7 +474,7 @@ $stats = [
                         <!-- Ship Date Window -->
                         <div>
                             <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider flex items-center justify-between">
-                                <span><i class="fas fa-calendar-alt mr-2 text-purple-400"></i>SHIP DATE WINDOW</span>
+                                <span><i class="fas fa-calendar-alt mr-2 text-purple-400"></i>Mulai Pengiriman di tanggal:</span>
                                 <button type="button" onclick="clearShipDate()" class="text-xs text-purple-400 hover:text-purple-300 transition" title="Clear">
                                     <i class="fas fa-times-circle"></i>
                                 </button>
@@ -487,7 +490,7 @@ $stats = [
                         <!-- Est. Delivery Window -->
                         <div>
                             <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider flex items-center justify-between">
-                                <span><i class="fas fa-calendar-check mr-2 text-blue-400"></i>EST. DELIVERY WINDOW</span>
+                                <span><i class="fas fa-calendar-check mr-2 text-blue-400"></i>Est. Kedatangan:</span>
                                 <button type="button" onclick="clearDeliveryDate()" class="text-xs text-blue-400 hover:text-blue-300 transition" title="Clear">
                                     <i class="fas fa-times-circle"></i>
                                 </button>
@@ -567,22 +570,6 @@ $stats = [
                                         <input type="text" id="dest_zip" placeholder="ZIP" class="modern-input" maxlength="10">
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Est. Delivery Window -->
-                        <div>
-                            <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider flex items-center justify-between">
-                                <span><i class="fas fa-clock mr-2 text-blue-400"></i>EST. DELIVERY WINDOW</span>
-                                <button type="button" onclick="clearDeliveryDate()" class="text-xs text-blue-400 hover:text-blue-300 transition" title="Clear">
-                                    <i class="fas fa-times-circle"></i>
-                                </button>
-                            </label>
-                            <div>
-                                <input type="date" id="delivery_date" class="modern-input w-full text-sm" placeholder="Select delivery date">
-                            </div>
-                            <div class="mt-2 text-xs text-gray-500">
-                                <i class="fas fa-info-circle mr-1"></i>Select estimated arrival date
                             </div>
                         </div>
 
