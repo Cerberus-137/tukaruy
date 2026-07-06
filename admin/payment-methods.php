@@ -19,6 +19,13 @@ $methods = $stmt->fetchAll();
 
 // Calculate stats
 $enabledCount = count(array_filter($methods, fn($m) => $m['enabled']));
+
+// Get API settings from database
+$stmt = $pdo->query("SELECT setting_key, setting_value FROM admin_settings WHERE setting_key IN ('qrispay_api_token', 'saweria_api_token')");
+$settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
+$qrisToken = $settings['qrispay_api_token'] ?? '';
+$qris2Token = $settings['saweria_api_token'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="id" class="dark">
@@ -180,7 +187,15 @@ $enabledCount = count(array_filter($methods, fn($m) => $m['enabled']));
 
             <!-- Payment Methods Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <?php foreach ($methods as $method): ?>
+                <?php foreach ($methods as $method): 
+                    // Replace brand names for display
+                    $displayName = $method['display_name'];
+                    if ($method['method_name'] === 'qrispay') {
+                        $displayName = 'QRIS';
+                    } elseif ($method['method_name'] === 'saweria') {
+                        $displayName = 'QRIS 2';
+                    }
+                ?>
                 <div class="glass-effect rounded-2xl p-6 hover:border-purple-500/50 transition">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center space-x-4">
@@ -188,7 +203,7 @@ $enabledCount = count(array_filter($methods, fn($m) => $m['enabled']));
                                 <i class="fas fa-<?php echo $method['icon']; ?> text-3xl text-purple-400"></i>
                             </div>
                             <div>
-                                <h3 class="text-xl font-bold"><?php echo htmlspecialchars($method['display_name']); ?></h3>
+                                <h3 class="text-xl font-bold"><?php echo htmlspecialchars($displayName); ?></h3>
                                 <p class="text-xs text-gray-500 font-mono"><?php echo htmlspecialchars($method['method_name']); ?></p>
                             </div>
                         </div>
@@ -209,7 +224,7 @@ $enabledCount = count(array_filter($methods, fn($m) => $m['enabled']));
 
                     <?php if ($method['method_name'] === 'qrispay'): ?>
                     <div class="mt-4 text-xs text-yellow-400 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-                        <i class="fas fa-exclamation-triangle mr-2"></i>QRIS memiliki batas maksimal Rp 499.000 per transaksi
+                        <i class="fas fa-exclamation-triangle mr-2"></i>Maximum transaction: Rp 499.000
                     </div>
                     <?php endif; ?>
                 </div>
@@ -225,25 +240,25 @@ $enabledCount = count(array_filter($methods, fn($m) => $m['enabled']));
                 
                 <div class="space-y-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">QRISPay API Token</label>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">QRIS API Token</label>
                         <div class="flex gap-3">
-                            <input type="password" id="qrispay-token" class="flex-1 bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition" placeholder="cki_...">
+                            <input type="password" id="qrispay-token" value="<?php echo htmlspecialchars(substr($qrisToken, 0, 20)); ?>..." class="flex-1 bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition" placeholder="cki_...">
                             <button onclick="saveApiSetting('qrispay_api_token', 'qrispay-token')" class="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg transition font-semibold">
                                 <i class="fas fa-save mr-2"></i>Simpan
                             </button>
                         </div>
-                        <p class="mt-2 text-xs text-gray-500">API token untuk QRIS payment gateway</p>
+                        <p class="mt-2 text-xs text-gray-500">API token untuk QRIS payment gateway (Primary)</p>
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Saweria API Token</label>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">QRIS 2 API Token</label>
                         <div class="flex gap-3">
-                            <input type="password" id="saweria-token" class="flex-1 bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition" placeholder="eyJ...">
+                            <input type="password" id="saweria-token" value="<?php echo htmlspecialchars(substr($qris2Token, 0, 20)); ?>..." class="flex-1 bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition" placeholder="eyJ...">
                             <button onclick="saveApiSetting('saweria_api_token', 'saweria-token')" class="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg transition font-semibold">
                                 <i class="fas fa-save mr-2"></i>Simpan
                             </button>
                         </div>
-                        <p class="mt-2 text-xs text-gray-500">API token untuk Saweria donation platform</p>
+                        <p class="mt-2 text-xs text-gray-500">API token untuk QRIS payment gateway (Secondary)</p>
                     </div>
                 </div>
             </div>
