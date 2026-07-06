@@ -1978,19 +1978,18 @@ function showNotification(message, type = 'info') {
 }
 
 
-// Setup Ship Date Picker with Enhanced Modal Calendar
-let shipDatePicker = null;
+// Setup Ship Date Picker - Using HTML5 input instead of Flatpickr
 let tempSelectedDates = null;
 let shipDatesData = {};
 
 function setupShipDatePicker() {
-    // First, fetch ship dates and populate disable array
-    fetchAndInitializeCalendar();
+    console.log('🚀 Setting up ship date picker...');
+    fetchAndSetupDatepicker();
 }
 
-async function fetchAndInitializeCalendar() {
+async function fetchAndSetupDatepicker() {
     try {
-        console.log('📡 Fetching ship dates...');
+        console.log('📡 Fetching available ship dates...');
         const response = await fetch('api/ship-dates');
         const data = await response.json();
         
@@ -1999,90 +1998,186 @@ async function fetchAndInitializeCalendar() {
         if (data.success && data.dates && data.dates.length > 0) {
             // Store available dates
             window.shipDatesData = {};
-            const availableDates = [];
-            
             data.dates.forEach(item => {
                 window.shipDatesData[item.date] = item.count;
-                availableDates.push(item.date);
             });
             
-            console.log('💾 Available dates:', availableDates.length);
+            console.log('💾 Available dates stored:', Object.keys(window.shipDatesData).length);
             
-            // Create disable function - disable all dates EXCEPT available ones
-            const disableDates = (date) => {
-                const dateStr = flatpickrDateFormat(date);
-                const isAvailable = availableDates.includes(dateStr);
-                return !isAvailable; // Return true to disable, false to enable
-            };
+            // Create simple HTML calendar
+            createSimpleCalendar();
             
-            // Initialize Flatpickr with proper configuration
-            const container = document.getElementById('ship-date-calendar-container');
-            if (!container) {
-                console.error('❌ Calendar container not found');
-                return;
-            }
-            
-            shipDatePicker = flatpickr(container, {
-                mode: 'range',
-                inline: true,
-                dateFormat: 'Y-m-d',
-                showMonths: 2,
-                minDate: 'today',
-                disable: [disableDates], // Disable unavailable dates
-                enable: availableDates, // Enable only available dates
-                onChange: function(selectedDates) {
-                    tempSelectedDates = selectedDates;
-                    updateCalendarSelectedRange(selectedDates);
-                    
-                    // Add visual indicators for selected dates
-                    setTimeout(() => {
-                        addDateCountBadges();
-                    }, 50);
-                }
-            });
-            
-            // Add count badges to available dates
-            setTimeout(() => {
-                addDateCountBadges();
-            }, 200);
-            
-            console.log('✅ Calendar initialized with', availableDates.length, 'available dates');
         } else {
-            console.warn('⚠️ No dates returned from API');
+            console.warn('⚠️ No dates available');
         }
     } catch (error) {
-        console.error('❌ Failed to initialize calendar:', error);
+        console.error('❌ Error fetching dates:', error);
     }
 }
 
-// Helper function to format date for comparison
-function flatpickrDateFormat(date) {
+// Create a simple HTML-based calendar
+function createSimpleCalendar() {
+    const container = document.getElementById('ship-date-calendar-container');
+    if (!container) return;
+    
+    console.log('🎨 Creating simple calendar...');
+    
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    
+    let calendarHTML = '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">';
+    
+    // Generate 2 months
+    for (let m = 0; m < 2; m++) {
+        const month = new Date(currentYear, currentMonth + m);
+        const monthName = month.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        
+        calendarHTML += generateMonthCalendar(month);
+    }
+    
+    calendarHTML += '</div>';
+    
+    container.innerHTML = calendarHTML;
+    
+    // Attach event listeners to date cells
+    attachDateClickListeners();
+    
+    console.log('✅ Simple calendar created');
+}
+
+// Generate calendar for a single month
+function generateMonthCalendar(date) {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const monthName = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    let html = `
+        <div style="background: rgba(42, 42, 42, 0.8); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 20px;">
+            <h3 style="text-align: center; color: #e5e7eb; margin: 0 0 15px 0; font-size: 16px; font-weight: 600;">${monthName}</h3>
+            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;">
+    `;
+    
+    // Day headers
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    dayNames.forEach(day => {
+        html += `<div style="text-align: center; color: #9ca3af; font-size: 12px; font-weight: 600; padding: 5px;">${day}</div>`;
+    });
+    
+    // Empty cells before first day
+    for (let i = 0; i < startingDayOfWeek; i++) {
+        html += `<div style="padding: 8px;"></div>`;
+    }
+    
+    // Days of month
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateObj = new Date(year, month, day);
+        const dateStr = formatDateForStorage(dateObj);
+        const isAvailable = window.shipDatesData && window.shipDatesData[dateStr];
+        const count = isAvailable ? window.shipDatesData[dateStr] : 0;
+        
+        const backgroundColor = isAvailable ? 'rgba(139, 92, 246, 0.2)' : 'rgba(100, 100, 100, 0.2)';
+        const textColor = isAvailable ? '#e5e7eb' : '#4a4a4a';
+        const cursor = isAvailable ? 'pointer' : 'not-allowed';
+        const opacity = isAvailable ? '1' : '0.5';
+        
+        html += `
+            <div class="calendar-day-cell" 
+                 data-date="${dateStr}" 
+                 data-available="${isAvailable}" 
+                 style="
+                    padding: 10px;
+                    background: ${backgroundColor};
+                    border: 1px solid rgba(139, 92, 246, 0.3);
+                    border-radius: 8px;
+                    text-align: center;
+                    cursor: ${cursor};
+                    opacity: ${opacity};
+                    color: ${textColor};
+                    font-weight: 500;
+                    user-select: none;
+                    transition: all 0.2s ease;
+                    position: relative;
+                 "
+                 data-count="${count}">
+                <div style="font-size: 14px;">${day}</div>
+                ${count > 0 ? `<div style="font-size: 10px; color: #c084fc; margin-top: 2px;">${count}</div>` : ''}
+            </div>
+        `;
+    }
+    
+    html += '</div></div>';
+    return html;
+}
+
+// Format date for storage/comparison
+function formatDateForStorage(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
 
-// Add count badges to available dates
-function addDateCountBadges() {
-    const calendarDays = document.querySelectorAll('.flatpickr-day');
-    console.log('🎨 Adding badges to', calendarDays.length, 'calendar days');
-    
-    calendarDays.forEach(day => {
-        if (day.dateObj) {
-            const dateStr = flatpickrDateFormat(day.dateObj);
+// Attach click listeners to calendar days
+function attachDateClickListeners() {
+    document.querySelectorAll('.calendar-day-cell').forEach(cell => {
+        cell.addEventListener('click', function() {
+            const isAvailable = this.getAttribute('data-available') === 'true';
+            if (!isAvailable) return;
             
-            if (window.shipDatesData && window.shipDatesData[dateStr]) {
-                const count = window.shipDatesData[dateStr];
-                day.classList.add('has-tn');
-                day.setAttribute('data-count', formatCount(count));
-                day.title = `${count} tracking numbers`;
-                day.style.position = 'relative';
+            const dateStr = this.getAttribute('data-date');
+            
+            // Toggle selection
+            if (this.classList.contains('selected')) {
+                this.classList.remove('selected');
+                this.style.background = 'rgba(139, 92, 246, 0.2)';
                 
-                console.log('✨ Added badge for', dateStr, ':', count);
+                // Remove from selected dates
+                if (tempSelectedDates) {
+                    tempSelectedDates = tempSelectedDates.filter(d => formatDateForStorage(d) !== dateStr);
+                }
+            } else {
+                // Add selection
+                if (!tempSelectedDates) tempSelectedDates = [];
+                
+                if (tempSelectedDates.length < 2) {
+                    this.classList.add('selected');
+                    this.style.background = 'rgba(139, 92, 246, 0.8)';
+                    this.style.borderColor = '#8b5cf6';
+                    
+                    tempSelectedDates.push(new Date(dateStr));
+                    tempSelectedDates.sort((a, b) => a - b); // Sort dates
+                    
+                    // Update display
+                    updateCalendarSelectedRange(tempSelectedDates);
+                }
             }
-        }
+        });
+        
+        // Hover effect
+        cell.addEventListener('mouseover', function() {
+            const isAvailable = this.getAttribute('data-available') === 'true';
+            if (isAvailable && !this.classList.contains('selected')) {
+                this.style.background = 'rgba(139, 92, 246, 0.4)';
+                this.style.borderColor = 'rgba(139, 92, 246, 0.8)';
+            }
+        });
+        
+        cell.addEventListener('mouseout', function() {
+            const isAvailable = this.getAttribute('data-available') === 'true';
+            if (isAvailable && !this.classList.contains('selected')) {
+                this.style.background = 'rgba(139, 92, 246, 0.2)';
+                this.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+            }
+        });
     });
+    
+    console.log('✅ Click listeners attached to', document.querySelectorAll('.calendar-day-cell').length, 'cells');
 }
 
 // Toggle Ship Date Calendar Modal
