@@ -164,6 +164,18 @@ $recentPayments = $stmt->fetchAll();
                 </a>
                 
                 <div class="pt-4 mt-4 border-t border-gray-700">
+                    <p class="text-xs font-semibold text-gray-500 uppercase px-4 mb-2">Content</p>
+                    <a href="/admin/blog" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl">
+                        <i class="fas fa-newspaper text-lg w-5"></i>
+                        <span class="font-medium">Blog Articles</span>
+                    </a>
+                    <a href="/admin/contact" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl">
+                        <i class="fas fa-envelope text-lg w-5"></i>
+                        <span class="font-medium">Contact Messages</span>
+                    </a>
+                </div>
+                
+                <div class="pt-4 mt-4 border-t border-gray-700">
                     <a href="/admin/diagnostic" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl">
                         <i class="fas fa-stethoscope text-lg w-5"></i>
                         <span class="font-medium">Diagnostic</span>
