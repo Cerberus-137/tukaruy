@@ -1372,7 +1372,7 @@ function createResultRow(result) {
         }
     }
     
-    // Format dates
+    // Format ship date
     let shipDate = 'N/A';
     if (result.ship_date) {
         try {
@@ -1380,6 +1380,17 @@ function createResultRow(result) {
             shipDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         } catch (e) {
             shipDate = result.ship_date;
+        }
+    }
+    
+    // Format delivery date
+    let deliveryDate = 'N/A';
+    if (result.est_delivery) {
+        try {
+            const date = new Date(result.est_delivery);
+            deliveryDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        } catch (e) {
+            deliveryDate = result.est_delivery;
         }
     }
     
@@ -1393,6 +1404,12 @@ function createResultRow(result) {
     
     // Get carrier name
     const carrierName = result.carrier ? result.carrier.toUpperCase() : 'N/A';
+    
+    // Build match explanation (why this tracking is in results)
+    let matchExplanation = [];
+    if (shipDate !== 'N/A') matchExplanation.push(`Ship: ${shipDate}`);
+    if (deliveryDate !== 'N/A') matchExplanation.push(`Est. Delivery: ${deliveryDate}`);
+    const matchText = matchExplanation.length > 0 ? matchExplanation.join(' | ') : 'Matches filter criteria';
     
     row.innerHTML = `
         <td class="py-4 px-4">
@@ -1413,9 +1430,17 @@ function createResultRow(result) {
         </td>
         <td class="py-4 px-4">
             <div class="text-sm text-gray-400">${shipDate}</div>
+            <div class="text-xs text-gray-500 mt-1">Ship</div>
+        </td>
+        <td class="py-4 px-4">
+            <div class="text-sm text-gray-400">${deliveryDate}</div>
+            <div class="text-xs text-gray-500 mt-1">Est. Delivery</div>
         </td>
         <td class="py-4 px-4">
             <div class="text-sm text-gray-400">${weight}</div>
+        </td>
+        <td class="py-4 px-4">
+            <div class="text-xs text-purple-300 mb-2">${matchText}</div>
         </td>
         <td class="py-4 px-4 text-right">
             <button onclick="showRevealModal('${result.tn_id}', ${result.reveal_cost_credits || 1})" 

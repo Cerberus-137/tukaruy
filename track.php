@@ -569,8 +569,15 @@ $stats = [
                             <label class="text-xs font-bold text-gray-400 mb-3 block uppercase tracking-wider">
                                 <i class="fas fa-clock mr-2 text-purple-400"></i>EST. DELIVERY WINDOW
                             </label>
-                            <div class="relative">
-                                <input type="date" id="delivery_from" class="modern-input">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs text-gray-500 mb-1 block">From</label>
+                                    <input type="date" id="delivery_from" class="modern-input w-full">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500 mb-1 block">To</label>
+                                    <input type="date" id="delivery_to" class="modern-input w-full">
+                                </div>
                             </div>
                             <p class="text-xs text-gray-500 mt-2">
                                 <i class="fas fa-info-circle mr-1"></i>Pre-transit labels have no estimate yet
@@ -664,14 +671,16 @@ $stats = [
                                     <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
                                     <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Origin</th>
                                     <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Destination</th>
-                                    <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Shipment</th>
+                                    <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Ship Date</th>
+                                    <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Est. Delivery</th>
                                     <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Weight</th>
+                                    <th class="text-left py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Candidates</th>
                                     <th class="text-right py-4 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="results-table">
                                 <tr>
-                                    <td colspan="7" class="text-center py-12">
+                                    <td colspan="9" class="text-center py-12">
                                         <i class="fas fa-spinner fa-spin text-3xl text-purple-500"></i>
                                         <div class="mt-3 text-gray-500">Loading data...</div>
                                     </td>
