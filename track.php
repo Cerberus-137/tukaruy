@@ -684,26 +684,6 @@ $stats = [
         </div>
     </div>
 
-    <!-- History Modal -->
-    <div id="history-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center">
-        <div class="glass-effect rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[80vh] overflow-hidden">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold">Riwayat Reveal</h3>
-                <button onclick="closeHistoryModal()" class="w-8 h-8 rounded-lg bg-dark-300 hover:bg-dark-400 transition flex items-center justify-center">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="overflow-y-auto max-h-96">
-                <div id="history-content">
-                    <div class="text-center py-8">
-                        <i class="fas fa-spinner fa-spin text-3xl text-purple-500"></i>
-                        <div class="mt-3 text-gray-500">Loading history...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Ship Date Calendar Modal - SIMPLIFIED -->
     <div id="ship-date-calendar-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-dark-200 rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-dark-400">
