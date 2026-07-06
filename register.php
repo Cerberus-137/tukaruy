@@ -23,33 +23,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $lastName = $_POST['last_name'] ?? '';
     $company = $_POST['company'] ?? null;
     $captchaToken = $_POST['cf-turnstile-response'] ?? '';
+    $acceptTos = isset($_POST['accept_tos']) && $_POST['accept_tos'] === '1';
     
     // Validation
     if (empty($email) || empty($password) || empty($firstName) || empty($lastName)) {
         $error = 'Please fill in all required fields';
+    } elseif (!$acceptTos) {
+        $error = 'You must accept the Terms of Service to register';
     } elseif (strlen($password) < 8) {
         $error = 'Password must be at least 8 characters';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid email address';
+    } elseif (empty($captchaToken)) {
+        $error = 'Please complete the CAPTCHA verification';
     } else {
-        // Verify CAPTCHA token - ALWAYS REQUIRED
-        if (empty($captchaToken)) {
-            $error = 'Please complete the CAPTCHA verification';
+        // Verify CAPTCHA token
+        $captchaValid = verifyCaptcha($captchaToken, TURNSTILE_SECRET_KEY);
+        
+        if (!$captchaValid) {
+            $error = 'CAPTCHA verification failed. Please try again.';
+            error_log('CAPTCHA verification failed for email: ' . $email . ' | Token: ' . substr($captchaToken, 0, 20) . '...');
         } else {
-            $captchaValid = verifyCaptcha($captchaToken, TURNSTILE_SECRET_KEY);
+            $result = registerUser($email, $password, $firstName, $lastName, $company);
             
-            if (!$captchaValid) {
-                $error = 'CAPTCHA verification failed. Please try again.';
-                error_log('CAPTCHA verification failed for email: ' . $email);
+            if ($result['success']) {
+                header('Location: /login?registered=1');
+                exit;
             } else {
-                $result = registerUser($email, $password, $firstName, $lastName, $company);
-                
-                if ($result['success']) {
-                    header('Location: /login?registered=1');
-                    exit;
-                } else {
-                    $error = $result['message'];
-                }
+                $error = $result['message'];
             }
         }
     }
@@ -277,6 +278,23 @@ function verifyCaptcha($token, $secretKey) {
                             <p id="captcha-error" class="mt-1 text-xs text-red-400 hidden">Please complete the CAPTCHA</p>
                         </div>
 
+                        <!-- Terms of Service Checkbox -->
+                        <div class="flex items-start space-x-3 p-4 bg-slate-700/30 rounded-lg border border-slate-600">
+                            <input 
+                                type="checkbox" 
+                                name="accept_tos" 
+                                id="accept_tos" 
+                                value="1"
+                                class="mt-1 w-4 h-4 text-purple-600 bg-slate-700 border-slate-600 rounded focus:ring-purple-500 focus:ring-2"
+                                required
+                            >
+                            <label for="accept_tos" class="text-sm text-gray-300">
+                                Saya telah membaca dan menyetujui 
+                                <a href="/tos.php" target="_blank" class="text-purple-400 hover:text-purple-300 underline">Syarat dan Ketentuan Penggunaan (Terms of Service)</a>
+                                dan memahami bahwa penggunaan layanan ini tunduk pada hukum yang berlaku di Republik Indonesia.
+                            </label>
+                        </div>
+
                         <button 
                             type="submit"
                             id="submit-btn"
@@ -303,7 +321,7 @@ function verifyCaptcha($token, $secretKey) {
 
         // Callback when CAPTCHA is completed
         function onCaptchaSuccess(token) {
-            console.log('✅ CAPTCHA completed successfully');
+            console.log('✅ CAPTCHA completed successfully:', token.substring(0, 20) + '...');
             captchaCompleted = true;
             document.getElementById('captcha-error').classList.add('hidden');
         }
@@ -311,7 +329,17 @@ function verifyCaptcha($token, $secretKey) {
         // Form validation
         document.getElementById('register-form').addEventListener('submit', function(e) {
             const captchaResponse = document.querySelector('[name="cf-turnstile-response"]');
+            const tosCheckbox = document.getElementById('accept_tos');
             
+            // Validate TOS checkbox
+            if (!tosCheckbox.checked) {
+                e.preventDefault();
+                alert('Anda harus menyetujui Syarat dan Ketentuan Penggunaan untuk mendaftar.');
+                tosCheckbox.focus();
+                return false;
+            }
+            
+            // Validate CAPTCHA
             if (!captchaResponse || !captchaResponse.value) {
                 e.preventDefault();
                 document.getElementById('captcha-error').classList.remove('hidden');
@@ -319,7 +347,8 @@ function verifyCaptcha($token, $secretKey) {
                 return false;
             }
             
-            console.log('📝 Form submitted with CAPTCHA token');
+            console.log('📝 Form submitted with CAPTCHA token:', captchaResponse.value.substring(0, 20) + '...');
+            console.log('✅ TOS accepted');
         });
     </script>
 

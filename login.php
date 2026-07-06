@@ -23,6 +23,7 @@ $success = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
+    $rememberMe = isset($_POST['remember_me']) && $_POST['remember_me'] === '1';
     $captchaToken = $_POST['cf-turnstile-response'] ?? '';
     
     if (empty($email) || empty($password)) {
@@ -46,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // For development/testing, skip CAPTCHA validation and proceed with login
         if (empty($error)) {
-            $result = loginUser($email, $password);
+            $result = loginUser($email, $password, $rememberMe);
             
             if ($result['success']) {
                 header('Location: /track');
@@ -176,6 +177,20 @@ function verifyCaptcha($token, $secretKey) {
                             class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition"
                             required
                         >
+                    </div>
+
+                    <!-- Remember Me Checkbox -->
+                    <div class="flex items-center">
+                        <input 
+                            type="checkbox" 
+                            name="remember_me" 
+                            id="remember_me" 
+                            value="1"
+                            class="w-4 h-4 text-purple-600 bg-slate-700 border-slate-600 rounded focus:ring-purple-500 focus:ring-2"
+                        >
+                        <label for="remember_me" class="ml-2 text-sm text-gray-300">
+                            Remember me for 30 days
+                        </label>
                     </div>
 
                     <!-- Cloudflare Turnstile CAPTCHA -->

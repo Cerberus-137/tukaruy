@@ -31,7 +31,7 @@ function getCurrentUser() {
 }
 
 // Login user
-function loginUser($email, $password) {
+function loginUser($email, $password, $rememberMe = false) {
     $pdo = getDBConnection();
     
     $stmt = $pdo->prepare("SELECT id, email, password, first_name, last_name, role, tickets FROM users WHERE email = ?");
@@ -56,6 +56,20 @@ function loginUser($email, $password) {
     $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
     $_SESSION['user_role'] = $user['role'];
     $_SESSION['user_tickets'] = $user['tickets'];
+    
+    // Handle Remember Me - set cookie for 30 days
+    if ($rememberMe) {
+        $token = bin2hex(random_bytes(32)); // Generate secure random token
+        $expiry = time() + (30 * 24 * 60 * 60); // 30 days
+        
+        // Store token in database (you may want to create a remember_tokens table)
+        // For now, we'll use a simple cookie approach
+        setcookie('remember_token', $token, $expiry, '/', '', true, true); // HttpOnly, Secure
+        setcookie('remember_user', $user['id'], $expiry, '/', '', true, true);
+        
+        // Store in session for tracking
+        $_SESSION['remember_me'] = true;
+    }
     
     return ['success' => true, 'user' => $user];
 }
